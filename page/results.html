@@ -4,9 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta name="robots" content="noindex">
+<meta name="description" content="Found the hotel? MyRoomPrice checks Booking.com, Expedia, Agoda, Google Hotels, Trivago, Kayak and the hotel's own site live in your browser with Claude, and shows the lowest total with taxes. Free, and never ranked for money.">
+<link rel="canonical" href="https://myroomprice.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MyRoomPrice">
+<meta property="og:title" content="MyRoomPrice: find the lowest price for the hotel you've chosen">
+<meta property="og:description" content="Found the hotel? MyRoomPrice checks Booking.com, Expedia, Agoda, Google Hotels, Trivago, Kayak and the hotel's own site live in your browser with Claude, and shows the lowest total with taxes. Free, and never ranked for money.">
+<meta property="og:url" content="https://myroomprice.com/">
+<meta property="og:image" content="https://myroomprice.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0b3a4e">
-<title>MyRoomPrice</title>
+<title>MyRoomPrice: the lowest price for the hotel you've chosen</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"%3E%3Crect width="32" height="32" rx="8" fill="%230b3a4e"/%3E%3Cpath transform="translate%287 3.5%29 scale%28.75%29" fill="%23ffc53d" fill-rule="evenodd" d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 32 12 32s12-11.4 12-20.1C24 5.3 18.6 0 12 0zm0 7.2a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2z"/%3E%3C/svg%3E">
 <!--
   MyRoomPrice, by Londoner in Sydney: the web app the MyRoomPrice Claude skill shows its results in.
@@ -226,6 +236,17 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
 
 <div class="wrap">
   <form id="search" autocomplete="off" novalidate class="tw-relative tw-z-[2] tw--mt-[76px] tw-rounded-[20px] tw-bg-white tw-p-4 tw-shadow-card sm:tw-p-5">
+    <!-- Paste a hotel link: the page reads the hotel, dates and guests from it (see readHotelLink), all in the browser. -->
+    <div class="tw-mb-4" id="link-row">
+      <label class="mrs-paste" for="q-link">
+        <svg class="tw-h-5 tw-w-5 tw-flex-none tw-text-ocean" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L11.6 6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.6-1.6"/></svg>
+        <span class="tw-sr-only">Hotel link (optional)</span>
+        <input class="tw-min-w-0 tw-flex-1 tw-border-0 tw-bg-transparent tw-py-2 tw-text-[15px] tw-font-medium tw-text-ink tw-outline-none placeholder:tw-text-ink-3" id="q-link" type="url" inputmode="url" spellcheck="false"
+          placeholder="Found it on Booking.com, Expedia or Agoda? Paste the link here">
+        <button class="mrs-paste-btn" type="button" id="paste-btn">Paste</button>
+      </label>
+      <div id="link-found" hidden></div>
+    </div>
     <div class="tw-grid tw-gap-3 md:tw-grid-cols-2 lg:tw-grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)_auto] lg:tw-items-end">
       <label class="mrs-label">Hotel
         <input class="mrs-input" id="q-hotel" name="hotel" maxlength="200" placeholder="Hotel name">
@@ -364,7 +385,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   // seen: offers already on screen, so only new ones animate in.
   // ready: Claude is watching this page for a search or an answer. requested: the user clicked Check prices.
   // answered: the user answered Claude's question.
-  const state = { data: null, selected: null, picked: false, seen: new Set(), ready: false, requested: false, answered: false };
+  const state = { data: null, selected: null, picked: false, seen: new Set(), ready: false, requested: false, answered: false, link: null };
 
   // Site logos, built into the page by tools/build_page.py. Each is the site's own small icon.
   const SITE_LOGOS = {
@@ -798,6 +819,9 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   }
 
   function fillSearch(d) {
+    state.link = null;
+    $("q-link").value = "";
+    showLink();
     $("q-hotel").value = d ? d.hotel.name : "";
     $("q-where").value = d ? d.hotel.where : "";
     setDates(d ? d.stay.checkin : "", d ? d.stay.checkout : "");
@@ -828,7 +852,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       : ready ? "Claude is ready. Fill in the hotel, where it is and your dates, then click Check prices."
       : "MyRoomPrice checks Google Hotels, Trivago, Kayak, the big booking sites and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.";
     $("get").hidden = ready;
-    document.title = ready ? "Ready · MyRoomPrice" : "MyRoomPrice";
+    document.title = ready ? "Ready · MyRoomPrice" : "MyRoomPrice: the lowest price for the hotel you've chosen";
   }
 
   // ---------- handing a search to Claude ----------
@@ -941,6 +965,149 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     render();
     if (d.status === "thinking") card("claude", spinner(), "Claude is thinking", d.message && para(d.message));
     if (d.status === "question" && d.question) showQuestion(d.question);
+  }
+
+  // ---------- reading a pasted hotel link ----------
+  // Everything is read from the link itself, in the browser: nothing is fetched. Each site's own address
+  // patterns give the hotel's name (from its page address), the place, the dates and the guests.
+  const COUNTRIES = {
+    au: "Australia", nz: "New Zealand", us: "United States", ca: "Canada", gb: "United Kingdom", uk: "United Kingdom",
+    ie: "Ireland", fr: "France", de: "Germany", it: "Italy", es: "Spain", pt: "Portugal", nl: "Netherlands", be: "Belgium",
+    ch: "Switzerland", at: "Austria", gr: "Greece", hr: "Croatia", cz: "Czechia", hu: "Hungary", pl: "Poland", dk: "Denmark",
+    se: "Sweden", no: "Norway", fi: "Finland", is: "Iceland", tr: "Turkey", ae: "United Arab Emirates", qa: "Qatar",
+    jp: "Japan", kr: "South Korea", cn: "China", hk: "Hong Kong", tw: "Taiwan", sg: "Singapore", my: "Malaysia",
+    th: "Thailand", id: "Indonesia", vn: "Vietnam", kh: "Cambodia", la: "Laos", ph: "Philippines", in: "India",
+    lk: "Sri Lanka", mv: "Maldives", fj: "Fiji", mx: "Mexico", br: "Brazil", ar: "Argentina", za: "South Africa",
+    eg: "Egypt", ma: "Morocco", il: "Israel",
+  };
+  const SMALL = new Set(["and", "of", "the", "by", "on", "at", "in", "de", "la", "le", "du"]);
+  function titleCase(slug) {
+    return decodeURIComponent(slug).replace(/[-_+]+/g, " ").trim().split(/\s+/)
+      .map((w, i) => (i > 0 && SMALL.has(w.toLowerCase()) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1)))
+      .join(" ").slice(0, 120);
+  }
+  const ISO = /^\d{4}-\d{2}-\d{2}$/;
+  function linkDate(v, dayFirst) {
+    if (!v) return "";
+    v = v.trim();
+    if (ISO.test(v)) return v;
+    const m = v.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})$/);
+    if (!m) return "";
+    let [d, mo] = dayFirst ? [+m[1], +m[2]] : [+m[2], +m[1]];
+    if (mo > 12) [d, mo] = [mo, d];
+    return m[3] + "-" + String(mo).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+  }
+  function plusDays(iso, n) { const d = parseDay(iso); if (!d) return ""; d.setDate(d.getDate() + n); return isoDay(d); }
+  // Expedia and Hotels.com write rooms as rm1=a2:c7:c4 (2 adults, children aged 7 and 4).
+  function roomGuests(v) {
+    const parts = (v || "").split(":");
+    const a = parts.find((x) => /^a\d+$/.test(x));
+    return { adults: a ? +a.slice(1) : 0, children: parts.filter((x) => /^c\d+$/.test(x)).length };
+  }
+  const SITE_READERS = [
+    { key: "booking", name: "Booking.com", host: /(^|\.)booking\.com$/, read(u, q) {
+      const m = u.pathname.match(/\/hotel\/([a-z]{2})\/([^/.]+)/);
+      const y = q.get("checkin_year"), mo = q.get("checkin_month"), d = q.get("checkin_monthday");
+      const old = y && mo && d ? y + "-" + mo.padStart(2, "0") + "-" + d.padStart(2, "0") : "";
+      const yo = q.get("checkout_year"), moo = q.get("checkout_month"), dd = q.get("checkout_monthday");
+      return { hotel: m ? titleCase(m[2]) : q.get("ss") || "", where: m ? COUNTRIES[m[1]] || "" : "",
+        checkin: linkDate(q.get("checkin")) || old, checkout: linkDate(q.get("checkout")) || (yo && moo && dd ? yo + "-" + moo.padStart(2, "0") + "-" + dd.padStart(2, "0") : ""),
+        adults: +q.get("group_adults") || 0, children: +q.get("group_children") || 0 };
+    } },
+    { key: "agoda", name: "Agoda", host: /(^|\.)agoda\.com$/, read(u, q) {
+      const m = u.pathname.match(/\/([^/]+)\/hotel\/(?:all\/)?([a-z0-9-]+?)(?:-([a-z]{2}))?\.html/);
+      const checkin = linkDate(q.get("checkIn") || q.get("checkin"));
+      const los = +q.get("los") || 0;
+      return { hotel: m ? titleCase(m[1]) : "", where: m ? [titleCase(m[2]), COUNTRIES[m[3]] || ""].filter(Boolean).join(", ") : "",
+        checkin, checkout: linkDate(q.get("checkOut") || q.get("checkout")) || (checkin && los ? plusDays(checkin, los) : ""),
+        adults: +q.get("adults") || 0, children: +q.get("children") || 0 };
+    } },
+    { key: "expedia", name: "Expedia", host: /(^|\.)(expedia|wotif|ebookers|orbitz|travelocity)\.[a-z.]+$/, read(u, q) {
+      const m = u.pathname.match(/\/(?:([A-Za-z0-9-]+?)-Hotels-)?([A-Za-z0-9-]+)\.h\d+\.Hotel-Information/);
+      const dayFirst = /\.(com\.au|co\.uk|co\.nz|ie)$/.test(u.hostname);
+      const g = roomGuests(q.get("rm1"));
+      return { hotel: m ? titleCase(m[2]) : "", where: m && m[1] ? titleCase(m[1]) : "",
+        checkin: linkDate(q.get("chkin") || q.get("startDate") || q.get("checkIn"), dayFirst),
+        checkout: linkDate(q.get("chkout") || q.get("endDate") || q.get("checkOut"), dayFirst),
+        adults: g.adults || +q.get("adults") || 0, children: g.children };
+    } },
+    { key: "hotelscom", name: "Hotels.com", host: /(^|\.)hotels\.com$/, read(u, q) {
+      const m = u.pathname.match(/\/ho\d+[^/]*\/([a-z0-9-]+)/);
+      const dayFirst = /^(au|uk|nz|ie)\./.test(u.hostname);
+      const g = roomGuests(q.get("rm1"));
+      return { hotel: m ? titleCase(m[1]) : "", where: "",
+        checkin: linkDate(q.get("chkin") || q.get("startDate") || q.get("q-check-in"), dayFirst),
+        checkout: linkDate(q.get("chkout") || q.get("endDate") || q.get("q-check-out"), dayFirst),
+        adults: g.adults || +q.get("q-room-0-adults") || 0, children: g.children };
+    } },
+    { key: "trip", name: "Trip.com", host: /(^|\.)trip\.com$/, read(u, q) {
+      const m = u.pathname.match(/\/hotels\/([a-z-]+?)-hotel-detail-\d+\/([^/]+)/);
+      return { hotel: m ? titleCase(m[2]) : q.get("hotelName") || "", where: m ? titleCase(m[1]) : "",
+        checkin: linkDate(q.get("checkIn") || q.get("checkin")), checkout: linkDate(q.get("checkOut") || q.get("checkout")),
+        adults: +q.get("adult") || +q.get("adults") || 0, children: +q.get("children") || 0 };
+    } },
+  ];
+  // Any other site: dates from the usual parameter names, and the hotel from the most name-like part of the path.
+  function readGeneric(u, q) {
+    const pick = (...names) => { for (const n of names) for (const [k, v] of q) if (k.toLowerCase() === n) return v; return ""; };
+    const seg = u.pathname.split("/").map((x) => x.replace(/\.[a-z]+$/i, "")).filter((x) => /[a-z]{3,}-[a-z]{3,}/i.test(x))
+      .sort((a, b) => b.length - a.length)[0];
+    return { hotel: seg ? titleCase(seg) : "", where: "",
+      checkin: linkDate(pick("checkin", "check_in", "check-in", "arrival", "arrive", "startdate", "from", "chkin", "datein")),
+      checkout: linkDate(pick("checkout", "check_out", "check-out", "departure", "depart", "enddate", "to", "chkout", "dateout")),
+      adults: +pick("adults", "adult", "group_adults", "guests") || 0, children: +pick("children", "child", "group_children") || 0 };
+  }
+
+  // Returns what the link says, or null if it isn't a web link at all.
+  function readHotelLink(text) {
+    const raw = (text || "").trim().split(/\s+/).find((w) => /^https?:\/\//i.test(w)) || "";
+    if (!raw || raw.length > 4000) return null;
+    let u;
+    try { u = new URL(raw); } catch (e) { return null; }
+    if (u.protocol !== "https:" && u.protocol !== "http:") return null;
+    const host = u.hostname.toLowerCase();
+    const reader = SITE_READERS.find((r) => r.host.test(host));
+    const found = (reader ? reader.read : readGeneric)(u, u.searchParams);
+    return Object.assign(found, { site: reader ? reader.name : host.replace(/^www\./, ""), logo: reader ? reader.key : "", link: u.href });
+  }
+
+  function applyLink(text) {
+    const r = readHotelLink(text);
+    if (!r) return false;
+    state.link = r;
+    if (r.hotel) $("q-hotel").value = r.hotel;
+    if (r.where) $("q-where").value = r.where;
+    if (r.checkin && r.checkout && r.checkout > r.checkin) setDates(r.checkin, r.checkout);
+    else if (r.checkin) setDates(r.checkin, "");
+    if (r.adults) $("q-adults").value = Math.min(12, r.adults);
+    $("q-children").value = Math.min(8, r.children || 0);
+    showGuests();
+    showLink();
+    return true;
+  }
+
+  function showLink() {
+    const r = state.link;
+    const box = $("link-found");
+    $("link-row").querySelector(".mrs-paste").hidden = !!r;
+    box.hidden = !r;
+    if (!r) { box.replaceChildren(); return; }
+    const got = [r.hotel, r.checkin && r.checkout ? day(r.checkin) + " – " + day(r.checkout) : "", r.adults ? guests({ adults: r.adults, children: r.children }) : ""].filter(Boolean);
+    const missing = [!r.hotel && "the hotel", !(r.checkin && r.checkout) && "the dates"].filter(Boolean);
+    box.replaceChildren(el("div", { class: "tw-flex tw-items-center tw-gap-3 tw-rounded-xl tw-border tw-border-solid tw-border-reef/50 tw-bg-reef-soft tw-px-3 tw-py-2.5" },
+      el("span", { class: "tw-flex tw-h-8 tw-w-8 tw-flex-none tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-lg tw-bg-white [&>img]:tw-h-6 [&>img]:tw-w-6" }, logoNode(r.site, r.logo)),
+      el("div", { class: "tw-min-w-0 tw-flex-1" },
+        el("p", { class: "tw-truncate tw-text-sm tw-font-bold tw-text-ink", text: (got.length ? "Filled in from " : "Link from ") + r.site }),
+        el("p", { class: "tw-truncate tw-text-sm tw-text-ink-2", text: got.length ? got.join(" · ") : "Claude will read the hotel and price from the page." }),
+        missing.length > 0 && got.length > 0 && el("p", { class: "tw-text-xs tw-text-ink-3", text: "The link doesn't say " + missing.join(" or ") + ", so add " + (missing.length > 1 ? "them" : "it") + " below." })),
+      el("button", { type: "button", class: "mrs-quiet tw-flex-none", onclick: clearLink, text: "Remove" })));
+  }
+
+  function clearLink() {
+    state.link = null;
+    $("q-link").value = "";
+    showLink();
+    $("q-link").focus();
   }
 
   // ---------- date picker ----------
@@ -1082,6 +1249,26 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     field.setAttribute("aria-expanded", "false");
     if (refocus) field.focus();
   }
+  // Phones get a placeholder short enough to read in full.
+  if (!matchMedia("(min-width: 640px)").matches) $("q-link").placeholder = "Paste a hotel link (optional)";
+  const pastedText = (e) => (e.clipboardData || window.clipboardData).getData("text");
+  $("q-link").addEventListener("paste", (e) => { if (applyLink(pastedText(e))) e.preventDefault(); });
+  $("q-link").addEventListener("change", () => applyLink($("q-link").value));
+  $("q-link").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); applyLink($("q-link").value); } });
+  // A link pasted into the Hotel box is read the same way.
+  $("q-hotel").addEventListener("paste", (e) => { const t = pastedText(e); if (/^\s*https?:\/\//i.test(t) && applyLink(t)) e.preventDefault(); });
+  // ...and so is one pasted anywhere on the search page that isn't a text box.
+  document.addEventListener("paste", (e) => {
+    const t = e.target;
+    if (state.data || (t && t.closest && t.closest("input, textarea, [contenteditable]"))) return;
+    if (applyLink(pastedText(e))) { e.preventDefault(); $("search").scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+  });
+  $("paste-btn").addEventListener("click", async () => {
+    try {
+      const t = await navigator.clipboard.readText();
+      if (!applyLink(t)) { $("q-link").value = t; $("q-link").focus(); }
+    } catch (e) { $("q-link").focus(); }  // no clipboard access: let them paste themselves
+  });
   $("q-dates").addEventListener("click", () => (openPop && openPop.pop === $("picker") ? closePops() : openPicker()));
   $("q-guests").addEventListener("click", () => (openPop && openPop.pop === $("guests-pop") ? closePops() : showPop($("guests-pop"), $("q-guests"), renderGuests)));
   $("picker").addEventListener("click", (e) => { const b = e.target.closest("button[data-day]"); if (b && !b.disabled) chooseDay(b.dataset.day); });
@@ -1107,12 +1294,12 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     const adults = Math.min(12, Math.max(1, parseInt($("q-adults").value, 10) || 2));
     const children = Math.min(8, Math.max(0, parseInt($("q-children").value, 10) || 0));
     if (!hotel) { $("q-hotel").focus(); return needMore("Add the hotel's name."); }
-    if (!where) { $("q-where").focus(); return needMore("Add where the hotel is: a city, town or country."); }
+    if (!where && !state.link) { $("q-where").focus(); return needMore("Add where the hotel is: a city, town or country."); }
     if (!a || !b) { openPicker(); return needMore("Choose your check-in and check-out dates."); }
     if (b <= a) { openPicker(); return needMore("Check-out needs to be after check-in."); }
-    const stay = hotel + ", " + where + ", " + longDay(a) + " to " + longDay(b) + ", " + guests({ adults, children });
-    $("request").textContent = "Check requested. Hotel: " + hotel + ". Where: " + where + ". Check-in: " + a + ". Check-out: " + b +
-      ". Adults: " + adults + ". Children: " + children + ".";
+    const stay = [hotel, where].filter(Boolean).join(", ") + ", " + longDay(a) + " to " + longDay(b) + ", " + guests({ adults, children });
+    $("request").textContent = "Check requested. Hotel: " + hotel + ". Where: " + (where || "see link") + ". Check-in: " + a + ". Check-out: " + b +
+      ". Adults: " + adults + ". Children: " + children + "." + (state.link ? " Link: " + state.link.link : "");
     document.title = "Check requested · MyRoomPrice";
     state.requested = true;
     state.answered = false;

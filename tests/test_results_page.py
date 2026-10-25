@@ -108,7 +108,7 @@ class PageTest(unittest.TestCase):
             self.assertIn(words, self.script, words)
         for words in ('title starts with "Check requested"', "Check requested. Hotel:", "Where: (city, town or country)",
                       '"Answer given"', "Answer given. Question: (id). Answer: (label).", '"status": "question"',
-                      '"status": "thinking"', 'Use `"hotel"`', "Check-in: YYYY-MM-DD",
+                      '"status": "thinking"', 'Use `"hotel"`', "Check-in: YYYY-MM-DD", '"Link: (address)"', '**A pasted link.**',
                       "Check-out: YYYY-MM-DD", "Adults:", "Children:", "#ready", "5 minutes"):
             self.assertIn(words, skill, words)
         self.assertIn("READY_MS = 5 * 60e3", self.script)
@@ -152,6 +152,45 @@ class PageTest(unittest.TestCase):
         # A price before tax never beats an all-in total.
         self.assertIn("const TAX_RANK = { included: 0, unknown: 1, excluded: 2 };", self.script)
         self.assertIn("(TAX_RANK[a.taxes] - TAX_RANK[b.taxes]) || (a[key] - b[key])", self.script)
+
+    def read_links(self, links):
+        """Run the page's own link reader in Node on example links (written for the test, not live pages)."""
+        node = subprocess.run(["which", "node"], capture_output=True, text=True).stdout.strip()
+        if not node:
+            self.skipTest("node not installed")
+        script = self.script
+        reader = script[script.index("  const COUNTRIES = {"):script.index("  function applyLink(text) {")]
+        helpers = "\n".join(re.search(r"^  function %s\(.*$" % name, script, re.M).group(0) for name in ("parseDay",))
+        helpers += "\n" + re.search(r"^  const isoDay = .*$", script, re.M).group(0)
+        code = helpers + "\n" + reader + "\nconsole.log(JSON.stringify(" + json.dumps(links) + ".map(readHotelLink)));"
+        result = subprocess.run([node, "-e", code], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return json.loads(result.stdout)
+
+    def test_pasted_links_fill_in_the_search(self):
+        booking, agoda, expedia, hotels, trip, other, junk = self.read_links([
+            "https://www.booking.com/hotel/au/sheraton-on-the-park.en-gb.html?aid=304142&label=x&checkin=2026-11-20&checkout=2026-11-23&group_adults=2&group_children=1&age=7&no_rooms=1",
+            "https://www.agoda.com/park-hyatt-tokyo/hotel/tokyo-jp.html?checkIn=2027-03-01&los=3&adults=2&rooms=1&children=0&cid=1844104",
+            "https://www.expedia.com.au/Sydney-Hotels-Sheraton-Grand-Sydney-Hyde-Park.h17004.Hotel-Information?chkin=20%2F11%2F2026&chkout=22%2F11%2F2026&rm1=a2%3Ac7",
+            "https://au.hotels.com/ho123456/the-langham-sydney-sydney-australia/?chkin=2026-12-10&chkout=2026-12-12&rm1=a2",
+            "https://www.trip.com/hotels/bangkok-hotel-detail-1234567/mandarin-oriental-bangkok/?checkIn=2027-01-05&checkOut=2027-01-08&adult=2&children=0",
+            "https://www.marriott.com/en-us/hotels/sydsi-sheraton-grand-sydney-hyde-park/overview/?arrivalDate=x&checkin=2026-11-20&checkout=2026-11-22&adults=2",
+            "not a link at all",
+        ])
+        self.assertEqual((booking["hotel"], booking["where"], booking["checkin"], booking["checkout"], booking["adults"], booking["children"], booking["site"]),
+                         ("Sheraton on the Park", "Australia", "2026-11-20", "2026-11-23", 2, 1, "Booking.com"))
+        self.assertEqual((agoda["hotel"], agoda["where"], agoda["checkin"], agoda["checkout"], agoda["adults"]),
+                         ("Park Hyatt Tokyo", "Tokyo, Japan", "2027-03-01", "2027-03-04", 2))
+        self.assertEqual((expedia["hotel"], expedia["where"], expedia["checkin"], expedia["checkout"], expedia["adults"], expedia["children"]),
+                         ("Sheraton Grand Sydney Hyde Park", "Sydney", "2026-11-20", "2026-11-22", 2, 1))
+        self.assertEqual((hotels["checkin"], hotels["checkout"], hotels["adults"], hotels["site"]), ("2026-12-10", "2026-12-12", 2, "Hotels.com"))
+        self.assertEqual((trip["hotel"], trip["where"], trip["checkin"], trip["checkout"]), ("Mandarin Oriental Bangkok", "Bangkok", "2027-01-05", "2027-01-08"))
+        self.assertEqual((other["hotel"], other["checkin"], other["checkout"], other["site"]),
+                         ("Sydsi Sheraton Grand Sydney Hyde Park", "2026-11-20", "2026-11-22", "marriott.com"))
+        self.assertIsNone(junk)
+        # The link travels to Claude in the request line, and only web links are accepted.
+        self.assertIn('(state.link ? " Link: " + state.link.link : "")', self.script)
+        self.assertIn('if (u.protocol !== "https:" && u.protocol !== "http:") return null;', self.script)
 
     def test_built_page_is_up_to_date(self):
         result = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "build_page.py"), "--check"], capture_output=True, text=True)

@@ -41,3 +41,9 @@
   .mrs-navlink:not(.tw-hidden) { display: inline-flex; }
   .mrs-navcta { @apply tw-bg-ocean-soft tw-text-ocean hover:tw-bg-ocean hover:tw-text-white aria-[current=page]:tw-bg-ocean aria-[current=page]:tw-text-white; }
 }
+
+@layer components {
+  /* Paste-a-link bar at the top of the search card */
+  .mrs-paste { @apply tw-flex tw-cursor-text tw-items-center tw-gap-2.5 tw-rounded-xl tw-border-[1.5px] tw-border-dashed tw-border-ocean/40 tw-bg-ocean-soft/40 tw-py-1 tw-pl-3.5 tw-pr-1.5 tw-transition focus-within:tw-border-solid focus-within:tw-border-reef focus-within:tw-bg-white focus-within:tw-ring-4 focus-within:tw-ring-reef/20 hover:tw-border-ocean; }
+  .mrs-paste-btn { @apply tw-inline-flex tw-h-9 tw-flex-none tw-cursor-pointer tw-items-center tw-rounded-lg tw-border-0 tw-bg-white tw-px-3.5 tw-text-sm tw-font-bold tw-text-ocean tw-shadow-sm tw-transition hover:tw-bg-ocean hover:tw-text-white; }
+}
