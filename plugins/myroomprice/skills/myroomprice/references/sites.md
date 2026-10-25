@@ -60,7 +60,7 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
 1. Search the site for the hotel, in the worker tab, with the dates (the addresses below put them in for you).
 2. Find the hotel in the results and read the address of its own page from the link on its name (see "From a list to the hotel's page"). Don't click it; on several sites that opens a new tab.
 3. Go to that hotel page in the worker tab, with the dates added (see "Booking links").
-4. Read the room, the total with taxes and fees, and the cancellation terms there, on the hotel's page.
+4. Read the room, the total with taxes and fees, and the cancellation terms there, on the hotel's page, with the page reader (`scripts/read_offers.js`; see "Reading a hotel page" in SKILL.md). *Checked* on Booking.com, Agoda, Expedia and Trip.com hotel pages: Agoda shows prices per night (the reader marks them "per night"), the others show the total for the stay.
 5. Use that page, with the dates, as the offer's `link`.
 
 How to search each site:
@@ -142,7 +142,7 @@ They redirect to the user's country site. "Member Price" deals need a free One K
 ## Catches to watch for
 
 - **Stale listings.** Feed and Google prices can be hours old. A site listed at a price may have no rooms when you open it. Only report prices you saw live, or label the rest "listed, not confirmed".
-- **Check the important terms yourself.** A page summary (from `find`) once said a Booking.com rate had free cancellation when it was really non-refundable. Before you report a rate's cancellation terms or total, confirm them in a screenshot or the page text.
+- **Check the important terms yourself.** A page summary (from `find`) once said a Booking.com rate had free cancellation when it was really non-refundable. Take a rate's total and cancellation terms from the page reader, which copies the page's own words, or from the page text, never from a summary.
 - **Subscriptions versus free memberships.** A hotel's own member rate, Booking Genius and Expedia One Key are free. Super+ and some "VIP" deal clubs charge a fee. Keep the two apart.
 - **Fees paid at the hotel.** Resort, destination, parking and pet fees are often left out of aggregator totals. The hotel's own site or its policies section usually lists them.
 - **Currency.** Sites pick the currency from the user's location, and the same applies to the feed if you pass `--currency`. Keep everything in one currency.

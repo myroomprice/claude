@@ -40,14 +40,30 @@ Keep the user's browser calm: **two tabs at most**, the MyRoomPrice tab and one 
 
 The user is waiting, so aim to show the first prices within about a minute and finish within about 6 minutes.
 - **Use the price feed if you can.** With a SerpApi key (see Setup), the sweep gets Google's whole price list in seconds. Then you only need to browse to confirm prices, not to find them.
-- **Read pages as text.** Use the page text or a find over the page, which is much faster than screenshots. Take a screenshot only to confirm a total and its cancellation terms, or when the page text is empty (Google Hotels).
+- **Read hotel pages with the page reader** (see "Reading a hotel page"). One call returns the prices and terms word for word, in a few seconds. No screenshots, scrolling or summaries.
 - **Batch your browser steps.** When you know the next few actions (go to an address, wait, read), send them in one batched call instead of one at a time.
 - **Put the dates in the address** wherever a site allows it (Booking.com, Kayak, Trivago, Agoda). Only use a site's date picker when the address can't carry them.
 - **Don't wait on a timer.** Read the page as soon as it has loaded; wait only if prices are still loading.
-- **Confirm fewer sites:** the hotel's own site and the two cheapest others. Give each about 90 seconds. If a site is slow or stuck, list it under "couldn't check" and move on.
+- **Confirm fewer sites:** the hotel's own site and the two cheapest others. Give each about 45 seconds. If a site is slow or stuck, list it under "couldn't check" and move on.
 - **Comparison sites:** Google Hotels always, and Trivago. Check Kayak too only when Google and Trivago list fewer than five sites between them, or their prices disagree by more than about 10%.
 - **Update the MyRoomPrice tab 3 or 4 times,** not after every site: when you start, after the comparison sites, after the confirmations, and at the end.
 - **Reviews last, and briefly** (see "Reviews"), after the prices are on the page.
+
+## Reading a hotel page
+
+Screenshots are slow, and a summary of a page can get a price or a cancellation term wrong. Instead, pull the rates straight out of the page itself:
+1. Read `scripts/read_offers.js` once at the start of the check, and keep it.
+2. On each site's hotel page, run the whole file with the browser's JavaScript tool (`javascript_tool` in Claude in Chrome). Send it in the same batched call as the step that opens the page. It scrolls to the room list, waits up to about 6 seconds for the rooms to load, and returns one short line of JSON:
+   - `hotel`: the page's heading. Check that it's the right hotel.
+   - `page`: the page's address. With the dates added, this is the offer's link.
+   - `offers`: up to 5 rates, cheapest first, each `[price, room, cancellation, taxes, payment]`, copied word for word from the page. A price ends in "per night" when the page says so: multiply it by the nights for the total. Otherwise it's the price the page shows for the stay.
+   - `flags`: `sold-out` (no rates at all), `sign-in` or `member` (a lower price may need an account), `captcha` (stop and list the site under "couldn't check"), `no-rooms` (it couldn't find the room list, so the prices may be from elsewhere on the page).
+3. Use what it returns as the offer: the price, its terms, and `page` as the link. Empty terms mean the page didn't say; record them as unknown and don't guess. The reader clicks nothing and changes nothing.
+
+Fall back only when the reader comes back empty, flagged `no-rooms`, or with prices that don't look right, such as far below the comparison sites:
+- Read the page text (`get_page_text`) and find the rates there.
+- Take a screenshot only if the page text is empty too (Google Hotels).
+- If neither works within about a minute, list the site under "couldn't check".
 
 ## Pop-ups
 
@@ -197,10 +213,10 @@ For each site, write down:
 How to behave while browsing (you're in the user's real browser, signed in as them):
 - **Skip the ads.** On Google Hotels, ignore rows marked "Sponsored" or "Ad"; the same site almost always appears again under "All options". Go to sites at their own address.
 - **Look only.** Opening a room's rate options or switching prices to include tax is fine. Never click Reserve, Book or Continue to payment. Never sign in, create an account, or type personal or payment details. If a price needs a sign-in to see, record it as "member price, sign in to see". Joining is the user's choice.
-- **Confirm the important terms yourself.** Check totals and cancellation terms in a screenshot or the page text, not just a summary of the page. A summary once got a non-refundable rate wrong.
+- **Confirm the important terms from the page's own words.** Take totals and cancellation terms from the page reader (see "Reading a hotel page"), or from the page text if you had to fall back, never from a summary of the page. A summary once got a non-refundable rate wrong.
 - **CAPTCHAs:** if one appears, or a "verify you're human" page, stop on that site and list it under "couldn't check". Don't try to get around it.
 - **Pop-ups and cookie banners:** see "Pop-ups".
-- **Time:** about 90 seconds per site (see "Keep it quick"). If the dates won't stick in the address, use the site's date picker.
+- **Time:** about 45 seconds per site (see "Keep it quick"). If the dates won't stick in the address, use the site's date picker.
 - **Tabs:** everything in the one worker tab (see "Tabs"). When you finish, close it. Leave the MyRoomPrice tab and the user's own tabs alone.
 
 `references/sources.md` lists more booking sites worth a look in some countries, and what to skip.
