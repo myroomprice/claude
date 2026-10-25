@@ -1,0 +1,57 @@
+<!doctype html>
+<!--
+  The MyRoomSearch logo: the Londoner in Sydney pin beside the name, set exactly like the East Coast Guide logo
+  (same pin, same Fraunces at its 32px design, same byline). Each version is a page of its own:
+  #horizontal-white-text and #stacked-white-text for dark backgrounds, #horizontal-dark-text and #stacked-dark-text
+  for white ones, #horizontal-navy (1200x400), #stacked-navy (1080x1080) and #icon-navy (512x512).
+  Render them all with: python3 tools/build_logos.py
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MyRoomSearch logo</title>
+<style>
+  @font-face { font-family: 'Fraunces'; font-weight: 100 900; src: url('fraunces-latin-opsz-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'DM Sans'; font-weight: 100 1000; src: url('dm-sans-latin-opsz-normal.woff2') format('woff2'); }
+  html, body { margin: 0; background: transparent; }
+  /* Sizes are in em of the name, so one font size scales the whole logo. Navy is the guide's --color-ocean-deep. */
+  .version { display: none; }
+  .version:target { display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+  .navy { background: #0B3A4E; }
+  .loose { padding: 0.5em; }
+  .logo { display: flex; align-items: center; gap: 0.44em; color: #fff; }
+  /* Dark text for white backgrounds is the guide's ink (--color-ink). */
+  .ink .logo { color: #0F2A3A; }
+  .logo img { display: block; height: 2.19em; }
+  /* Fraunces changes its design with size; hold it at the 32px design the guide's logo uses, so every version matches. */
+  .name { font-family: 'Fraunces', serif; font-weight: 700; font-optical-sizing: none; font-variation-settings: 'opsz' 32; letter-spacing: -0.015em; line-height: 1; white-space: nowrap; }
+  .by { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.375em; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.67em; white-space: nowrap; }
+  .stacked { flex-direction: column; gap: 0.43em; text-align: center; }
+  .stacked img { height: 2.79em; }
+  .icon img { height: 2.79em; }
+</style>
+</head>
+<body>
+  <div id="horizontal-white-text" class="version loose" style="font-size:128px">
+    <div class="logo"><img src="pin-full.png" alt=""><div><div class="name">MyRoomSearch</div><div class="by">By Londoner in Sydney</div></div></div>
+  </div>
+  <div id="stacked-white-text" class="version loose" style="font-size:128px">
+    <div class="logo stacked"><img src="pin-full.png" alt=""><div><div class="name">MyRoomSearch</div><div class="by">By Londoner in Sydney</div></div></div>
+  </div>
+  <div id="horizontal-dark-text" class="version loose ink" style="font-size:128px">
+    <div class="logo"><img src="pin-full.png" alt=""><div><div class="name">MyRoomSearch</div><div class="by">By Londoner in Sydney</div></div></div>
+  </div>
+  <div id="stacked-dark-text" class="version loose ink" style="font-size:128px">
+    <div class="logo stacked"><img src="pin-full.png" alt=""><div><div class="name">MyRoomSearch</div><div class="by">By Londoner in Sydney</div></div></div>
+  </div>
+  <div id="horizontal-navy" class="version navy" style="width:1200px;height:400px;font-size:68px">
+    <div class="logo"><img src="pin-full.png" alt=""><div><div class="name">MyRoomSearch</div><div class="by">By Londoner in Sydney</div></div></div>
+  </div>
+  <div id="stacked-navy" class="version navy" style="width:1080px;height:1080px;font-size:104px">
+    <div class="logo stacked"><img src="pin-full.png" alt=""><div><div class="name">MyRoomSearch</div><div class="by">By Londoner in Sydney</div></div></div>
+  </div>
+  <div id="icon-navy" class="version navy icon" style="width:512px;height:512px;font-size:128px">
+    <div class="logo"><img src="pin-full.png" alt=""></div>
+  </div>
+</body>
+</html>

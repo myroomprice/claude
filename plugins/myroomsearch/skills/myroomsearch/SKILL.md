@@ -1,0 +1,209 @@
+---
+name: myroomsearch
+description: MyRoomSearch finds the cheapest way to book a specific hotel for specific dates by comparing the booking sites (Booking.com, Expedia, Hotels.com, Agoda, Trip.com, Priceline, Google Hotels, Trivago and others) against the hotel's own website, including member and refundable rates. Use this whenever the user wants the best price, cheapest rate or "where should I book" for a named hotel and dates, asks "is this a good price?" while looking at a hotel or booking page, asks whether booking direct is cheaper than an aggregator, or says something like "check prices for The Langham Boston 10-12 Dec", even if they never say "compare". Also use it for a short list of 2-4 named hotels on the same dates. Not for open-ended "find me somewhere to stay in X" searches until they have narrowed to particular hotels.
+---
+
+# MyRoomSearch
+
+MyRoomSearch, by Londoner in Sydney, finds the lowest real price for a hotel stay. When you talk to the user about it, call it MyRoomSearch.
+
+The goal is to tell the user where to book a named hotel for their dates at the lowest *true* cost (the total for the whole stay, with taxes and fees), and what they give up for that price. Listed prices are misleading. Some are per night, some are before tax, some are for members only, some can't be refunded, and some leave out resort fees. Your job is to compare like with like.
+
+The work happens in three passes:
+1. An optional quick sweep with price feeds shows the field.
+2. Two price-comparison sites, Google Hotels and Trivago, list what each booking site charges.
+3. You confirm the real totals on the hotel's own site and the cheapest booking sites, in the user's own browser.
+
+The report's booking links are added last (step 7) and never affect the ranking.
+
+## Where you're running
+
+- **Chrome side panel (Claude in Chrome):** you act in the user's own browser.
+  - Do the checking in the background (see "Tabs" below), and never navigate away from the page the user is on. They may want to come back to it.
+  - Scripts may not run here, or may not reach the internet. If the sweep fails, skip it; Google Hotels and Trivago in the browser cover the same ground.
+  - Show the results in the MyRoomSearch tab (see "The app tab"), with a short summary in the panel.
+- **Claude Code or the desktop app, with Claude in Chrome connected:** the browser tools are `mcp__claude-in-chrome__*`. Read the chrome-browser skill first if it's available. Scripts run on the user's computer. Use the table report.
+- **Only a browser that isn't the user's own** (no sign-ins), or none at all: tell the user and ask before going on. They can connect Claude in Chrome, you can use the other browser (it won't see member prices), or you can report the sweep alone, clearly marked as unconfirmed.
+
+## Tabs
+
+Keep the user's browser calm: they should be able to watch the MyRoomSearch tab, or carry on with their own tabs, while you work in the background.
+- **The MyRoomSearch tab** is the only tab meant for the user (see "The app tab").
+- **One worker tab** does all the checking. Open it in the background at the start, and don't switch the user to it. Use it for Google Hotels and Trivago, and for any site you open by its address.
+- **Site tabs:** a "Visit site" or "Get price" button on Google Hotels always opens a new tab of its own. It stays in the background, inside your tab group, and it can't be made to open in the worker tab. Read it, then close it straight away, before you open the next site. That way there's never more than the worker tab and one site tab open at once. Close any other tab a site opens by itself just as quickly.
+- **When you finish,** close the worker tab and any site tab still open. Leave the MyRoomSearch tab, and the user's own tabs, as they are.
+
+## The app tab
+
+MyRoomSearch shows its results in one browser tab that works like a booking site: the user can filter, sort and select options, then continue to the chosen site. Keep everything in that one tab, and update it as you go so it feels like a live web app.
+
+1. **Open it once.** When the browser check starts, use the MyRoomSearch tab if the user is already on it. Otherwise open one new tab for it. Never open a second results tab. If the user closed it, open a new one.
+2. **Show that you've started.** Load it straight away with:
+   - `"status": "checking"`
+   - the hotel and the stay
+   - no offers
+   - a `progress` list of what you're about to check
+
+   Name each step after the site, so the page can show its logo as it checks: for example Google Hotels, Trivago, the hotel's own site, then the booking sites. To be sure of a logo, give the step a `"logo"`. Use one of `google`, `trivago`, `booking`, `expedia`, `hotelscom`, `agoda`, `trip`, `priceline`, `supercom`, `skylark`, `kayak`, `tripadvisor`, `vrbo`, `qantas`, `luxuryescapes`, `wotif`, `webjet`, `lastminute` or `hoteltonight`, or `hotel` for the hotel's own site. Offers take the same `"logo"`. Any other site gets a lettered badge.
+3. **Update it as you go,** in that same tab, about 3 to 6 times in all, not after every click:
+   - **After the comparison sites:** add the listed offers. Mark the ones you're about to open with `"checking": true`, and the rest with `"confirmed": false`.
+   - **After each site you confirm:** fill in its real total and terms, set `"checking": false`, and mark its step `done`, or `blocked` if a CAPTCHA stopped you. Mark the step you're on now `checking`. The page draws a spinner around that site's logo.
+   - **Each time:** a short `message` saying what you're doing now, for example "Reading the Langham's own rates".
+
+   The page redraws in place and keeps the user's filters and their chosen option.
+4. **Finish it** with `"status": "done"`, the `checked` time and the `summary`.
+
+**How to update it:**
+1. Write the results as JSON in the format described at the top of `scripts/results_link.py`. Keep one results file and edit it between updates.
+2. Run `python3 "${CLAUDE_SKILL_DIR}/scripts/results_link.py" results.json`.
+3. Navigate the app tab to the link it prints.
+
+The results travel in the part of the link after `#`, which never leaves the user's browser. The script also turns booking links into partner links and adds the disclosure (step 7).
+
+**When it can't work:**
+- **The link starts with `file://`:** the app hasn't been published yet, and Claude in Chrome can't open files from the computer. Skip the tab and give the full report in the chat.
+- **Scripts can't run:** read `results_page` from `settings.json`. Open `<results_page>#j=` followed by the JSON, percent-encoded as `encodeURIComponent` would encode it. Use plain links, with no disclosure.
+- **Neither works** (scripts can't run and `results_page` is empty): skip the tab.
+
+## 1. Pin down the trip
+
+You need the exact hotel and both dates. Ask for these only if they're missing.
+- **From the page they're on:** if the user is looking at a hotel or booking page ("is this a good price?"), read the hotel name, dates, guests, room and price from that page. Dates are often in the address, for example `checkin=2026-12-10`. That page's offer becomes a row called "This page".
+- **From the results page:** if they're on this skill's own results page (titled "MyRoomSearch"), read the search form at the top: Hotel, Check-in, Check-out, Adults and Children. Show the new check in that same tab (see "The app tab"). It's this skill's own page, so updating it is expected.
+- **Hotel:** if a name could match several properties (for example "Hilton Boston"), confirm which one before searching.
+- **Dates:** turn things like "10-12 Dec" into check-in 2026-12-10 and check-out 2026-12-12. If no year is given, use the next time those dates come round.
+- **Defaults:** 2 adults, 1 room, no children, the cheapest standard room (or the room on the page they're looking at).
+- **Optional:** the user may give a currency, a room type, or "must be refundable". Use them if given.
+- **Currency:** use the one the user asks for. Otherwise use the currency the sites show the user, which is usually their home currency. Pass the same currency to the script so the sweep matches what you'll see live.
+
+## 2. Sweep with the price feeds (optional)
+
+This skill's scripts live in its own folder, `${CLAUDE_SKILL_DIR}`. If that variable is empty, use the base directory shown when the skill loaded. If scripts can't run here, skip this step.
+
+```bash
+python3 "${CLAUDE_SKILL_DIR}/scripts/sweep.py" \
+  --hotel "The Langham Boston" --check-in 2026-12-10 --check-out 2026-12-12 \
+  --adults 2 --currency AUD --gl au \
+  --tripadvisor-url "https://www.tripadvisor.com/Hotel_Review-g60745-d114149-Reviews-The_Langham_Boston-Boston_Massachusetts.html"
+```
+
+It asks two feeds and prints every offer, cheapest first. Add `--json` to read the fields yourself.
+- **Google Hotels via SerpApi** shows most booking sites plus the hotel's own site, with totals including tax. It needs a SerpApi key (see Setup).
+- **Xotelo** is free and needs no key, but it needs the hotel's TripAdvisor page: find that with a web search (`tripadvisor Hotel_Review <hotel name> <city>`). Its prices are before tax and lag behind live prices, so treat them as a rough guide.
+- **Location:** set `--gl` to the country the user books from. Booking sites price differently by country.
+
+Check the hotel name the script matched. If it's the wrong property, run it again with the street or neighbourhood added.
+
+## 3. The price-comparison sites
+
+Read `references/sites.md` before you start browsing. It has tested steps for each site, how each shows tax and member prices, and catches found in testing.
+
+In the worker tab, check both comparison sites. Between them they list most booking sites:
+1. **Google Hotels,** for the hotel, with the dates set. Its Prices tab lists every booking site plus the hotel's own site, and marks the official one.
+2. **Trivago,** for the same hotel and dates. It sometimes lists smaller sites, or lower prices, that Google doesn't. Open it directly at its own address, not through Google's Trivago row, which is often a paid ad. Then read the hotel's deals, including "More deals".
+
+Note each site's listed price. These lists tell you where to look, but they aren't the final word: a listed price can be stale or before tax.
+
+## 4. Confirm on the sites
+
+The final answer has to come from the sites themselves. Check, in this order:
+1. **The hotel's own site, every time.** Booking direct is often the same price or cheaper once member rates count. Hotel booking pages usually show prices before tax, so find the total with tax.
+2. **The two or three cheapest sites** across both lists, plus the page the user started on if it isn't among them. Open each one, because a listed price can be stale: in testing, Google listed Booking.com at the going rate while Booking.com had no rooms.
+
+For each site, write down:
+- the room name
+- the **total for the stay including taxes and fees**
+- whether it's free to cancel (and until when)
+- whether you pay now or at the hotel
+- whether it's a member price
+- anything extra: a fee paid at the hotel, breakfast included
+
+How to behave while browsing (you're in the user's real browser, signed in as them):
+- **Skip the ads.** On Google Hotels, don't click rows marked "Sponsored" or "Ad". Each click costs the advertiser money, and the same site almost always appears again under "All options" as a free link. Open a site at its own address when you can.
+- **Look only.** Opening a room's rate options or switching prices to include tax is fine. Never click Reserve, Book or Continue to payment. Never sign in, create an account, or type personal or payment details. If a price needs a sign-in to see, record it as "member price, sign in to see". Joining is the user's choice.
+- **Confirm the important terms yourself.** Check totals and cancellation terms in a screenshot or the page text, not just a summary of the page. A summary once got a non-refundable rate wrong.
+- **CAPTCHAs:** if one appears, or a "verify you're human" page, stop on that site and list it under "couldn't check". Don't try to get around it.
+- **Cookie banners:** choose reject, or necessary cookies only.
+- **Time:** keep to a few minutes per site. If the dates won't stick in a URL, use the site's date picker.
+- **Tabs:** one worker tab, and one site tab at a time, closed as soon as you've read it (see "Tabs"). When you finish, close the worker tab. Leave the MyRoomSearch tab and the user's own tabs alone.
+
+`references/sources.md` lists more booking sites worth a look in some countries, and what to skip.
+
+## 5. Compare like with like
+
+- **Rank by the all-in price paid for the whole stay.** In the US especially, a nightly price before tax can hide 15-20% in taxes plus a nightly resort fee. If a site only shows the price before tax, work out the total using the tax another site showed for the same stay, and say it's an estimate.
+- **Match the room and the guests.** If the cheapest offer is a smaller room, can't be refunded, or is for one guest instead of two, say so instead of letting it look like a straight win.
+- **Show two winners:** the cheapest offer overall, and the cheapest one with free cancellation.
+- **Free member prices count; paid subscriptions don't.** A price behind a free sign-up (the hotel's own member rate, Booking Genius, Expedia One Key) is a real price, so say it needs a free sign-up. A price that needs a paid subscription (Super+) is not the price. Mention it only as a side note. If you can't tell whether a membership costs money, say so.
+- **Only confirmed prices win.** If a site you didn't open, or one that showed no rooms, looks cheapest, label it "listed, not confirmed" and don't crown it.
+- **One currency.** If a site insists on another currency, convert at roughly today's rate, mark it as approximate, and say which currency the card will be charged in.
+- **Weigh booking direct.** Direct bookings are usually easier to change. If the official rate is within about 5% of the cheapest, say that booking direct is probably the better deal.
+- **Price match:** if an aggregator clearly beats the hotel's own site and the brand offers a price match (Hilton, Marriott, Hyatt, IHG and Accor do), mention it.
+
+## 6. Report
+
+Lead with the answer. (Amounts below say AUD because a skill file can't contain a dollar sign followed by a digit. In your report, write amounts the way the sites show them.) The examples come from a live test: The Langham, Boston, 10-12 Dec 2026, 2 adults, seen from Australia.
+
+**The app tab** holds the full results (see "The app tab" above). The final update includes every offer you'd put in the table, with:
+- the totals and terms you confirmed
+- the link you found for each offer
+- `"this_page": true` on the offer from the page the user started on
+- `"keep_link": true` on any link the user gave you
+- a one- or two-sentence `summary` with the answer and its main catch
+
+In the chat, keep it short: give the compact report below, and say the full results are in the MyRoomSearch tab.
+
+**Compact report: the Chrome side panel, or any narrow window.** Keep it to about 10 lines:
+
+> **Cheapest: Super.com, AUD 1,434 total.** Superior Queen (a smaller room), free to cancel.
+> **This page (Booking.com): AUD 1,550.** Booking direct is AUD 31 less for the same room.
+>
+> 1. Super.com: AUD 1,434. Free cancellation, smaller room
+> 2. Langham website: AUD 1,519. Free member rate, no refund
+> 3. This page, Booking.com: AUD 1,550. No refund
+>
+> Cheapest you can cancel: Super.com, AUD 1,434.
+> Checked 2:30pm, 25 Oct. Want the full table?
+
+**Table report: Claude Code, the desktop app, or when asked:**
+
+| # | Where | Room | Cancel | Total (taxes & fees) | Per night | Notes |
+|---|-------|------|--------|---------------------|-----------|-------|
+| 1 | Super.com | Superior, 1 Queen | Free | AUD 1,434 | AUD 717 | Lower "Member Price" needs paid Super+ |
+| 2 | Hotel website (member) | Deluxe King | No refund, prepaid | AUD 1,519 | AUD 760 | Free member sign-up |
+| 3 | Booking.com | Deluxe King | No refund | AUD 1,550 | AUD 775 | |
+| 4 | Hotel website (member) | Deluxe King | Free to 3pm 9 Dec | AUD 1,787 | AUD 894 | Cheapest refundable direct |
+
+Both formats end with:
+- **Couldn't check:** each site and why (for example "Agoda: CAPTCHA").
+- **Extra fees:** any fee paid at the hotel (resort fee, parking).
+- **Checked:** the time and date. Prices change often, so tell the user to re-check before booking.
+- **Links:** to the winning offers (step 7).
+
+If the feed numbers and the live site differ, trust the live site.
+
+**Watching a price:** if the user asks you to keep an eye on the price, suggest they save this check as a shortcut in Claude in Chrome and turn on its schedule. It runs while Chrome is open.
+
+## 7. Booking links
+
+The makers of this plugin earn a small commission when someone books through a partner link. That keeps the plugin free, but only while users can trust the ranking. So:
+- **Rank first, link second.** Settle the ranking on price and terms alone, then turn its links into partner links. Never reorder offers, drop an offer, or nudge the user toward a site because it pays. When the hotel's own site is the best deal, say so plainly and give its plain link.
+- **Only links you found.** Use the script only on links you opened while checking. If the user pasted a booking link themselves, or one came from someone else's page, give it back exactly as it was. Never swap another person's referral or affiliate link for ours.
+- **The results tab handles this for you:** `results_link.py` applies these same rules to every offer's link. For links you give in the chat, run this script on all of them at once:
+
+  ```bash
+  python3 "${CLAUDE_SKILL_DIR}/scripts/book_link.py" --check-in 2026-12-10 --check-out 2026-12-12 \
+    --adults 2 --currency AUD --url "<booking.com hotel page>" --url "<hotel's own site>"
+  ```
+
+  Covered sites (Booking.com, Expedia, Hotels.com, Agoda, Vrbo, Kayak) come back as partner links to the same hotel page and dates. Everything else comes back unchanged. If scripts can't run here, use the plain links you found.
+- **Disclosure:** if the result includes a `disclosure`, put it word for word as the last line of the report, in small type if the format allows. If no link is a partner link, leave it out.
+
+## Setup
+
+The skill works without any setup. A free SerpApi key adds the Google Hotels feed to the sweep in Claude Code:
+1. The user creates a free account at serpapi.com. Let them sign up themselves.
+2. They copy the API key from serpapi.com/manage-api-key.
+3. Save it with `mkdir -p ~/.config/myroomsearch && printf '%s' 'THEIR_KEY' > ~/.config/myroomsearch/serpapi_key && chmod 600 ~/.config/myroomsearch/serpapi_key`, or set the `SERPAPI_KEY` environment variable instead.
+
+Keep the key in that file only, and never put it in a project repo.

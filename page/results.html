@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b3a4e">
+<title>MyRoomSearch</title>
+<link rel="icon" type="image/png" href="brand/favicon.png">
+<!--
+  MyRoomSearch, by Londoner in Sydney: the web app the MyRoomSearch Claude skill shows its results in.
+  Everything on screen comes from the link itself (the part after #), which browsers never send to a server.
+  While Claude checks prices it updates the link, and the page redraws in place without reloading.
+  Styled after East Coast Guide. Hero photo: Palm Bay Resort, Whitsundays, from the East Coast Guide's own photos.
+  Fonts: Fraunces and DM Sans, SIL Open Font License 1.1 (see font-licenses/).
+  Edit this file (page/results.html), then run: python3 tools/build_page.py
+-->
+<style>
+@font-face { font-family: "Fraunces"; font-style: normal; font-weight: 100 900; font-display: swap; src: url("fonts/fraunces-latin-wght-normal.woff2") format("woff2"); }
+@font-face { font-family: "Fraunces"; font-style: italic; font-weight: 100 900; font-display: swap; src: url("fonts/fraunces-latin-wght-italic.woff2") format("woff2"); }
+@font-face { font-family: "DM Sans"; font-style: normal; font-weight: 100 1000; font-display: swap; src: url("fonts/dm-sans-latin-wght-normal.woff2") format("woff2"); }
+
+:root {
+  color-scheme: light;
+  --sans: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --ink: #0f2a3a; --ink-2: #3d5566; --ink-3: #688090; --line: #d6e2e7; --mist: #f2f7f8;
+  --ocean: #0a6e7d; --ocean-dark: #085966; --ocean-deep: #0b3a4e; --ocean-soft: #e1f0f4;
+  --reef: #2bb8ad; --reef-soft: #ddf3ef; --sun: #ffc53d; --sun-soft: #fff4d4; --gum: #3c7a5a; --gum-soft: #e4f0e8;
+  --radius: 20px;
+  --shadow: 0 1px 2px rgb(15 42 58 / 0.06), 0 12px 30px -14px rgb(15 42 58 / 0.25);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: #fff; color: var(--ink); font: 16px/1.6 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: clip; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--reef); outline-offset: 2px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 640px) { .wrap { padding: 0 28px; } }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 20px; border: 0; border-radius: 999px; font-size: 15px; font-weight: 700; line-height: 1.1; cursor: pointer; text-decoration: none; transition: background-color .2s; }
+.btn-primary { background: var(--ocean); color: #fff; } .btn-primary:hover { background: var(--ocean-dark); }
+.btn-sun { background: var(--sun); color: var(--ink); } .btn-sun:hover { background: #ffb703; }
+.btn-ghost { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); } .btn-ghost:hover { background: var(--mist); }
+.btn-wide { width: 100%; }
+.eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+
+/* Top bar with the logo: the guide's pin beside the name, as in brand/logo.html */
+.topbar { position: sticky; top: 0; z-index: 20; background: rgb(255 255 255 / .95); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+.topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; }
+.logo { display: flex; align-items: center; gap: 9px; color: var(--ink); text-decoration: none; min-width: 0; }
+.logo img { display: block; height: 40px; width: auto; }
+.logo .name { font-family: var(--serif); font-weight: 700; font-size: 21px; line-height: 1; letter-spacing: -0.015em; white-space: nowrap; }
+.logo .by { font-size: 8px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; margin-top: 5px; color: var(--ink-2); white-space: nowrap; }
+.trip { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 14px; color: var(--ink-2); }
+.trip .what { display: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (min-width: 760px) { .trip .what { display: block; } }
+.status { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; padding: 0 12px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; background: var(--mist); color: var(--ink-2); }
+.status.live { background: var(--sun-soft); color: #7a5300; }
+.status.done { background: var(--reef-soft); color: #11615b; }
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .3; transform: scale(.6); } }
+
+/* Hero band. On the search page it carries a photo, like the guide's page openings: the photo across the full
+   width, fading to navy at the bottom so the words stay readable. Results keep the plain navy band. */
+.hero { position: relative; isolation: isolate; overflow: hidden; background: var(--ocean-deep); color: #fff; padding: 36px 0 112px; }
+.hero-photo, .hero-shade, .photo-credit { display: none; }
+.hero.photo { min-height: max(460px, min(64svh, 620px)); display: flex; align-items: flex-end; padding-top: 96px; text-shadow: 0 1px 12px rgb(0 0 0 / .35); }
+.hero.photo > .wrap { width: 100%; }
+.hero.photo .hero-photo { display: block; position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; }
+.hero.photo .hero-shade { display: block; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, var(--ocean-deep) 6%, rgb(11 58 78 / .45) 45%, rgb(0 0 0 / .3)); }
+.hero.photo .photo-credit { display: block; position: absolute; top: 12px; right: 16px; font-size: 11px; color: rgb(255 255 255 / .8); }
+.hero .eyebrow { color: var(--sun); display: flex; align-items: center; gap: 8px; }
+.hero h1 { margin-top: 8px; font-size: clamp(34px, 6.2vw, 66px); line-height: .98; max-width: 18ch; }
+.hero .stay { margin-top: 14px; font-weight: 700; }
+.hero .summary { margin-top: 10px; max-width: 62ch; color: rgb(255 255 255 / .88); font-size: clamp(16px, 2vw, 18px); }
+.steps { display: flex; flex-wrap: wrap; gap: 14px 16px; margin: 22px 0 0; padding: 0; list-style: none; }
+/* Each site being checked: its logo on a white disc. The one being checked now spins a sun-to-reef ring;
+   finished ones get a reef tick, blocked ones a coral mark, and waiting ones stay faded. */
+.step { display: grid; justify-items: center; gap: 7px; width: 74px; text-align: center; font-size: 12px; font-weight: 600; line-height: 1.25; color: rgb(255 255 255 / .7); text-shadow: none; }
+.step .disc { position: relative; width: 52px; height: 52px; border-radius: 50%; background: #fff; display: grid; place-items: center; box-shadow: 0 4px 14px rgb(0 0 0 / .25); transition: transform .3s, opacity .3s; }
+.step .disc img { display: block; width: 30px; height: 30px; border-radius: 7px; }
+.mono { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--ocean); color: #fff; font-family: var(--serif); font-weight: 700; font-size: 17px; }
+.step.waiting .disc { opacity: .5; } .step.waiting .disc img, .step.waiting .mono { filter: grayscale(1); }
+.step.checking { color: #fff; } .step.checking .disc { transform: scale(1.08); }
+.step.checking .disc::before { content: ""; position: absolute; inset: -6px; border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 25%, var(--sun) 55%, var(--reef) 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3.5px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3.5px));
+  animation: spin .9s linear infinite; }
+.step.checking .disc::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; box-shadow: 0 0 18px 2px rgb(255 197 61 / .45); animation: pulse 1.6s ease-in-out infinite; }
+.step.done { color: #fff; }
+.step.done .disc::after, .step.blocked .disc::after { position: absolute; right: -5px; bottom: -5px; width: 21px; height: 21px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 800; border: 2px solid var(--ocean-deep); }
+.step.done .disc::after { content: "✓"; background: var(--reef); }
+.step.blocked .disc::after { content: "!"; background: #e0684b; }
+.step .what { font-size: 11px; font-weight: 700; color: var(--sun); }
+@keyframes spin { to { transform: rotate(1turn); } }
+.offer .site { display: flex; align-items: center; gap: 10px; }
+.offer .site img, .offer .site .mono { width: 26px; height: 26px; border-radius: 7px; flex: none; font-size: 15px; box-shadow: 0 0 0 1px var(--line); }
+
+/* Search card, overlapping the foot of the hero like the guide's ticket cards */
+.search { position: relative; z-index: 2; margin-top: -76px; background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+.search label { display: grid; gap: 4px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); min-width: 0; }
+.search input { width: 100%; min-width: 0; height: 46px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-size: 16px; letter-spacing: 0; text-transform: none; color: var(--ink); }
+.search input:focus { border-color: var(--reef); outline: none; }
+.search .hotel { grid-column: 1 / -1; }
+.search .go { grid-column: 1 / -1; align-self: end; }
+@media (min-width: 900px) { .search { grid-template-columns: 2.2fr 1fr 1fr .7fr .7fr auto; align-items: end; padding: 18px 20px; } .search .hotel, .search .go { grid-column: auto; } }
+.notice { margin-top: 12px; padding: 14px 16px; border-radius: 14px; background: var(--sun-soft); color: var(--ink); display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.notice q { font-weight: 700; quotes: "“" "”"; }
+
+/* Highlights */
+.highlights { display: grid; gap: 12px; grid-template-columns: 1fr; margin: 28px 0 8px; }
+@media (min-width: 640px) { .highlights { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .highlights { grid-template-columns: repeat(4, 1fr); } }
+.tile { text-align: left; border: 0; cursor: pointer; background: var(--mist); border-radius: 16px; padding: 14px 16px; display: grid; gap: 2px; }
+.tile:hover { background: var(--ocean-soft); }
+.tile .label { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ocean); }
+.tile .price { font-family: var(--serif); font-weight: 600; font-size: 26px; line-height: 1.15; }
+.tile .who { font-weight: 700; }
+.tile .sub { font-size: 14px; color: var(--ink-2); }
+
+/* Main layout */
+.main { display: grid; gap: 24px; grid-template-columns: 1fr; padding: 20px 0 120px; }
+@media (min-width: 1000px) { .main { grid-template-columns: 220px 1fr 330px; align-items: start; padding-bottom: 64px; } }
+.filters h2, .choice h2, .more h2 { font-size: 20px; }
+.filters { display: grid; gap: 10px; }
+.filters .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (min-width: 1000px) { .filters { position: sticky; top: 84px; } .filters .opts { display: grid; gap: 4px; } }
+.check { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 14px; border-radius: 999px; background: var(--mist); font-size: 15px; cursor: pointer; }
+.check input { width: 18px; height: 18px; accent-color: var(--ocean); margin: 0; }
+@media (min-width: 1000px) { .check { background: transparent; padding: 0 4px; border-radius: 8px; } .check:hover { background: var(--mist); } }
+.sort { display: grid; gap: 4px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.sort select { height: 42px; padding: 0 10px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-size: 15px; letter-spacing: 0; text-transform: none; color: var(--ink); }
+
+.count { font-size: 14px; color: var(--ink-3); margin-bottom: 10px; }
+.list { display: grid; gap: 14px; }
+.offer { position: relative; background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; display: grid; gap: 12px; grid-template-columns: auto 1fr; border: 2px solid transparent; }
+.offer.selected { border-color: var(--reef); }
+.offer.muted { opacity: .72; }
+.offer.new { animation: rise .35s ease-out; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.offer .rank { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 26px; line-height: 1; color: var(--reef); width: 2ch; }
+.offer .body { display: grid; gap: 6px; min-width: 0; }
+.offer .site h3 { font-size: 20px; line-height: 1.2; }
+.offer .room { color: var(--ink-2); font-size: 15px; }
+.offer .notes { color: var(--ink-2); font-size: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--mist); color: var(--ink-2); }
+.chip.reef { background: var(--reef-soft); color: #11615b; } .chip.sun { background: var(--sun-soft); color: #7a5300; }
+.chip.ocean { background: var(--ocean-soft); color: var(--ocean-dark); } .chip.gum { background: var(--gum-soft); color: var(--gum); }
+.chip.ink { background: var(--ink); color: #fff; }
+.offer .side { grid-column: 1 / -1; display: flex; align-items: end; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+.price-big { font-family: var(--serif); font-weight: 600; font-size: 28px; line-height: 1.1; }
+.price-small { font-size: 13px; color: var(--ink-3); }
+@media (min-width: 640px) {
+  .offer { grid-template-columns: auto 1fr auto; padding: 18px 20px; }
+  .offer .side { grid-column: auto; flex-direction: column; align-items: end; justify-content: start; border-top: 0; padding-top: 0; text-align: right; min-width: 170px; }
+}
+.empty { background: var(--mist); border-radius: var(--radius); padding: 24px; color: var(--ink-2); }
+.skeleton { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; display: grid; gap: 10px; }
+.skeleton i { display: block; height: 14px; border-radius: 7px; background: linear-gradient(90deg, var(--mist), #e3ecef, var(--mist)); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; }
+.skeleton i:nth-child(1) { width: 40%; height: 20px; } .skeleton i:nth-child(2) { width: 65%; } .skeleton i:nth-child(3) { width: 30%; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+/* Your choice */
+.choice { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; display: grid; gap: 12px; }
+@media (min-width: 1000px) { .choice { position: sticky; top: 84px; } }
+.choice .total { font-family: var(--serif); font-weight: 600; font-size: 34px; line-height: 1.05; }
+.choice ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 15px; display: grid; gap: 4px; }
+.choice .domain { font-size: 13px; color: var(--ink-3); text-align: center; }
+.warn { border-radius: 14px; background: var(--sun-soft); padding: 12px 14px; font-size: 14px; }
+.fine { font-size: 12.5px; color: var(--ink-3); }
+/* On a phone the choice sits in a bar along the bottom of the screen */
+.bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -8px 24px -12px rgb(15 42 58 / .3); padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bar .who { font-weight: 700; font-size: 15px; line-height: 1.2; }
+.bar .amt { font-family: var(--serif); font-weight: 600; font-size: 22px; line-height: 1.1; }
+@media (min-width: 1000px) { .bar { display: none; } }
+
+.more { display: grid; gap: 16px; grid-template-columns: 1fr; padding-bottom: 40px; }
+@media (min-width: 800px) { .more { grid-template-columns: repeat(3, 1fr); } }
+.box { background: var(--mist); border-radius: var(--radius); padding: 18px 20px; }
+.box ul { margin: 8px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 15px; }
+.box p { margin-top: 8px; color: var(--ink-2); font-size: 15px; }
+
+footer { background: var(--ocean-deep); color: rgb(255 255 255 / .75); font-size: 14px; }
+footer .wrap { padding-top: 32px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); display: grid; gap: 8px; }
+@media (min-width: 1000px) { footer .wrap { padding-bottom: 40px; } }
+footer strong { color: #fff; }
+footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(255 255 255 / .75); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .step.checking .disc::before { background: conic-gradient(var(--sun), var(--reef)); } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="logo" href="#" aria-label="MyRoomSearch, by Londoner in Sydney">
+      <img src="brand/pin.png" alt="" width="31" height="40">
+      <span><span class="name">MyRoomSearch</span><span class="by" style="display:block">By Londoner in Sydney</span></span>
+    </a>
+    <div class="trip"><span class="what" id="trip"></span><span class="status" id="status" hidden></span></div>
+  </div>
+</header>
+
+<section class="hero photo" id="hero">
+  <img class="hero-photo" src="brand/hero.webp" alt="" width="1280" height="720" fetchpriority="high">
+  <div class="hero-shade"></div>
+  <p class="photo-credit">Palm Bay Resort, Whitsundays</p>
+  <div class="wrap">
+    <p class="eyebrow" id="eyebrow">Find the lowest price</p>
+    <h1 id="hotel-name">Find the best price for your stay</h1>
+    <p class="stay" id="stay-line"></p>
+    <p class="summary" id="summary">Fill in your hotel and dates, then ask Claude in the side panel to check them.</p>
+    <ul class="steps" id="steps" hidden></ul>
+  </div>
+</section>
+
+<div class="wrap">
+  <form class="search" id="search" autocomplete="off">
+    <label class="hotel">Hotel<input id="q-hotel" name="hotel" placeholder="The Langham, Boston"></label>
+    <label>Check-in<input id="q-in" name="checkin" type="date"></label>
+    <label>Check-out<input id="q-out" name="checkout" type="date"></label>
+    <label>Adults<input id="q-adults" name="adults" type="number" min="1" max="12" value="2"></label>
+    <label>Children<input id="q-children" name="children" type="number" min="0" max="8" value="0"></label>
+    <button class="btn btn-sun go" type="submit">Check prices</button>
+  </form>
+  <div class="notice" id="notice" hidden role="status">
+    <span>Now send this to Claude in the side panel: <q id="ask-text">Check prices for the stay on this page.</q> Claude reads the hotel and dates from this page and shows the results here.</span>
+    <button class="btn btn-ghost" type="button" id="copy-ask">Copy</button>
+  </div>
+
+  <div class="highlights" id="highlights"></div>
+
+  <div class="main" id="main" hidden>
+    <aside class="filters" aria-label="Filter and sort">
+      <h2>Filter</h2>
+      <div class="opts">
+        <label class="check"><input type="checkbox" id="f-refundable">Free cancellation</label>
+        <label class="check"><input type="checkbox" id="f-payhotel">Pay at the hotel</label>
+        <label class="check"><input type="checkbox" id="f-confirmed">Confirmed prices only</label>
+      </div>
+      <label class="sort">Sort by
+        <select id="sort">
+          <option value="total">Lowest total</option>
+          <option value="refundable">Free cancellation first</option>
+        </select>
+      </label>
+    </aside>
+
+    <section aria-label="Options">
+      <p class="count" id="count" aria-live="polite"></p>
+      <div class="list" id="list"></div>
+    </section>
+
+    <aside class="choice" id="choice" aria-live="polite"></aside>
+  </div>
+
+  <div class="more" id="more"></div>
+</div>
+
+<div class="bar" id="bar" hidden></div>
+
+<footer>
+  <div class="wrap">
+    <div class="logo"><img src="brand/pin.png" alt="" width="31" height="40"><span><span class="name">MyRoomSearch</span><span class="by" style="display:block">By Londoner in Sydney</span></span></div>
+    <p><strong>Prices change often.</strong> <span id="foot-checked">Check the total on the booking site before you pay.</span></p>
+    <p>Everything on this page comes from the link you opened. Nothing about your stay is sent anywhere until you choose a site.</p>
+    <p id="disclosure"></p>
+  </div>
+</footer>
+
+<script>
+"use strict";
+(function () {
+  const MAX_TEXT = 400;
+  const MAX_OFFERS = 40;
+  // selected: the key of the chosen offer. picked: the user chose it themselves, so updates mustn't move it.
+  // seen: offers already on screen, so only new ones animate in.
+  const state = { data: null, selected: null, picked: false, seen: new Set() };
+
+  // Site logos, built into the page by tools/build_page.py. Each is the site's own small icon.
+  const SITE_LOGOS = {
+    google: "brand/sites/google.png", trivago: "brand/sites/trivago.png", booking: "brand/sites/booking.png",
+    expedia: "brand/sites/expedia.png", hotelscom: "brand/sites/hotelscom.png", agoda: "brand/sites/agoda.png",
+    trip: "brand/sites/trip.png", priceline: "brand/sites/priceline.png", supercom: "brand/sites/supercom.png",
+    skylark: "brand/sites/skylark.png", kayak: "brand/sites/kayak.png", tripadvisor: "brand/sites/tripadvisor.png",
+    vrbo: "brand/sites/vrbo.png", qantas: "brand/sites/qantas.png", luxuryescapes: "brand/sites/luxuryescapes.png",
+    wotif: "brand/sites/wotif.png", webjet: "brand/sites/webjet.png", lastminute: "brand/sites/lastminute.png",
+    hoteltonight: "brand/sites/hoteltonight.png",
+  };
+  // The hotel's own site has no logo of its own here, so it gets a little hotel drawn in the guide's ocean colour.
+  const HOTEL_ICON = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><rect width="30" height="30" rx="7" fill="#0a6e7d"/><path d="M8 24V9.5L15 6l7 3.5V24z" fill="#fff"/><path d="M11 12h2v2h-2zM17 12h2v2h-2zM11 16h2v2h-2zM17 16h2v2h-2zM13.5 20h3v4h-3z" fill="#0a6e7d"/></svg>');
+  const GUESS = [["google", /google/], ["trivago", /trivago/], ["booking", /booking/], ["expedia", /expedia/],
+    ["hotelscom", /hotels\.com|hotelscom/], ["agoda", /agoda/], ["trip", /trip\.com|\bctrip/], ["priceline", /priceline/],
+    ["supercom", /super\.com|supercom/], ["skylark", /skylark/], ["kayak", /kayak/], ["tripadvisor", /tripadvisor/],
+    ["vrbo", /vrbo|stayz/], ["qantas", /qantas/], ["luxuryescapes", /luxury ?escapes/], ["wotif", /wotif/],
+    ["webjet", /webjet/], ["lastminute", /lastminute/], ["hoteltonight", /hotel ?tonight/]];
+  function logoKey(name, given, official) {
+    if (given === "hotel" || SITE_LOGOS[given]) return given;
+    const n = (name || "").toLowerCase();
+    for (const [key, re] of GUESS) if (re.test(n)) return key;
+    if (official || /'s (own )?site|hotel's|official/.test(n)) return "hotel";
+    return "";
+  }
+  function logoNode(name, key) {
+    if (key === "hotel") return el("img", { src: HOTEL_ICON, alt: "" });
+    if (key && SITE_LOGOS[key]) return el("img", { src: SITE_LOGOS[key], alt: "" });
+    const letter = ((name || "?").replace(/^(the|www\.)\s*/i, "").match(/[a-z0-9]/i) || ["?"])[0].toUpperCase();
+    return el("span", { class: "mono", "aria-hidden": "true", text: letter });
+  }
+
+  // ---------- small helpers ----------
+  function el(tag, props, ...children) {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(props || {})) {
+      if (value === undefined || value === null || value === false) continue;
+      if (key === "class") node.className = value;
+      else if (key === "text") node.textContent = value;
+      else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
+      else node.setAttribute(key, value === true ? "" : String(value));
+    }
+    for (const child of children.flat()) {
+      if (child === null || child === undefined || child === false || child === 0 || child === "") continue;
+      node.append(child instanceof Node ? child : document.createTextNode(String(child)));
+    }
+    return node;
+  }
+  const $ = (id) => document.getElementById(id);
+  const str = (v) => (typeof v === "string" ? v.slice(0, MAX_TEXT) : "");
+  const num = (v) => (typeof v === "number" && isFinite(v) && v >= 0 ? v : null);
+  const list = (v) => (Array.isArray(v) ? v : []);
+
+  // Only plain web links can become buttons; anything else in the data is ignored.
+  function safeUrl(v) {
+    if (typeof v !== "string") return null;
+    try {
+      const u = new URL(v);
+      return u.protocol === "https:" || u.protocol === "http:" ? u : null;
+    } catch (e) { return null; }
+  }
+
+  // ---------- reading the link ----------
+  function readData() {
+    const params = new URLSearchParams(location.hash.slice(1));
+    try {
+      if (params.has("d")) {
+        let b64 = params.get("d").replace(/-/g, "+").replace(/_/g, "/");
+        b64 += "=".repeat((4 - (b64.length % 4)) % 4);
+        const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        return JSON.parse(new TextDecoder().decode(bytes));
+      }
+      if (params.has("j")) return JSON.parse(params.get("j"));
+    } catch (e) { return { broken: true }; }
+    return null;
+  }
+
+  function clean(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    if (raw.broken) return { broken: true };
+    const stay = raw.stay || {};
+    const hotel = raw.hotel || {};
+    const data = {
+      hotel: { name: str(hotel.name), address: str(hotel.address) },
+      stay: {
+        checkin: /^\d{4}-\d{2}-\d{2}$/.test(stay.checkin) ? stay.checkin : "",
+        checkout: /^\d{4}-\d{2}-\d{2}$/.test(stay.checkout) ? stay.checkout : "",
+        adults: num(stay.adults) || 2, children: num(stay.children) || 0, rooms: num(stay.rooms) || 1,
+      },
+      status: raw.status === "checking" ? "checking" : "done",
+      message: str(raw.message),
+      steps: list(raw.progress).slice(0, 12).map((s) => ({
+        label: str(s && s.label),
+        logo: logoKey(str(s && s.label), str(s && s.logo), false),
+        state: ["waiting", "checking", "done", "blocked"].includes(s && s.state) ? s.state : "waiting",
+      })).filter((s) => s.label),
+      currency: /^[A-Z]{3}$/.test(raw.currency) ? raw.currency : "",
+      checked: str(raw.checked),
+      summary: str(raw.summary),
+      disclosure: str(raw.disclosure),
+      fees: list(raw.fees).map(str).filter(Boolean).slice(0, 10),
+      couldnt: list(raw.couldnt_check).map((c) => ({ site: str(c && c.site), why: str(c && c.why) })).filter((c) => c.site).slice(0, 15),
+      offers: [],
+    };
+    data.nights = nightsBetween(data.stay.checkin, data.stay.checkout);
+    const keys = new Set();
+    list(raw.offers).slice(0, MAX_OFFERS).forEach((o) => {
+      if (!o || typeof o !== "object" || !str(o.site)) return;
+      const offer = {
+        site: str(o.site),
+        kind: o.kind === "official" ? "official" : "aggregator",
+        room: str(o.room), roomNote: str(o.room_note),
+        total: num(o.total),
+        refundable: o.refundable === true, cancelUntil: str(o.cancel_until),
+        pay: o.pay === "at hotel" || o.pay === "now" ? o.pay : "",
+        member: str(o.member), includes: list(o.includes).map(str).filter(Boolean).slice(0, 6),
+        notes: str(o.notes),
+        confirmed: o.confirmed !== false, checking: o.checking === true, thisPage: o.this_page === true,
+        link: safeUrl(o.link), partner: o.partner === true,
+      };
+      offer.logo = logoKey(offer.site, str(o.logo), offer.kind === "official");
+      // A key that stays the same between updates, so a choice survives as results arrive.
+      let key = str(o.id) || [offer.site, offer.room, offer.refundable ? "r" : "n", offer.member].join("|");
+      while (keys.has(key)) key += "+";
+      keys.add(key);
+      offer.key = key;
+      data.offers.push(offer);
+    });
+    return data;
+  }
+
+  // ---------- formatting ----------
+  function parseDay(s) { if (!s) return null; const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
+  function nightsBetween(a, b) { const x = parseDay(a), y = parseDay(b); return x && y ? Math.max(1, Math.round((y - x) / 864e5)) : 1; }
+  function day(s) { const d = parseDay(s); return d ? d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }) : ""; }
+  function money(n) {
+    if (n === null) return "";
+    const cur = state.data && state.data.currency;
+    try { return new Intl.NumberFormat("en-US", { style: "currency", currency: cur || "USD", maximumFractionDigits: 0 }).format(n).replace(/^\$/, cur === "USD" ? "US$" : "$"); }
+    catch (e) { return (cur ? cur + " " : "") + Math.round(n).toLocaleString(); }
+  }
+  function guests(s) {
+    const parts = [s.adults + (s.adults === 1 ? " adult" : " adults")];
+    if (s.children) parts.push(s.children + (s.children === 1 ? " child" : " children"));
+    if (s.rooms > 1) parts.push(s.rooms + " rooms");
+    return parts.join(", ");
+  }
+  function cancelText(o) { return o.refundable ? "Free cancellation" + (o.cancelUntil ? " until " + o.cancelUntil : "") : "No refund"; }
+  const live = () => state.data && state.data.status === "checking";
+
+  // ---------- choosing which offers to show ----------
+  function filtered() {
+    const f = (id) => $(id).checked;
+    const out = state.data.offers.filter((o) =>
+      (!f("f-refundable") || o.refundable) && (!f("f-payhotel") || o.pay === "at hotel") && (!f("f-confirmed") || (o.confirmed && !o.checking)));
+    const mode = $("sort").value;
+    const key = (o) => o.total;
+    const sure = (o) => o.confirmed && !o.checking;
+    out.sort((a, b) =>
+      (sure(a) === sure(b) ? 0 : sure(a) ? -1 : 1) ||
+      (mode === "refundable" ? (a.refundable === b.refundable ? 0 : a.refundable ? -1 : 1) : 0) ||
+      ((key(a) ?? Infinity) - (key(b) ?? Infinity)));
+    return out;
+  }
+  const confirmedOffers = () => state.data.offers.filter((o) => o.confirmed && !o.checking && o.total !== null);
+  const cheapest = (arr, key = "total") => arr.slice().sort((a, b) => a[key] - b[key])[0] || null;
+
+  // ---------- drawing ----------
+  function select(key, scroll) {
+    state.selected = key;
+    state.picked = true;
+    render();
+    if (scroll && window.matchMedia("(max-width: 999px)").matches) {
+      const card = [...document.querySelectorAll(".offer")].find((c) => c.dataset.key === key);
+      if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+
+  function badges(o) {
+    return el("div", { class: "chips" },
+      o.thisPage && el("span", { class: "chip ink", text: "This page" }),
+      o.kind === "official" && el("span", { class: "chip ocean", text: "Hotel's own site" }),
+      o.checking && el("span", { class: "chip sun" }, el("span", { class: "pulse" }), "Checking"),
+      el("span", { class: "chip " + (o.refundable ? "reef" : "sun"), text: cancelText(o) }),
+      o.pay === "at hotel" && el("span", { class: "chip", text: "Pay at the hotel" }),
+      o.member && el("span", { class: "chip ocean", text: o.member }),
+      !o.confirmed && !o.checking && el("span", { class: "chip", text: "Listed, not confirmed" }));
+  }
+
+  function offerCard(o, rank) {
+    const nights = state.data.nights;
+    const selected = state.selected === o.key;
+    const fresh = !state.seen.has(o.key);
+    const amount = o.total;
+    return el("article", { class: "offer" + (selected ? " selected" : "") + (o.confirmed && !o.checking ? "" : " muted") + (fresh ? " new" : ""), "data-key": o.key },
+      el("div", { class: "rank", text: String(rank).padStart(2, "0"), "aria-hidden": "true" }),
+      el("div", { class: "body" },
+        el("div", { class: "site" }, logoNode(o.site, o.logo), el("h3", { text: o.site })),
+        o.room && el("p", { class: "room", text: o.room + (o.roomNote ? " · " + o.roomNote : "") }),
+        badges(o),
+        o.includes.length > 0 && el("p", { class: "notes", text: "Includes " + o.includes.join(", ") }),
+        o.notes && el("p", { class: "notes", text: o.notes })),
+      el("div", { class: "side" },
+        el("div", {},
+          el("div", { class: "price-big", text: o.total === null ? "No price" : (o.confirmed && !o.checking ? "" : "listed ") + money(amount) }),
+          o.total !== null && el("div", { class: "price-small", text: "total incl. taxes · " + money(amount / nights) + " a night" })),
+        el("button", { class: selected ? "btn btn-ghost" : "btn btn-primary", type: "button", "aria-pressed": selected ? "true" : "false",
+          onclick: () => select(o.key, false) }, selected ? "Selected" : "Select")));
+  }
+
+  function continueLink(o, label, wide) {
+    return el("a", { class: "btn btn-sun" + (wide ? " btn-wide" : ""), href: o.link.href, target: "_blank",
+      rel: o.partner ? "sponsored noopener noreferrer" : "noopener noreferrer" }, label);
+  }
+
+  function renderChoice() {
+    const box = $("choice");
+    const bar = $("bar");
+    box.replaceChildren(el("h2", { text: "Your choice" }));
+    const o = state.data.offers.find((x) => x.key === state.selected);
+    if (!o) {
+      box.append(el("p", { class: "fine", text: live() ? "Results appear here as Claude confirms each site. Pick any option to see its details." : "Pick an option to see its details." }));
+      bar.hidden = true;
+      return;
+    }
+    const s = state.data.stay;
+    box.append(
+      el("div", {}, el("div", { class: "eyebrow", style: "color: var(--ocean)", text: o.site }), o.room && el("div", { text: o.room })),
+      el("div", {}, el("div", { class: "total", text: money(o.total) }), el("div", { class: "fine", text: "Total for " + state.data.nights + (state.data.nights === 1 ? " night" : " nights") + ", taxes and fees included" })),
+      el("ul", {},
+        el("li", { text: day(s.checkin) + " to " + day(s.checkout) + ", " + guests(s) }),
+        el("li", { text: cancelText(o) }),
+        o.pay && el("li", { text: o.pay === "at hotel" ? "Pay at the hotel" : "Pay when you book" }),
+        o.member && el("li", { text: o.member }),
+        o.includes.length > 0 && el("li", { text: "Includes " + o.includes.join(", ") }),
+        o.notes && el("li", { text: o.notes })));
+    if (o.checking) box.append(el("p", { class: "warn", text: "Claude is still checking this price on the site." }));
+    else if (!o.confirmed) box.append(el("p", { class: "warn", text: "This price was listed but not confirmed on the site. Check it before you book." }));
+    if (o.link) {
+      box.append(continueLink(o, "Continue to " + o.site + " ↗", true),
+        el("p", { class: "domain", text: "Opens " + o.link.hostname.replace(/^www\./, "") + " in a new tab" + (o.partner ? " · partner link" : "") }));
+    } else {
+      box.append(el("p", { class: "fine", text: "No link was saved for this option. Search for it on " + o.site + "." }));
+    }
+    bar.hidden = false;
+    bar.replaceChildren(
+      el("div", {}, el("div", { class: "who", text: o.site }), el("div", { class: "amt", text: money(o.total) })),
+      o.link ? continueLink(o, "Continue ↗", false) : el("span", { class: "fine", text: "No link saved" }));
+  }
+
+  function renderHighlights() {
+    const box = $("highlights");
+    box.replaceChildren();
+    const conf = confirmedOffers();
+    const sofar = live() ? " so far" : "";
+    const tile = (label, o, sub) => o && box.append(el("button", { class: "tile", type: "button", onclick: () => select(o.key, true) },
+      el("span", { class: "label", text: label + sofar }), el("span", { class: "price", text: money(o.total) }),
+      el("span", { class: "who", text: o.site }), el("span", { class: "sub", text: sub })));
+    const best = cheapest(conf);
+    tile("Cheapest", best, best && [best.room, cancelText(best)].filter(Boolean).join(" · "));
+    const refund = cheapest(conf.filter((o) => o.refundable));
+    if (refund && refund !== best) tile("Cheapest you can cancel", refund, [refund.room, cancelText(refund)].filter(Boolean).join(" · "));
+    const own = cheapest(conf.filter((o) => o.kind === "official"));
+    if (own && own !== best) tile("Hotel's own site", own, best ? money(own.total - best.total) + " more than the cheapest" : "");
+  }
+
+  function renderMore() {
+    const box = $("more");
+    box.replaceChildren();
+    const d = state.data;
+    if (d.couldnt.length) box.append(el("div", { class: "box" }, el("h2", { text: "Couldn't check" }),
+      el("ul", {}, d.couldnt.map((c) => el("li", { text: c.site + (c.why ? ": " + c.why : "") })))));
+    if (d.fees.length) box.append(el("div", { class: "box" }, el("h2", { text: "Paid at the hotel" }),
+      el("ul", {}, d.fees.map((f) => el("li", { text: f })))));
+  }
+
+  function renderHeader() {
+    const d = state.data;
+    const stay = d.stay.checkin ? day(d.stay.checkin) + " to " + day(d.stay.checkout) : "";
+    $("hotel-name").textContent = d.hotel.name || "Your stay";
+    $("stay-line").textContent = [stay, d.stay.checkin ? d.nights + (d.nights === 1 ? " night" : " nights") : "", guests(d.stay)].filter(Boolean).join(" · ");
+    $("trip").textContent = [d.hotel.name, stay].filter(Boolean).join(" · ");
+    const eyebrow = $("eyebrow");
+    const status = $("status");
+    status.hidden = false;
+    if (live()) {
+      eyebrow.replaceChildren(el("span", { class: "pulse" }), "Checking prices");
+      status.className = "status live";
+      status.replaceChildren(el("span", { class: "pulse" }), "Checking");
+      $("summary").textContent = d.message || "Claude is checking each site in your browser. Keep this tab open: results appear here as each price is confirmed.";
+      document.title = "Checking… · MyRoomSearch";
+    } else {
+      eyebrow.textContent = "Lowest price found";
+      status.className = "status done";
+      status.textContent = d.checked ? "Checked " + d.checked : "Checked";
+      $("summary").textContent = d.summary;
+      document.title = (d.hotel.name ? d.hotel.name + " · " : "") + "MyRoomSearch";
+    }
+    const steps = $("steps");
+    steps.hidden = !d.steps.length;
+    const said = { waiting: "waiting", checking: "checking now", done: "done", blocked: "couldn't check" };
+    steps.replaceChildren(...d.steps.map((s) => el("li", { class: "step " + s.state, "aria-label": s.label + ": " + said[s.state] },
+      el("span", { class: "disc", "aria-hidden": "true" }, logoNode(s.label, s.logo)),
+      el("span", { "aria-hidden": "true", text: s.label }),
+      s.state === "checking" && el("span", { class: "what", "aria-hidden": "true", text: "Checking…" }),
+      s.state === "blocked" && el("span", { class: "what", "aria-hidden": "true", text: "Couldn't check" }))));
+    $("foot-checked").textContent = (d.checked ? "These were checked " + d.checked + ". " : "") + "Check the total on the booking site before you pay.";
+    $("disclosure").textContent = d.disclosure;
+  }
+
+  function render() {
+    const shown = filtered();
+    const listBox = $("list");
+    listBox.replaceChildren(...shown.map((o, i) => offerCard(o, i + 1)));
+    if (!shown.length) {
+      if (live() && !state.data.offers.length) listBox.append(...[1, 2, 3].map(() => el("div", { class: "skeleton", "aria-hidden": "true" }, el("i"), el("i"), el("i"))));
+      else listBox.append(el("div", { class: "empty", text: "No options match these filters." }));
+    }
+    state.data.offers.forEach((o) => state.seen.add(o.key));
+    const mode = $("sort").selectedOptions[0].textContent.toLowerCase();
+    $("count").textContent = live() && !state.data.offers.length ? "Looking for prices…"
+      : shown.length + (shown.length === 1 ? " option" : " options") + (live() ? " so far" : "") + ", sorted by " + mode;
+    renderChoice();
+    renderHighlights();
+  }
+
+  function fillSearch(d) {
+    $("q-hotel").value = d ? d.hotel.name : "";
+    $("q-in").value = d ? d.stay.checkin : "";
+    $("q-out").value = d ? d.stay.checkout : "";
+    $("q-adults").value = d ? d.stay.adults : 2;
+    $("q-children").value = d ? d.stay.children : 0;
+  }
+
+  function showEmpty(broken) {
+    state.data = null;
+    $("hero").classList.add("photo");
+    $("main").hidden = true;
+    $("highlights").replaceChildren();
+    $("more").replaceChildren();
+    $("bar").hidden = true;
+    $("status").hidden = true;
+    $("steps").hidden = true;
+    $("trip").textContent = "";
+    $("eyebrow").textContent = "Find the lowest price";
+    $("hotel-name").textContent = "Find the best price for your stay";
+    $("stay-line").textContent = "";
+    $("summary").textContent = broken ? "This link looks incomplete, so there are no results to show. Ask Claude to check the stay again."
+      : "Fill in your hotel and dates, then ask Claude in the side panel to check them.";
+    document.title = "MyRoomSearch";
+  }
+
+  // Runs on load and every time Claude updates the link. Filters, sort and the user's own choice are kept.
+  function start() {
+    const d = clean(readData());
+    if (!d || d.broken) { fillSearch(null); showEmpty(d && d.broken); return; }
+    const sameStay = state.data && state.data.hotel.name === d.hotel.name && state.data.stay.checkin === d.stay.checkin && state.data.stay.checkout === d.stay.checkout;
+    if (!sameStay) { state.seen = new Set(); state.selected = null; state.picked = false; }
+    state.data = d;
+    $("hero").classList.remove("photo");
+    fillSearch(d);
+    $("notice").hidden = true;
+    $("main").hidden = false;
+    if (!d.offers.some((o) => o.key === state.selected)) { state.selected = null; state.picked = false; }
+    if (!state.picked) { const best = cheapest(confirmedOffers()); state.selected = best ? best.key : null; }
+    renderHeader();
+    renderMore();
+    render();
+  }
+
+  // ---------- controls ----------
+  ["f-refundable", "f-payhotel", "f-confirmed", "sort"].forEach((id) => $(id).addEventListener("change", () => state.data && render()));
+  $("search").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const hotel = $("q-hotel").value.trim();
+    const a = $("q-in").value, b = $("q-out").value;
+    $("ask-text").textContent = hotel && a && b ? "Check prices for " + hotel + ", " + day(a) + " to " + day(b) + ", on this page." : "Check prices for the stay on this page.";
+    $("notice").hidden = false;
+  });
+  $("copy-ask").addEventListener("click", (e) => {
+    const text = $("ask-text").textContent;
+    const done = () => { e.target.textContent = "Copied"; setTimeout(() => (e.target.textContent = "Copy"), 2000); };
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {}); else done();
+  });
+  document.querySelector(".topbar .logo").addEventListener("click", (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); });
+  window.addEventListener("hashchange", start);
+  start();
+})();
+</script>
+</body>
+</html>

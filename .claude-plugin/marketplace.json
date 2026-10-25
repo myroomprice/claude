@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "myroomsearch",
+  "description": "MyRoomSearch, by Londoner in Sydney: finds the lowest real price for a hotel stay.",
+  "owner": {
+    "name": "Stephen M"
+  },
+  "plugins": [
+    {
+      "name": "myroomsearch",
+      "description": "MyRoomSearch, by Londoner in Sydney, finds the lowest real price for a hotel stay. It compares Booking.com, Expedia, Hotels.com, Agoda, Google Hotels, Trivago and the hotel's own site in your Chrome, and shows the results in a live web-app tab.",
+      "version": "0.8.0",
+      "author": {
+        "name": "Stephen M"
+      },
+      "category": "productivity",
+      "source": "./plugins/myroomsearch",
+      "homepage": "https://github.com/steveRepo/myroomsearch"
+    }
+  ]
+}
