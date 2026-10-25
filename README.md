@@ -20,13 +20,13 @@ Or ask anywhere: "best price for The Langham Boston, 10–12 Dec, 2 adults". You
 You need a paid Claude plan (Pro, Max, Team or Enterprise). You don't need the desktop app or Claude Code.
 
 1. Install [Claude in Chrome](https://chromewebstore.google.com/detail/fcoeoabgfenejglbffodgkkbkcdhcgfn) and sign in.
-2. In Claude, open **Customize → Plugins → Add marketplace** and enter `myroomprice/myroomprice`.
+2. In Claude, open **Customize → Plugins → Add marketplace** and enter `myroomprice/claude`.
 3. Install **myroomprice**. It's then available in the Chrome side panel, and everywhere else you use Claude.
 
 ## Install in Claude Code
 
 ```
-/plugin marketplace add myroomprice/myroomprice
+/plugin marketplace add myroomprice/claude
 /plugin install myroomprice@myroomprice
 ```
 
