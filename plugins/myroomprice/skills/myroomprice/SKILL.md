@@ -27,11 +27,44 @@ The report's booking links are added last (step 7) and never affect the ranking.
 
 ## Tabs
 
-Keep the user's browser calm: they should be able to watch the MyRoomPrice tab, or carry on with their own tabs, while you work in the background.
+Keep the user's browser calm: **two tabs at most**, the MyRoomPrice tab and one worker tab. Never more. The user should be able to watch the MyRoomPrice tab, or carry on in their own tabs, while you work.
 - **The MyRoomPrice tab** is the only tab meant for the user (see "The app tab").
-- **One worker tab** does all the checking. Open it in the background at the start, and don't switch the user to it. Use it for Google Hotels and Trivago, and for any site you open by its address.
-- **Site tabs:** a "Visit site" or "Get price" button on Google Hotels always opens a new tab of its own. It stays in the background, inside your tab group, and it can't be made to open in the worker tab. Read it, then close it straight away, before you open the next site. That way there's never more than the worker tab and one site tab open at once. Close any other tab a site opens by itself just as quickly.
-- **When you finish,** close the worker tab and any site tab still open. Leave the MyRoomPrice tab, and the user's own tabs, as they are.
+- **One worker tab** does all the checking. Open it in the background at the start and don't switch the user to it. Every site is visited in this one tab, by navigating it to the site's address.
+- **Don't click anything that opens a new tab.** That rules out Google Hotels' "Visit site" and "Get price" buttons, Trivago's and Kayak's "View deal" buttons, Kayak's "Compare vs" boxes, and any link that opens a new window. Read the listed price from the list instead, then go to the site yourself in the worker tab (see "Reaching each site" in `references/sites.md`).
+- **The one exception** is the hotel's own booking page, when Google's "Visit site" is the only way in with the dates filled in. Do that last, after you've read everything you need from Google. When the new tab opens, close the old worker tab straight away and carry on in the new one, so there are still only two.
+- **If a tab opens anyway** (a site's pop-under, an ad), close it at once. After any click that might open one, list your tabs and check.
+- **When you finish,** close the worker tab. Leave the MyRoomPrice tab, and the user's own tabs, as they are.
+- **Chrome's "Claude started debugging this browser" bar** appears while you work. When you start a check, tell the user once, in one line, that it's normal, and not to click Cancel or close the background tab until the check finishes (Cancel stops the check). The MyRoomPrice page says the same.
+
+## Keep it quick
+
+The user is waiting, so aim to show the first prices within about a minute and finish within about 6 minutes.
+- **Use the price feed if you can.** With a SerpApi key (see Setup), the sweep gets Google's whole price list in seconds. Then you only need to browse to confirm prices, not to find them.
+- **Read pages as text.** Use the page text or a find over the page, which is much faster than screenshots. Take a screenshot only to confirm a total and its cancellation terms, or when the page text is empty (Google Hotels).
+- **Batch your browser steps.** When you know the next few actions (go to an address, wait, read), send them in one batched call instead of one at a time.
+- **Put the dates in the address** wherever a site allows it (Booking.com, Kayak, Trivago, Agoda). Only use a site's date picker when the address can't carry them.
+- **Don't wait on a timer.** Read the page as soon as it has loaded; wait only if prices are still loading.
+- **Confirm fewer sites:** the hotel's own site and the two cheapest others. Give each about 90 seconds. If a site is slow or stuck, list it under "couldn't check" and move on.
+- **Comparison sites:** Google Hotels always, and Trivago. Check Kayak too only when Google and Trivago list fewer than five sites between them, or their prices disagree by more than about 10%.
+- **Update the MyRoomPrice tab 3 or 4 times,** not after every site: when you start, after the comparison sites, after the confirmations, and at the end.
+- **Reviews last, and briefly** (see "Reviews"), after the prices are on the page.
+
+## Pop-ups
+
+Booking sites throw up banners and pop-ups. Clear them quickly and never agree to anything.
+1. **Press Escape first.** It closes most pop-ups and sign-in boxes.
+2. **Then look for the close button**: the ✕, or "No thanks", "Maybe later", "Not now" or "Continue without". Never click "Accept all", "Sign in", "Join", "Subscribe" or "Allow".
+3. **If it still won't close after two tries,** read the page text underneath, which usually still works. If even that fails, list the site under "couldn't check" ("blocked by a pop-up") and move on.
+
+What you'll meet:
+- **Cookie banners:** choose "Reject all", "Necessary only", or Settings and then reject. If the banner has only an Accept button, leave it and read the page around it.
+- **Sign-in and member prompts** (Booking.com Genius, Expedia and Hotels.com One Key, Agoda, Trivago's "Sign in to save more"): close them. Never sign in or create an account. If a price needs a sign-in, record it as "member price, sign in to see".
+- **Email sign-ups and discount codes:** close them. Never type an email address.
+- **Country or currency pickers:** choose the user's country and currency.
+- **"Allow notifications" or "Know your location" requests** from Chrome itself: ignore them. They don't block the page, and the user can decide later.
+- **App banners and chat bubbles:** ignore them unless they cover the prices; then close them.
+- **New tabs or windows a site opens by itself** (Kayak and Trivago "compare" pop-unders): close them at once.
+- **"Leave site?" or other browser dialogs** stop your browser tools from working. Avoid clicking things that cause them, such as leaving a half-filled form. If one appears and your tools stop responding, tell the user to close it in Chrome.
 
 ## The app tab
 
@@ -130,8 +163,10 @@ Read `references/sites.md` before you start browsing. It has tested steps for ea
 
 In the worker tab, check the comparison sites. Between them they list most booking sites:
 1. **Google Hotels,** for the hotel, with the dates set. Its Prices tab lists every booking site plus the hotel's own site, and marks the official one.
-2. **Trivago,** for the same hotel and dates. It sometimes lists smaller sites, or lower prices, that Google doesn't. Open it directly at its own address, not through Google's Trivago row, which is often a paid ad. Then read the hotel's deals, including "More deals".
-3. **Kayak,** for the same hotel and dates, at its own address for the user's country (for example kayak.com.au). It sometimes finds lower prices or sites the other two miss. Kayak is quick to show "are you human" checks; if it does, skip it and list it under "couldn't check".
+2. **Trivago,** for the same hotel and dates. It sometimes lists smaller sites, or lower prices, that Google doesn't. Open it directly at its own address, not through Google's Trivago row, which is often a paid ad. Then read the hotel's deals, including "More deals", without clicking any deal.
+3. **Kayak,** only when the first two list fewer than five sites or disagree (see "Keep it quick"). Use its own address for the user's country (for example kayak.com.au). Kayak is quick to show "are you human" checks; if it does, skip it and list it under "couldn't check".
+
+Read the prices from the lists. Don't click through to the sites from here; each of those buttons opens a new tab (see "Tabs").
 
 Note each site's listed price. These lists tell you where to look, but they aren't the final word: a listed price can be stale or before tax.
 
@@ -139,7 +174,7 @@ Note each site's listed price. These lists tell you where to look, but they aren
 
 The final answer has to come from the sites themselves. Check, in this order:
 1. **The hotel's own site, every time.** Booking direct is often the same price or cheaper once member rates count. Hotel booking pages usually show prices before tax, so find the total with tax.
-2. **The two or three cheapest sites** across the lists, plus the page the user started on if it isn't among them. Open each one, because a listed price can be stale: in testing, Google listed Booking.com at the going rate while Booking.com had no rooms.
+2. **The two cheapest other sites** across the lists, plus the page the user started on if it isn't among them. Go to each one in the worker tab, by its address (see "Reaching each site" in `references/sites.md`), because a listed price can be stale: in testing, Google listed Booking.com at the going rate while Booking.com had no rooms.
 
 For each site, write down:
 - the room name
@@ -150,19 +185,19 @@ For each site, write down:
 - anything extra: a fee paid at the hotel, breakfast included
 
 How to behave while browsing (you're in the user's real browser, signed in as them):
-- **Skip the ads.** On Google Hotels, don't click rows marked "Sponsored" or "Ad". Each click costs the advertiser money, and the same site almost always appears again under "All options" as a free link. Open a site at its own address when you can.
+- **Skip the ads.** On Google Hotels, ignore rows marked "Sponsored" or "Ad"; the same site almost always appears again under "All options". Go to sites at their own address.
 - **Look only.** Opening a room's rate options or switching prices to include tax is fine. Never click Reserve, Book or Continue to payment. Never sign in, create an account, or type personal or payment details. If a price needs a sign-in to see, record it as "member price, sign in to see". Joining is the user's choice.
 - **Confirm the important terms yourself.** Check totals and cancellation terms in a screenshot or the page text, not just a summary of the page. A summary once got a non-refundable rate wrong.
 - **CAPTCHAs:** if one appears, or a "verify you're human" page, stop on that site and list it under "couldn't check". Don't try to get around it.
-- **Cookie banners:** choose reject, or necessary cookies only.
-- **Time:** keep to a few minutes per site. If the dates won't stick in a URL, use the site's date picker.
-- **Tabs:** one worker tab, and one site tab at a time, closed as soon as you've read it (see "Tabs"). When you finish, close the worker tab. Leave the MyRoomPrice tab and the user's own tabs alone.
+- **Pop-ups and cookie banners:** see "Pop-ups".
+- **Time:** about 90 seconds per site (see "Keep it quick"). If the dates won't stick in the address, use the site's date picker.
+- **Tabs:** everything in the one worker tab (see "Tabs"). When you finish, close it. Leave the MyRoomPrice tab and the user's own tabs alone.
 
 `references/sources.md` lists more booking sites worth a look in some countries, and what to skip.
 
 ### Reviews, while you're browsing
 
-Alongside the prices, find what reviewers say about the hotel, so the user can see it's the right choice. Spend no more than about 3 minutes on this; prices come first.
+After the prices are on the page, find what reviewers say about the hotel, so the user can see it's the right choice. Keep it to about a minute: one YouTube search page and the rating you've already seen are enough. Look for blog reviews only if the check has gone quickly.
 - **YouTube:** in the worker tab, open `https://www.youtube.com/results?search_query=` followed by the hotel's name, the place and "review", with spaces as `+`. Pick 1 to 3 videos that are really about this hotel, preferably from the last two or three years.
 - **Blogs and articles:** search Google for the hotel's name and "review", and pick 1 to 3 independent reviews (travel blogs, newspapers). Skip the hotel's own site and the booking sites.
 - **Overall rating:** if Google Hotels or Tripadvisor shows a rating and review count, add it as one item, for example "4.5 out of 5 from 2,310 reviews on Google".

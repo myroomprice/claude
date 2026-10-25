@@ -207,6 +207,18 @@ class PageTest(unittest.TestCase):
         self.assertIn("navigator.share({ title: d.hotel.name + \" · MyRoomPrice\", text, url: location.href })", self.script)
         self.assertIn("navigator.clipboard.writeText(text + ", self.script)
 
+    def test_one_worker_tab_and_the_debugging_bar(self):
+        with open(os.path.join(SCRIPTS, "..", "SKILL.md"), encoding="utf-8") as f:
+            skill = f.read()
+        for words in ("**two tabs at most**", "**Don't click anything that opens a new tab.**", "## Keep it quick", "## Pop-ups",
+                      "Press Escape first", "Claude started debugging this browser"):
+            self.assertIn(words, skill, words)
+        self.assertNotIn('Click "Visit site", or "Get price" for the official site.', skill)
+        # The page tells the user the bar is normal, while Claude is working and in the FAQ.
+        self.assertIn("don't click Cancel or close the background tab until the check is finished", self.html)
+        self.assertIn('$("keep-open").hidden = !(live() || watching());', self.script)
+        self.assertIn("Why does Chrome say", self.html)
+
     def test_built_page_is_up_to_date(self):
         result = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "build_page.py"), "--check"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)

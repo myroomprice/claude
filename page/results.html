@@ -231,6 +231,10 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     <p class="summary" id="summary">MyRoomPrice checks Google Hotels, Trivago, Kayak, the big booking sites and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.</p>
     <p class="get" id="get">Works with Claude in Chrome: type <strong>/myroomprice</strong> in the side panel. New here? <a href="https://myroomprice.com/setup/" target="_blank" rel="noopener">How to set it up</a></p>
     <ul class="steps" id="steps" hidden></ul>
+    <p class="tw-mt-5 tw-flex tw-max-w-[62ch] tw-items-start tw-gap-2.5 tw-rounded-xl tw-bg-white/10 tw-px-3.5 tw-py-2.5 tw-text-sm tw-text-white/90 [text-shadow:none]" id="keep-open" hidden>
+      <span class="tw-mt-px tw-flex tw-h-5 tw-w-5 tw-flex-none tw-items-center tw-justify-center tw-rounded-full tw-bg-sun tw-text-xs tw-font-bold tw-text-ink" aria-hidden="true">i</span>
+      <span>Chrome shows “Claude started debugging this browser” while Claude checks. That's normal for MyRoomPrice: don't click Cancel or close the background tab until the check is finished.</span>
+    </p>
   </div>
 </section>
 
@@ -328,6 +332,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       <details class="mrs-faq"><summary class="mrs-faq-q">How does it work?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">MyRoomPrice is a skill for Claude in Chrome. Claude looks the hotel up on Google Hotels, Trivago and Kayak to see which sites sell it and for how much. Then it visits the hotel's own website and the cheapest booking sites in a background tab and confirms each total. Results appear on this page as each price is confirmed.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">It only looks. It never books, signs in, or types your personal or payment details.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">How do I use it?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">1. <a class="tw-font-bold tw-text-ocean" href="https://myroomprice.com/setup/" target="_blank" rel="noopener">Add MyRoomPrice to Claude</a> (step-by-step guide). 2. Open Claude in Chrome's side panel and type <strong>/myroomprice</strong>. 3. Fill in the hotel, where it is, your dates and guests on this page, and click Check prices. 4. Answer any question Claude asks here, such as which hotel you meant. 5. Choose an option and continue to that site to book.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Do you rank results for money?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed"><strong>No. We don't rank anything.</strong> Results are always sorted by the total you'd pay, cheapest first, and you can filter and re-sort them yourself. We want you to get the cheapest price.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Some booking links go through our partner Stay22 and may earn us a small commission, at no extra cost to you. Whether a site pays us never changes where it appears: the cheapest confirmed price comes first, even when it pays us nothing.</p></div></details>
+      <details class="mrs-faq"><summary class="mrs-faq-q">Why does Chrome say “Claude started debugging this browser”?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">That's normal for MyRoomPrice. Chrome shows this bar whenever an extension, here Claude in Chrome, is working in your browser, and it goes away when Claude finishes.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">While a check is running, don't click <strong>Cancel</strong> on that bar and don't close the background tab Claude is using: either one stops the check. Claude uses just one background tab, besides this page, and closes it when it's done.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Is it free?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Yes, MyRoomPrice is free. It runs inside Claude, so you need a Claude plan that includes Claude in Chrome.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">What happens to my data?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Your search stays in your browser. Results travel inside this page's own link, after the #, which browsers never send to a server, so we never see them. Claude visits the booking sites in your own browser, just as you would. A review video loads from YouTube only when you choose to play it. Your recent searches are kept only in this browser, so you can check one again in a click; clear them any time with Clear all.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Can I rely on the prices?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">They're the prices each site showed when Claude checked. Prices and availability change often, some sites add fees at checkout, and we can't guarantee any price. Always check the total and the cancellation terms on the booking site before you pay.</p></div></details>
@@ -825,6 +830,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       $("summary").textContent = d.summary;
       document.title = (d.hotel.name ? d.hotel.name + " · " : "") + "MyRoomPrice";
     }
+    $("keep-open").hidden = !(live() || watching());
     const steps = $("steps");
     steps.hidden = !d.steps.length;
     const said = { waiting: "waiting", checking: "checking now", done: "done", blocked: "couldn't check" };
@@ -877,6 +883,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     $("more").replaceChildren();
     $("bar").hidden = true;
     $("steps").hidden = true;
+    $("keep-open").hidden = true;
     $("trip").textContent = "";
     const status = $("status");
     status.hidden = !ready;
@@ -1433,7 +1440,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     if (!state.ready) return typeSlash("Now type /myroomprice in Claude", stay);
     // Claude is watching: it reads the request within a few seconds and takes over this page.
     clearTimeout(readyTimer);
-    card("claude", spinner(), "Sent to Claude", para(el("strong", { text: stay }), ". Claude starts in a few seconds."));
+    card("claude", spinner(), "Sent to Claude", para(el("strong", { text: stay }), ". Claude starts in a few seconds."),
+      el("p", { class: "tw-mt-2 tw-text-sm tw-text-ink-2", text: "Chrome shows “Claude started debugging this browser” while Claude checks. That's normal for MyRoomPrice: don't click Cancel or close the background tab until the check is finished." }));
     pickupTimer = setTimeout(() => {
       if (!state.requested) return;
       stopReady();

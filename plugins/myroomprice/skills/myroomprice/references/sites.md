@@ -6,6 +6,7 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
 - Google Hotels: the way into every other site
 - Trivago: the second price list
 - Kayak: the third price list
+- Reaching each site in the worker tab
 - YouTube and blogs: reviews
 - The hotel's own booking page
 - Booking.com
@@ -28,7 +29,8 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
    - Text like "Get a lower price with free enrolment" next to the official site means a member rate exists.
    - Notes such as "Free cancellation until Dec 9" appear under a site's name.
    - `get_page_text` returns nothing on this page, so read it from screenshots or with `find`.
-4. **Open each site from here.** Click "Visit site", or "Get price" for the official site. Use the rows under "All options", not rows marked "Sponsored" or "Ad". Even an "All options" row can be a paid placement (Trivago's was), so open a site at its own address when you can. The site opens in a **new background tab** with the dates, guests and currency already set; Google opens it with its own code, so it can't be made to open in the worker tab. List your tabs to find it (for example `tabs_context_mcp`), read it, then close it before opening the next site (*Checked*). The worker tab stays on Google Hotels, so you can go straight on to the next row.
+4. **Don't click through to the sites from here.** "Visit site" and "Get price" always open a new tab, which Google opens with its own code, so it can't be kept in the worker tab (*Checked*). Even an "All options" row can be a paid placement (Trivago's was). Read each site's price from the list, then go to the sites yourself in the worker tab (see "Reaching each site"). The only exception is the hotel's own booking page; see "Tabs" in SKILL.md.
+5. **The hotel's website** is under the Overview tab ("Website"), or in the "Official site" row. Note its address for later.
 
 ## Trivago: the second price list
 
@@ -36,7 +38,7 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
 1. **Open it at its own address,** in the worker tab: Trivago's site for the user's country, for example `https://www.trivago.com.au` in Australia. Don't go through Google's Trivago row, which is often a paid ad.
 2. **Find the hotel.** Type the hotel's name into the Destination box and pick the hotel itself from the suggestions, not the city. *(Not yet checked.)*
 3. **Set the dates with the address.** Once the hotel is open, its address contains `search=100-<hotel number>`. Open `https://www.trivago.com.au/en-AU/lm?search=100-<hotel number>;dr-YYYYMMDD-YYYYMMDD;rc-<rooms>-<adults>`. For The Langham, Boston, 14 to 15 Jan for 2 adults, that's `search=100-8508;dr-20270114-20270115;rc-1-2` (*Checked*).
-4. **Read the deals.** The hotel's card shows its best deal first (site and price), with two more sites under it. Expand "More deals" for the rest. Trivago says cheaper offers can sit under "More deals", so look there before you note the cheapest.
+4. **Read the deals.** The hotel's card shows its best deal first (site and price), with two more sites under it. Expand "More deals" for the rest. Trivago says cheaper offers can sit under "More deals", so look there before you note the cheapest. Don't click a deal: each opens a new tab.
 - **Prices** are per night. Check the price display setting, and confirm totals on the booking site itself.
 - **Cookie banner:** use Settings to choose necessary cookies only, not "OK".
 - **Sign-in prompt:** "Sign in to save more" appears for users who aren't signed in. Close it.
@@ -46,10 +48,20 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
 *Checked (no bot check in testing).* Kayak lists deals from many booking sites, like Trivago.
 1. **Open its hotels page** for the user's country in the worker tab, for example `https://www.kayak.com.au/hotels`. Don't guess a city address: the city code in Kayak's links is internal, and a wrong one opens a different town.
 2. **Search by the hotel's name.** Click the destination box, type the hotel's name, and pick the hotel itself (bed icon) from the suggestions. The dates and guests carry over; check them in the box below before you click Search. Leave "Compare vs KAYAK" boxes unticked: they open other sites in new tabs.
-3. **Read the result.** The hotel's own address then looks like `/hotels/Sheraton-Grand-Sydney-Hyde-Park,Sydney,New-South-Wales,Australia-p24040-h11749/2026-11-20/2026-11-22/2adults`, with the hotel first in the list. Its price is the **total for the stay including estimated taxes** ("Total includes estimated local taxes & fees payable on check out"), with the number of sites under it. "View Deal" lists each site. Kayak also shows the hotel's rating and review count.
+3. **Read the result, without clicking "View Deal"** (it opens a new tab). The hotel's own address then looks like `/hotels/Sheraton-Grand-Sydney-Hyde-Park,Sydney,New-South-Wales,Australia-p24040-h11749/2026-11-20/2026-11-22/2adults`, with the hotel first in the list. Its price is the **total for the stay including estimated taxes** ("Total includes estimated local taxes & fees payable on check out"), with the number of sites under it. "View Deal" lists each site. Kayak also shows the hotel's rating and review count.
 - **Order isn't a guide:** Kayak says payments affect its ranking, so read the prices, not the order.
 - **Bot checks:** if Kayak shows a "please confirm you're a human" page, stop and list Kayak under "couldn't check".
 - **Cookie banner:** choose reject, or necessary only.
+
+## Reaching each site in the worker tab
+
+Go to each site by its address in the worker tab, never through another site's "Visit site" or "View deal" button. Put the dates in the address where the site allows it.
+- **Booking.com** (*Checked*): `https://www.booking.com/searchresults.html?ss=<hotel+name+and+city>&checkin=YYYY-MM-DD&checkout=YYYY-MM-DD&group_adults=2&no_rooms=1&group_children=0`. The hotel is usually first, and its card shows the stay total and whether taxes are included, so you can often read the price there without opening the hotel.
+- **Expedia, Hotels.com and Wotif** (*Not yet checked*): `https://www.expedia.com.au/Hotel-Search?destination=<hotel name>&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&adults=2&rooms=1` (and the same path on hotels.com or wotif.com). If the dates don't hold, use the site's own date picker.
+- **Agoda and Trip.com:** open the home page, type the hotel's name into the search box, pick the hotel from the suggestions, and set the dates. Agoda's hotel page then keeps them in its address (`checkIn=YYYY-MM-DD&los=<nights>`).
+- **Kayak** (*Checked*): see "Kayak" above.
+- **The hotel's own site:** go to the website address Google Hotels shows for it and use its "Book" or "Check availability" box. If its booking page only opens through Google's "Get price" button, use that, last (see "Tabs" in SKILL.md).
+- **A link the user pasted:** open it directly; it's usually the quickest page of all.
 
 ## YouTube and blogs: reviews
 
@@ -83,11 +95,11 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
 - `https://www.expedia.com/Hotel-Search?destination=<hotel name>&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&adults=2&rooms=1`
 - `https://www.hotels.com/Hotel-Search?destination=<hotel name>&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&adults=2`
 
-They redirect to the user's country site. "Member Price" deals need a free One Key sign-in. If the dates don't hold, use the site's own date picker, or reach the site through Google Hotels' "Visit site" instead.
+They redirect to the user's country site. "Member Price" deals need a free One Key sign-in. If the dates don't hold, use the site's own date picker.
 
 ## Other aggregators
 
-- **Agoda, Trip.com, Priceline, Tripadvisor:** their search links need internal city IDs, so reach them through Google Hotels' "Visit site", Trivago, or their own search box.
+- **Agoda, Trip.com, Priceline, Tripadvisor:** their search links need internal city IDs, so use their own search box (see "Reaching each site").
 - **Super.com** (*Checked*): its headline price matched Google's. It also shows a lower "Member Price", but that needs a **paid Super+ subscription** (free 5-day trial, then a monthly fee). Don't count that as the price. Mention it only as "lower with a paid subscription".
 - **SKYLARK** (*Checked*): its headline price is per night **before tax**. Click a rate to see the stay total including tax. Booking needs a SKYLARK membership ("become a friend"), and the page doesn't show what that costs. It charges in USD.
 - **Qantas Hotels and Luxury Escapes:** treat them like any other booking site, and rank them by the price paid.
