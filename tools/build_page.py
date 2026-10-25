@@ -2,13 +2,16 @@
 """Build the results page the skill opens: page/results.html with its fonts baked in.
 
 Browsers won't load font files into a page opened straight from disk, and the page should
-make no outside requests, so the fonts go inside the page as data. Edit page/results.html,
-then run:  python3 tools/build_page.py
+make no outside requests, so the fonts go inside the page as data. The Tailwind classes the page
+uses (prefixed tw-) are compiled with the Tailwind CLI and baked in the same way, where the page
+says /* @tailwind-output */. Edit page/results.html, then run:  python3 tools/build_page.py
+(it needs Node for the Tailwind step; --check reuses the last compiled page/tailwind.out.css).
 """
 
 import base64
 import os
 import re
+import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -16,12 +19,27 @@ SOURCE = os.path.join(ROOT, "page", "results.html")
 TARGET = os.path.join(ROOT, "plugins", "myroomsearch", "skills", "myroomsearch", "assets", "results.html")
 # Cloudflare serves docs/ (see wrangler.jsonc), so the published app lives at https://myroomsearch.com/
 PAGES = os.path.join(ROOT, "docs", "index.html")
+TAILWIND_IN = os.path.join(ROOT, "page", "tailwind.css")
+TAILWIND_OUT = os.path.join(ROOT, "page", "tailwind.out.css")
+TAILWIND = ["npx", "--yes", "tailwindcss@3.4.17", "-c", os.path.join(ROOT, "tailwind.config.js"),
+            "-i", TAILWIND_IN, "-o", TAILWIND_OUT, "--minify"]
 NOTE = "<!-- Built by tools/build_page.py from page/results.html. Edit that file, not this one. -->\n"
+
+
+def compile_tailwind():
+    result = subprocess.run(TAILWIND, cwd=ROOT, capture_output=True, text=True)
+    if result.returncode != 0:
+        sys.exit("Tailwind build failed:\n" + result.stderr)
 
 
 def build():
     with open(SOURCE, encoding="utf-8") as f:
         html = f.read()
+    with open(TAILWIND_OUT, encoding="utf-8") as f:
+        tailwind = f.read().strip()
+    if "/* @tailwind-output */" not in html:
+        sys.exit("page/results.html has no /* @tailwind-output */ marker for the Tailwind CSS.")
+    html = html.replace("/* @tailwind-output */", tailwind, 1)
 
     def inline(match):
         path = os.path.join(ROOT, "page", match.group(1))
@@ -53,6 +71,8 @@ def build():
 
 
 def main():
+    if "--check" not in sys.argv:
+        compile_tailwind()
     html, count = build()
     if "--check" in sys.argv:
         for path in (TARGET, PAGES):

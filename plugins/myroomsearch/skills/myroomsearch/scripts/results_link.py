@@ -8,7 +8,7 @@ part of the link after #, which browsers never send to a server.
 
 Results format (only "hotel", "stay" and "offers" are required):
 {
-  "hotel": {"name": "The Langham, Boston"},
+  "hotel": {"name": "The Langham, Boston", "where": "Boston, USA"},
   "stay": {"checkin": "2026-12-10", "checkout": "2026-12-12", "adults": 2, "children": 0},
   "currency": "AUD",
   "checked": "2:30pm, 25 Oct",
@@ -31,6 +31,14 @@ for a link the user gave you, so it is passed through exactly as it was.
 trip, priceline, supercom, skylark, kayak, tripadvisor, vrbo, qantas, luxuryescapes, wotif,
 webjet, lastminute, hoteltonight, or hotel for the hotel's own site. Without it, the app
 guesses from the site's name, and shows a lettered badge for sites it doesn't know.
+
+Before the check, while you work out the details or wait for the user's answer:
+  "status": "thinking", with a "message" saying what you're doing, or
+  "status": "question", with
+  "question": {"id": "hotel", "text": "Which hotel did you mean? Several in Sydney share the name.",
+               "options": [{"label": "Sheraton Grand Sydney Hyde Park", "detail": "161 Elizabeth St"},
+                           {"label": "Hyde Park Inn", "detail": "271 Elizabeth St"}]}
+  Options can also be plain strings, such as ["Yes", "No"]. The page adds "Try again" itself.
 
 While the check is running, the same tab is updated with these as well:
   "status": "checking" (or "done" at the end, which is the default)

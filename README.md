@@ -65,7 +65,7 @@ claude plugin validate --strict .
 
 The partner ID, the disclosure text and the results page's web address are in `plugins/myroomsearch/skills/myroomsearch/settings.json`. With the ID left empty, every link stays a plain link.
 
-The results page is `page/results.html`. After editing it, run `python3 tools/build_page.py`, which bakes the fonts and images into the copy the skill ships (`assets/results.html`) and into `docs/index.html`, the copy the website serves.
+The results page is `page/results.html`. Its search form, date picker and Claude's question card use Tailwind (`tw-` classes, set up in `tailwind.config.js` and `page/tailwind.css`). The build compiles Tailwind with Node and bakes the CSS into the page, because the site allows no outside scripts or stylesheets. After editing it, run `python3 tools/build_page.py`, which bakes the fonts and images into the copy the skill ships (`assets/results.html`) and into `docs/index.html`, the copy the website serves.
 
 The website is https://myroomsearch.com/, a Cloudflare Worker that serves the `docs/` folder (set up in `wrangler.jsonc`, with security headers in `docs/_headers`). That address is `results_page` in `settings.json`. To publish a new build, run `npx wrangler deploy`. Search results travel after the `#` in the address, which browsers never send to the server, so the site never sees them.
 

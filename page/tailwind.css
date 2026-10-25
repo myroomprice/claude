@@ -1,0 +1,18 @@
+/* Tailwind for the MyRoomSearch page: compiled by tools/build_page.py with tailwind.config.js. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Search form fields */
+  .mrs-label { @apply tw-grid tw-min-w-0 tw-gap-1.5 tw-text-xs tw-font-bold tw-uppercase tw-tracking-[.08em] tw-text-ink-3; }
+  .mrs-input { @apply tw-h-12 tw-w-full tw-min-w-0 tw-rounded-xl tw-border-[1.5px] tw-border-solid tw-border-line tw-bg-white tw-px-3.5 tw-text-base tw-font-semibold tw-normal-case tw-tracking-normal tw-text-ink tw-outline-none tw-transition placeholder:tw-font-normal placeholder:tw-text-ink-3 hover:tw-border-ink-3 focus:tw-border-reef focus:tw-ring-4 focus:tw-ring-reef/20; }
+  .mrs-field { @apply tw-flex tw-cursor-pointer tw-items-center tw-gap-2.5 tw-text-left aria-expanded:tw-border-reef aria-expanded:tw-ring-4 aria-expanded:tw-ring-reef/20; }
+  .mrs-pop { @apply tw-absolute tw-left-3 tw-right-3 tw-top-full tw-z-30 tw-mt-2 tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-white tw-p-4 tw-text-ink tw-shadow-card sm:tw-p-5; }
+  /* Buttons inside the form, the pop-ups and Claude's card */
+  .mrs-done { @apply tw-inline-flex tw-h-10 tw-cursor-pointer tw-items-center tw-rounded-full tw-border-0 tw-bg-ocean tw-px-5 tw-text-sm tw-font-bold tw-text-white tw-transition hover:tw-bg-ocean-dark; }
+  .mrs-quiet { @apply tw-inline-flex tw-h-10 tw-cursor-pointer tw-items-center tw-rounded-full tw-border-0 tw-bg-transparent tw-px-3 tw-text-sm tw-font-bold tw-text-ink-2 tw-underline tw-underline-offset-4 hover:tw-text-ink; }
+  .mrs-round { @apply tw-flex tw-h-9 tw-w-9 tw-flex-none tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-text-lg tw-font-bold tw-leading-none tw-text-ink tw-transition hover:tw-border-ocean hover:tw-bg-ocean-soft disabled:tw-cursor-not-allowed disabled:tw-opacity-30 disabled:hover:tw-border-line disabled:hover:tw-bg-white; }
+  .mrs-option { @apply tw-w-full tw-cursor-pointer tw-rounded-xl tw-border-[1.5px] tw-border-solid tw-border-line tw-bg-white tw-px-4 tw-py-3 tw-text-left tw-text-ink tw-transition hover:tw-border-ocean hover:tw-bg-ocean-soft; }
+  .mrs-pill { @apply tw-inline-flex tw-h-11 tw-min-w-[88px] tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-full tw-border-[1.5px] tw-border-solid tw-border-ocean tw-bg-white tw-px-5 tw-font-bold tw-text-ocean tw-transition hover:tw-bg-ocean hover:tw-text-white; }
+}

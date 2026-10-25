@@ -101,10 +101,14 @@ class PageTest(unittest.TestCase):
         skill_path = os.path.join(SCRIPTS, "..", "SKILL.md")
         with open(skill_path, encoding="utf-8") as f:
             skill = f.read()
-        for words in ('"Check requested · MyRoomSearch"', '"Check requested. Hotel: "', '". Check-in: "',
+        for words in ('"Check requested · MyRoomSearch"', '"Check requested. Hotel: "', '". Where: "', '". Check-in: "',
+                      '"Answer given · MyRoomSearch"', '"Answer given. Question: "', '". Answer: "', 'q.id === "hotel"',
+                      '["thinking", "question", "checking"]',
                       '". Check-out: "', '". Adults: "', '". Children: "', 'hashHas("ready")'):
             self.assertIn(words, self.script, words)
-        for words in ('title starts with "Check requested"', "Check requested. Hotel:", "Check-in: YYYY-MM-DD",
+        for words in ('title starts with "Check requested"', "Check requested. Hotel:", "Where: (city, town or country)",
+                      '"Answer given"', "Answer given. Question: (id). Answer: (label).", '"status": "question"',
+                      '"status": "thinking"', 'Use `"hotel"`', "Check-in: YYYY-MM-DD",
                       "Check-out: YYYY-MM-DD", "Adults:", "Children:", "#ready", "5 minutes"):
             self.assertIn(words, skill, words)
         self.assertIn("READY_MS = 5 * 60e3", self.script)

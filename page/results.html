@@ -102,26 +102,9 @@ button, input, select { font: inherit; color: inherit; }
 .offer .site { display: flex; align-items: center; gap: 10px; }
 .offer .site img, .offer .site .mono { width: 26px; height: 26px; border-radius: 7px; flex: none; font-size: 15px; box-shadow: 0 0 0 1px var(--line); }
 
-/* Search card, overlapping the foot of the hero like the guide's ticket cards */
-.search { position: relative; z-index: 2; margin-top: -76px; background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
-.search label { display: grid; gap: 4px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); min-width: 0; }
-.search input { width: 100%; min-width: 0; height: 46px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-size: 16px; letter-spacing: 0; text-transform: none; color: var(--ink); }
-.search input:focus { border-color: var(--reef); outline: none; }
-.search .hotel { grid-column: 1 / -1; }
-.search .go { grid-column: 1 / -1; align-self: end; }
-@media (min-width: 640px) { .search { grid-template-columns: 1fr 1fr .6fr .6fr; } .search .hotel { grid-column: 1 / -1; } }
-/* One row only once the date boxes have room to show the whole date. */
-@media (min-width: 1040px) { .search { grid-template-columns: minmax(0, 2fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(64px, .55fr) minmax(64px, .55fr) auto; align-items: end; padding: 18px 20px; } .search .hotel, .search .go { grid-column: auto; } }
-.notice { margin-top: 12px; padding: 14px 16px; border-radius: 14px; background: var(--sun-soft); color: var(--ink); display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
-.notice strong { font-weight: 700; }
-.notice.sent { background: var(--reef-soft); }
-.notice .pulse { color: var(--reef); flex: none; }
-.notice > span:last-child { flex: 1 1 240px; }
-.notice code { font: inherit; font-weight: 700; background: rgb(255 255 255 / .7); padding: 1px 6px; border-radius: 6px; }
 .hero .get { margin-top: 12px; font-size: 14.5px; color: rgb(255 255 255 / .8); }
 .hero .get a { color: #fff; font-weight: 700; }
 .status.ready { background: var(--reef-soft); color: #11615b; }
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 /* Highlights */
 .highlights { display: grid; gap: 12px; grid-template-columns: 1fr; margin: 28px 0 8px; }
@@ -203,6 +186,8 @@ footer .wrap { padding-top: 32px; padding-bottom: calc(96px + env(safe-area-inse
 footer strong { color: #fff; }
 footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(255 255 255 / .75); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .step.checking .disc::before { background: conic-gradient(var(--sun), var(--reef)); } }
+/* Tailwind (tw- classes), compiled and baked in by tools/build_page.py */
+/* @tailwind-output */
 </style>
 </head>
 <body>
@@ -231,17 +216,39 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
 </section>
 
 <div class="wrap">
-  <form class="search" id="search" autocomplete="off">
-    <label class="hotel">Hotel<input id="q-hotel" name="hotel" placeholder="The Langham, Boston"></label>
-    <label>Check-in<input id="q-in" name="checkin" type="date"></label>
-    <label>Check-out<input id="q-out" name="checkout" type="date"></label>
-    <label>Adults<input id="q-adults" name="adults" type="number" min="1" max="12" value="2"></label>
-    <label>Children<input id="q-children" name="children" type="number" min="0" max="8" value="0"></label>
-    <button class="btn btn-sun go" type="submit">Check prices</button>
+  <form id="search" autocomplete="off" novalidate class="tw-relative tw-z-[2] tw--mt-[76px] tw-rounded-[20px] tw-bg-white tw-p-4 tw-shadow-card sm:tw-p-5">
+    <div class="tw-grid tw-gap-3 md:tw-grid-cols-2 lg:tw-grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)_auto] lg:tw-items-end">
+      <label class="mrs-label">Hotel
+        <input class="mrs-input" id="q-hotel" name="hotel" maxlength="200" placeholder="Hotel name">
+      </label>
+      <label class="mrs-label">Where
+        <input class="mrs-input" id="q-where" name="where" maxlength="120" placeholder="City, town or country">
+      </label>
+      <div class="mrs-label">
+        <span id="dates-label">Dates</span>
+        <button type="button" class="mrs-input mrs-field" id="q-dates" aria-haspopup="dialog" aria-expanded="false" aria-controls="picker" aria-labelledby="dates-label q-dates-text">
+          <svg class="tw-h-5 tw-w-5 tw-flex-none tw-text-ocean" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+          <span class="tw-truncate" id="q-dates-text">Add dates</span>
+        </button>
+        <input type="hidden" id="q-in" name="checkin"><input type="hidden" id="q-out" name="checkout">
+      </div>
+      <div class="mrs-label">
+        <span id="guests-label">Guests</span>
+        <button type="button" class="mrs-input mrs-field" id="q-guests" aria-haspopup="dialog" aria-expanded="false" aria-controls="guests-pop" aria-labelledby="guests-label q-guests-text">
+          <svg class="tw-h-5 tw-w-5 tw-flex-none tw-text-ocean" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.6.8 2.6 2.5 3 5.2"/></svg>
+          <span class="tw-truncate" id="q-guests-text">2 adults</span>
+        </button>
+        <input type="hidden" id="q-adults" name="adults" value="2"><input type="hidden" id="q-children" name="children" value="0">
+      </div>
+      <button class="btn btn-sun tw-h-12 md:tw-col-span-2 lg:tw-col-span-1" type="submit">Check prices</button>
+    </div>
+    <div class="mrs-pop md:tw-right-auto md:tw-w-[680px]" id="picker" role="dialog" aria-label="Choose your dates" hidden></div>
+    <div class="mrs-pop md:tw-right-auto md:tw-w-[320px]" id="guests-pop" role="dialog" aria-label="Guests" hidden></div>
   </form>
-  <div class="notice" id="notice" hidden role="status"></div>
-  <!-- Claude reads this line to pick up the search. Keep its wording in step with SKILL.md. -->
-  <p class="sr-only" id="request"></p>
+  <!-- What Claude is doing or asking, and the user's answers. -->
+  <div class="tw-mt-3" id="claude" aria-live="polite" hidden></div>
+  <!-- Claude reads this line to pick up a search or an answer. Keep its wording in step with SKILL.md. -->
+  <p class="tw-sr-only" id="request"></p>
 
   <div class="highlights" id="highlights"></div>
 
@@ -290,8 +297,9 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
   const MAX_OFFERS = 40;
   // selected: the key of the chosen offer. picked: the user chose it themselves, so updates mustn't move it.
   // seen: offers already on screen, so only new ones animate in.
-  // ready: Claude is watching this page for a search. requested: the user clicked Check prices.
-  const state = { data: null, selected: null, picked: false, seen: new Set(), ready: false, requested: false };
+  // ready: Claude is watching this page for a search or an answer. requested: the user clicked Check prices.
+  // answered: the user answered Claude's question.
+  const state = { data: null, selected: null, picked: false, seen: new Set(), ready: false, requested: false, answered: false };
 
   // Site logos, built into the page by tools/build_page.py. Each is the site's own small icon.
   const SITE_LOGOS = {
@@ -375,13 +383,20 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
     const stay = raw.stay || {};
     const hotel = raw.hotel || {};
     const data = {
-      hotel: { name: str(hotel.name), address: str(hotel.address) },
+      hotel: { name: str(hotel.name), where: str(hotel.where), address: str(hotel.address) },
       stay: {
         checkin: /^\d{4}-\d{2}-\d{2}$/.test(stay.checkin) ? stay.checkin : "",
         checkout: /^\d{4}-\d{2}-\d{2}$/.test(stay.checkout) ? stay.checkout : "",
         adults: num(stay.adults) || 2, children: num(stay.children) || 0, rooms: num(stay.rooms) || 1,
       },
-      status: raw.status === "checking" ? "checking" : "done",
+      status: ["thinking", "question", "checking"].includes(raw.status) ? raw.status : "done",
+      question: raw.question && typeof raw.question === "object" && str(raw.question.text) ? {
+        id: str(raw.question.id) || "question",
+        text: str(raw.question.text),
+        options: list(raw.question.options).slice(0, 8)
+          .map((o) => (typeof o === "string" ? { label: str(o), detail: "" } : { label: str(o && o.label), detail: str(o && o.detail) }))
+          .filter((o) => o.label),
+      } : null,
       message: str(raw.message),
       steps: list(raw.progress).slice(0, 12).map((s) => ({
         label: str(s && s.label),
@@ -441,6 +456,8 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
   }
   function cancelText(o) { return o.refundable ? "Free cancellation" + (o.cancelUntil ? " until " + o.cancelUntil : "") : "No refund"; }
   const live = () => state.data && state.data.status === "checking";
+  // Claude is working something out, or waiting for the user's answer, before it checks prices.
+  const watching = () => state.data && (state.data.status === "thinking" || state.data.status === "question");
 
   // ---------- choosing which offers to show ----------
   function filtered() {
@@ -577,7 +594,14 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
     const eyebrow = $("eyebrow");
     const status = $("status");
     status.hidden = false;
-    if (live()) {
+    if (watching()) {
+      const asking = d.status === "question";
+      eyebrow.replaceChildren(el("span", { class: "pulse" }), asking ? "Claude has a question" : "Claude is thinking");
+      status.className = "status ready";
+      status.replaceChildren(el("span", { class: "pulse" }), asking ? "Question" : "Thinking");
+      $("summary").textContent = asking ? "Answer below and Claude carries on." : d.message || "Claude is getting ready to check prices.";
+      document.title = (asking ? "Question" : "Thinking…") + " · MyRoomSearch";
+    } else if (live()) {
       eyebrow.replaceChildren(el("span", { class: "pulse" }), "Checking prices");
       status.className = "status live";
       status.replaceChildren(el("span", { class: "pulse" }), "Checking");
@@ -620,10 +644,11 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
 
   function fillSearch(d) {
     $("q-hotel").value = d ? d.hotel.name : "";
-    $("q-in").value = d ? d.stay.checkin : "";
-    $("q-out").value = d ? d.stay.checkout : "";
+    $("q-where").value = d ? d.hotel.where : "";
+    setDates(d ? d.stay.checkin : "", d ? d.stay.checkout : "");
     $("q-adults").value = d ? d.stay.adults : 2;
     $("q-children").value = d ? d.stay.children : 0;
+    showGuests();
   }
 
   function showEmpty(broken) {
@@ -643,7 +668,7 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
     $("hotel-name").textContent = ready ? "Where are you staying?" : "Find the best price for your stay";
     $("stay-line").textContent = "";
     $("summary").textContent = broken ? "This link looks incomplete, so there are no results to show. Type /myroomsearch in Claude to start again."
-      : ready ? "Fill in your hotel and dates, then click Check prices. Claude starts checking straight away."
+      : ready ? "Fill in the hotel, where it is and your dates, then click Check prices. Claude starts checking straight away."
       : "Open Claude in the side panel and type /myroomsearch. Then fill in your stay here and click Check prices.";
     $("get").hidden = ready;
     document.title = ready ? "Ready · MyRoomSearch" : "MyRoomSearch";
@@ -659,17 +684,70 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
   const hashHas = (name) => new URLSearchParams(location.hash.slice(1)).has(name);
   function longDay(s) { const d = parseDay(s); return d ? d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : ""; }
 
-  function notice(kind, pulse, ...children) {
-    const box = $("notice");
-    box.className = "notice" + (kind ? " " + kind : "");
-    box.replaceChildren(...(pulse ? [el("span", { class: "pulse", "aria-hidden": "true" })] : []), el("span", {}, ...children));
+  // ---------- Claude's card: what Claude is doing or asking ----------
+  const CARD_TONES = {
+    claude: "tw-border-reef/40 tw-bg-reef-soft",
+    note: "tw-border-sun/70 tw-bg-sun-soft",
+    ask: "tw-border-ocean/25 tw-bg-white tw-shadow-card",
+  };
+  function card(tone, icon, title, ...body) {
+    const box = $("claude");
+    box.replaceChildren(el("div", { class: "tw-flex tw-items-start tw-gap-3.5 tw-rounded-2xl tw-border tw-border-solid tw-p-4 sm:tw-p-5 " + CARD_TONES[tone] },
+      icon, el("div", { class: "tw-min-w-0 tw-flex-1" }, el("p", { class: "tw-font-bold tw-text-ink", text: title }), ...body)));
     box.hidden = false;
+  }
+  const spinner = () => el("span", { class: "tw-mt-0.5 tw-h-5 tw-w-5 tw-flex-none tw-animate-spin tw-rounded-full tw-border-[2.5px] tw-border-solid tw-border-reef/25 tw-border-t-reef", "aria-hidden": "true" });
+  const badge = (text, colours) => el("span", { class: "tw-mt-px tw-flex tw-h-6 tw-w-6 tw-flex-none tw-items-center tw-justify-center tw-rounded-full tw-text-sm tw-font-bold " + colours, "aria-hidden": "true", text });
+  const para = (...children) => el("p", { class: "tw-mt-1 tw-text-ink-2" }, ...children);
+  const slash = () => el("code", { class: "tw-rounded-md tw-bg-white/80 tw-px-1.5 tw-py-0.5 tw-font-sans tw-font-bold tw-text-ink", text: "/myroomsearch" });
+  const needMore = (text) => card("note", badge("!", "tw-bg-sun tw-text-ink"), "Almost there", para(text));
+  const typeSlash = (title, stay) => card("note", badge("/", "tw-bg-sun tw-text-ink"), title,
+    para("Open Claude in the side panel and type ", slash(), ". It picks up ", el("strong", { text: stay }), " from this page."));
+
+  function showQuestion(q) {
+    const short = q.options.every((o) => !o.detail && o.label.length <= 14);
+    const options = el("div", { class: short ? "tw-mt-3 tw-flex tw-flex-wrap tw-gap-2" : "tw-mt-3 tw-grid tw-gap-2" },
+      q.options.map((o) => el("button", { type: "button", class: short ? "mrs-pill" : "mrs-option", onclick: () => answer(q, o.label) },
+        el("span", { class: "tw-block tw-font-bold", text: o.label }),
+        o.detail && el("span", { class: "tw-mt-0.5 tw-block tw-text-sm tw-text-ink-3", text: o.detail }))));
+    card("ask", badge("?", "tw-bg-ocean tw-text-white"), "Claude has a question", para(q.text), options,
+      el("div", { class: "tw-mt-2 tw--ml-3" }, el("button", { type: "button", class: "mrs-quiet", onclick: tryAgain, text: "Try again with a different search" })));
+    $("claude").scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  // The user's answer goes back to Claude the same way a search does: the tab title and the #request line.
+  function answer(q, label) {
+    $("request").textContent = "Answer given. Question: " + q.id + ". Answer: " + label + ".";
+    document.title = "Answer given · MyRoomSearch";
+    state.answered = true;
+    if (q.id === "hotel") $("q-hotel").value = label;  // the hotel they meant, ready for any later search
+    clearTimeout(readyTimer);
+    clearTimeout(pickupTimer);
+    card("claude", spinner(), "Sent to Claude", para("You chose ", el("strong", { text: label }), ". Claude is carrying on."));
+    pickupTimer = setTimeout(() => {
+      if (!state.answered) return;
+      stopReady();
+      card("note", badge("!", "tw-bg-sun tw-text-ink"), "Claude hasn't picked this up", para("Click Check prices to start again."));
+    }, PICKUP_MS);
+  }
+
+  function tryAgain() {
+    card("note", badge("✎", "tw-bg-sun tw-text-ink"), "Change your search",
+      para("Fix the hotel, where it is or the dates above, then click Check prices. Claude is still watching this page."));
+    $("q-hotel").focus();
+    $("q-hotel").select();
   }
 
   function setReady(on) {
     state.ready = on;
     clearTimeout(readyTimer);
-    if (on) readyTimer = setTimeout(() => { if (!state.data && !state.requested) { stopReady(); showEmpty(false); } }, READY_MS);
+    if (!on) return;
+    readyTimer = setTimeout(() => {
+      if (state.requested || state.answered) return;
+      stopReady();
+      if (!state.data) showEmpty(false);
+      else if (watching()) card("note", badge("!", "tw-bg-sun tw-text-ink"), "Claude has stopped waiting", para("Click Check prices to start again."));
+    }, READY_MS);
   }
 
   // Claude has stopped watching: drop "#ready" from the address too, so a reload doesn't claim otherwise.
@@ -683,53 +761,213 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
     const d = clean(readData());
     clearTimeout(pickupTimer);
     state.requested = false;
+    state.answered = false;
     $("request").textContent = "";
-    $("notice").hidden = true;
+    $("claude").hidden = true;
+    closePops();
     if (!d || d.broken) { setReady(!d && hashHas("ready")); fillSearch(null); showEmpty(d && d.broken); return; }
-    setReady(false);
+    // While Claude thinks or asks, it's watching this page for an answer or a new search.
+    setReady(d.status === "thinking" || d.status === "question");
     $("get").hidden = true;
     const sameStay = state.data && state.data.hotel.name === d.hotel.name && state.data.stay.checkin === d.stay.checkin && state.data.stay.checkout === d.stay.checkout;
     if (!sameStay) { state.seen = new Set(); state.selected = null; state.picked = false; }
     state.data = d;
     $("hero").classList.remove("photo");
     fillSearch(d);
-    $("notice").hidden = true;
-    $("main").hidden = false;
+    $("main").hidden = (d.status === "thinking" || d.status === "question") && !d.offers.length;
     if (!d.offers.some((o) => o.key === state.selected)) { state.selected = null; state.picked = false; }
     if (!state.picked) { const best = cheapest(confirmedOffers()); state.selected = best ? best.key : null; }
     renderHeader();
     renderMore();
     render();
+    if (d.status === "thinking") card("claude", spinner(), "Claude is thinking", d.message && para(d.message));
+    if (d.status === "question" && d.question) showQuestion(d.question);
   }
+
+  // ---------- date picker ----------
+  // Two months side by side (one on a phone). First click sets check-in, the second check-out.
+  const picker = { month: null, start: "", end: "", hover: "" };
+  const MAX_NIGHTS = 60;
+  const isoDay = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  const nightsText = (a, b) => { const n = nightsBetween(a, b); return n + (n === 1 ? " night" : " nights"); };
+  const wide = () => matchMedia("(min-width: 768px)").matches;
+
+  function setDates(a, b) {
+    $("q-in").value = a || "";
+    $("q-out").value = b || "";
+    picker.start = a || "";
+    picker.end = b || "";
+    const text = $("q-dates-text");
+    text.textContent = a && b ? day(a) + " – " + day(b) + " · " + nightsText(a, b) : a ? day(a) + " – add check-out" : "Add dates";
+    text.classList.toggle("tw-font-normal", !a);
+    text.classList.toggle("tw-text-ink-3", !a);
+  }
+
+  function monthGrid(first) {
+    const y = first.getFullYear(), m = first.getMonth();
+    const today = isoDay(new Date());
+    const a = picker.start;
+    const b = picker.end || (a && picker.hover > a ? picker.hover : "");
+    const cells = [];
+    for (let i = (first.getDay() + 6) % 7; i > 0; i--) cells.push(el("div", { "aria-hidden": "true" }));
+    for (let n = 1, last = new Date(y, m + 1, 0).getDate(); n <= last; n++) {
+      const s = isoDay(new Date(y, m, n));
+      const past = s < today;
+      const isStart = s === a, isEnd = !!b && s === b, picked = isStart || (isEnd && !!picker.end);
+      let band = "";
+      if (a && b && s > a && s < b) band = "tw-bg-ocean-soft";
+      else if (isStart && b) band = "tw-bg-[linear-gradient(to_right,transparent_50%,#e1f0f4_50%)]";
+      else if (isEnd) band = "tw-bg-[linear-gradient(to_left,transparent_50%,#e1f0f4_50%)]";
+      const look = picked ? "tw-bg-ocean tw-text-white"
+        : isEnd ? "tw-bg-white tw-text-ocean tw-ring-2 tw-ring-ocean"
+        : past ? "tw-cursor-not-allowed tw-bg-transparent tw-text-ink-3/40"
+        : "tw-cursor-pointer tw-bg-transparent tw-text-ink hover:tw-bg-white hover:tw-ring-2 hover:tw-ring-ocean";
+      cells.push(el("div", { class: "tw-py-0.5 " + band }, el("button", {
+        type: "button", "data-day": s, disabled: past, "aria-pressed": picked ? "true" : "false",
+        "aria-label": longDay(s) + (isStart ? ", check-in" : isEnd && picker.end ? ", check-out" : ""),
+        class: "tw-mx-auto tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-text-sm tw-font-semibold tw-transition " + look +
+          (s === today && !picked ? " tw-underline tw-decoration-2 tw-underline-offset-4" : ""),
+        text: String(n),
+      })));
+    }
+    return el("div", { class: "tw-min-w-0" },
+      el("p", { class: "tw-mb-2 tw-text-center tw-font-serif tw-text-lg tw-font-semibold", text: first.toLocaleDateString(undefined, { month: "long", year: "numeric" }) }),
+      el("div", { class: "tw-mb-1 tw-grid tw-grid-cols-7 tw-text-center tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-ink-3", "aria-hidden": "true" },
+        ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((w) => el("span", { text: w }))),
+      el("div", { class: "tw-grid tw-grid-cols-7" }, cells));
+  }
+
+  function renderPicker() {
+    const m0 = picker.month;
+    const thisMonth = new Date(); thisMonth.setDate(1); thisMonth.setHours(0, 0, 0, 0);
+    const months = [m0].concat(wide() ? [new Date(m0.getFullYear(), m0.getMonth() + 1, 1)] : []);
+    const go = (step) => { picker.month = new Date(m0.getFullYear(), m0.getMonth() + step, 1); renderPicker(); };
+    const a = picker.start, b = picker.end;
+    $("picker").replaceChildren(
+      el("div", { class: "tw-relative" },
+        el("button", { type: "button", class: "mrs-round tw-absolute tw-left-0 tw-top-0", "aria-label": "Previous month", disabled: m0 <= thisMonth, onclick: () => go(-1), text: "‹" }),
+        el("button", { type: "button", class: "mrs-round tw-absolute tw-right-0 tw-top-0", "aria-label": "Next month", onclick: () => go(1), text: "›" }),
+        el("div", { class: "tw-grid tw-gap-6 md:tw-grid-cols-2" }, months.map(monthGrid))),
+      el("div", { class: "tw-mt-3 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-border-0 tw-border-t tw-border-solid tw-border-line tw-pt-3" },
+        el("p", { class: "tw-text-sm tw-font-semibold tw-text-ink-2", "aria-live": "polite",
+          text: a && b ? day(a) + " – " + day(b) + " · " + nightsText(a, b) : a ? "Now choose your check-out date" : "Choose your check-in date" }),
+        el("div", { class: "tw-flex tw-items-center tw-gap-1" },
+          el("button", { type: "button", class: "mrs-quiet", onclick: () => { setDates("", ""); renderPicker(); }, text: "Clear" }),
+          el("button", { type: "button", class: "mrs-done", onclick: () => closePops(true), text: "Done" }))));
+  }
+
+  function chooseDay(s) {
+    const a = picker.start;
+    if (!a || picker.end || s <= a || nightsBetween(a, s) > MAX_NIGHTS) setDates(s, "");
+    else setDates(a, s);
+    picker.hover = "";
+    renderPicker();
+    if (picker.end) setTimeout(() => closePops(true), 250);
+  }
+
+  // ---------- guests ----------
+  function showGuests() {
+    $("q-guests-text").textContent = guests({ adults: parseInt($("q-adults").value, 10) || 2, children: parseInt($("q-children").value, 10) || 0 });
+  }
+  function stepper(label, note, id, min, max) {
+    const input = $(id);
+    const value = parseInt(input.value, 10) || 0;
+    const change = (by, focusLabel) => {
+      input.value = String(value + by);
+      showGuests();
+      renderGuests();
+      const again = $("guests-pop").querySelector('[aria-label="' + focusLabel + '"]');
+      if (again && !again.disabled) again.focus();
+    };
+    const less = "Fewer " + label.toLowerCase(), more = "More " + label.toLowerCase();
+    return el("div", { class: "tw-flex tw-items-center tw-justify-between tw-gap-4 tw-py-2" },
+      el("div", {}, el("p", { class: "tw-font-bold", text: label }), el("p", { class: "tw-text-sm tw-text-ink-3", text: note })),
+      el("div", { class: "tw-flex tw-items-center tw-gap-3" },
+        el("button", { type: "button", class: "mrs-round", "aria-label": less, disabled: value <= min, onclick: () => change(-1, less), text: "−" }),
+        el("span", { class: "tw-w-6 tw-text-center tw-text-lg tw-font-bold tw-tabular-nums", "aria-live": "polite", text: String(value) }),
+        el("button", { type: "button", class: "mrs-round", "aria-label": more, disabled: value >= max, onclick: () => change(1, more), text: "+" })));
+  }
+  function renderGuests() {
+    $("guests-pop").replaceChildren(
+      stepper("Adults", "18 or over", "q-adults", 1, 12),
+      stepper("Children", "Under 18", "q-children", 0, 8),
+      el("div", { class: "tw-mt-2 tw-flex tw-justify-end" }, el("button", { type: "button", class: "mrs-done", onclick: () => closePops(true), text: "Done" })));
+  }
+
+  // ---------- opening and closing the pop-ups ----------
+  let openPop = null;  // { pop, field }
+  function placePop(pop, field) {
+    if (!wide()) { pop.style.left = ""; return; }
+    const room = $("search").clientWidth - pop.offsetWidth - 12;
+    pop.style.left = Math.max(12, Math.min(field.offsetLeft, room)) + "px";
+  }
+  function showPop(pop, field, draw) {
+    closePops();
+    draw();
+    pop.hidden = false;
+    field.setAttribute("aria-expanded", "true");
+    placePop(pop, field);
+    openPop = { pop, field };
+    pop.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+  function openPicker() {
+    const from = picker.start ? parseDay(picker.start) : new Date();
+    picker.month = new Date(from.getFullYear(), from.getMonth(), 1);
+    showPop($("picker"), $("q-dates"), renderPicker);
+  }
+  function closePops(refocus) {
+    if (!openPop) return;
+    const { pop, field } = openPop;
+    openPop = null;
+    pop.hidden = true;
+    field.setAttribute("aria-expanded", "false");
+    if (refocus) field.focus();
+  }
+  $("q-dates").addEventListener("click", () => (openPop && openPop.pop === $("picker") ? closePops() : openPicker()));
+  $("q-guests").addEventListener("click", () => (openPop && openPop.pop === $("guests-pop") ? closePops() : showPop($("guests-pop"), $("q-guests"), renderGuests)));
+  $("picker").addEventListener("click", (e) => { const b = e.target.closest("button[data-day]"); if (b && !b.disabled) chooseDay(b.dataset.day); });
+  $("picker").addEventListener("mouseover", (e) => {
+    const b = e.target.closest("button[data-day]");
+    if (!b || b.disabled || !picker.start || picker.end || picker.hover === b.dataset.day) return;
+    picker.hover = b.dataset.day;
+    renderPicker();
+  });
+  // composedPath, because a click inside a pop-up can redraw it and take the clicked button out of the page.
+  document.addEventListener("click", (e) => { const path = e.composedPath(); if (openPop && !path.includes(openPop.pop) && !path.includes(openPop.field)) closePops(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && openPop) closePops(true); });
+  window.addEventListener("resize", () => { if (!openPop) return; if (openPop.pop === $("picker")) renderPicker(); placePop(openPop.pop, openPop.field); });
 
   // ---------- controls ----------
   ["f-refundable", "f-payhotel", "f-confirmed", "sort"].forEach((id) => $(id).addEventListener("change", () => state.data && render()));
   $("search").addEventListener("submit", (e) => {
     e.preventDefault();
+    closePops();
     const hotel = $("q-hotel").value.trim().slice(0, 200);
+    const where = $("q-where").value.trim().slice(0, 120);
     const a = $("q-in").value, b = $("q-out").value;
     const adults = Math.min(12, Math.max(1, parseInt($("q-adults").value, 10) || 2));
     const children = Math.min(8, Math.max(0, parseInt($("q-children").value, 10) || 0));
-    if (!hotel || !a || !b) return notice("", false, "Add the hotel and both dates, then click Check prices.");
-    if (b <= a) return notice("", false, "Check-out needs to be after check-in.");
-    const stay = hotel + ", " + longDay(a) + " to " + longDay(b) + ", " + guests({ adults, children });
-    $("request").textContent = "Check requested. Hotel: " + hotel + ". Check-in: " + a + ". Check-out: " + b +
+    if (!hotel) { $("q-hotel").focus(); return needMore("Add the hotel's name."); }
+    if (!where) { $("q-where").focus(); return needMore("Add where the hotel is: a city, town or country."); }
+    if (!a || !b) { openPicker(); return needMore("Choose your check-in and check-out dates."); }
+    if (b <= a) { openPicker(); return needMore("Check-out needs to be after check-in."); }
+    const stay = hotel + ", " + where + ", " + longDay(a) + " to " + longDay(b) + ", " + guests({ adults, children });
+    $("request").textContent = "Check requested. Hotel: " + hotel + ". Where: " + where + ". Check-in: " + a + ". Check-out: " + b +
       ". Adults: " + adults + ". Children: " + children + ".";
     document.title = "Check requested · MyRoomSearch";
     state.requested = true;
+    state.answered = false;
     clearTimeout(pickupTimer);
-    const askClaude = (lead) => notice("", false, lead, "Open Claude in the side panel and type ", el("code", { text: "/myroomsearch" }),
-      ". It picks up ", el("strong", { text: stay }), " from this page.");
-    if (!state.ready) return askClaude("");
-    // Claude is watching: it reads the request within a few seconds and replaces this page with the live check.
+    if (!state.ready) return typeSlash("Now type /myroomsearch in Claude", stay);
+    // Claude is watching: it reads the request within a few seconds and takes over this page.
     clearTimeout(readyTimer);
-    notice("sent", true, "Sent to Claude: ", el("strong", { text: stay }), ". Checking starts in a few seconds.");
+    card("claude", spinner(), "Sent to Claude", para(el("strong", { text: stay }), ". Claude starts in a few seconds."));
     pickupTimer = setTimeout(() => {
-      if (!state.requested || state.data) return;
+      if (!state.requested) return;
       stopReady();
-      showEmpty(false);
+      if (!state.data) showEmpty(false);
       document.title = "Check requested · MyRoomSearch";
-      askClaude("Claude hasn't picked this up. ");
+      typeSlash("Claude hasn't picked this up", stay);
     }, PICKUP_MS);
   });
   document.querySelector(".topbar .logo").addEventListener("click", (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); });
