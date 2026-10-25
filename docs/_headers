@@ -1,0 +1,7 @@
+# The app is one self-contained page: its own inline script and styles, images and fonts as data.
+# Results arrive in the link, and anyone can craft a link, so the page may load nothing else.
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

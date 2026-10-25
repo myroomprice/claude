@@ -1,0 +1,12 @@
+// MyRoomSearch web app on Cloudflare: an assets-only Worker that serves docs/ (built by tools/build_page.py)
+// at myroomsearch.com. Deploy with: npx wrangler deploy
+{
+  "name": "myroomsearch",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./docs" },
+  "routes": [
+    { "pattern": "myroomsearch.com", "custom_domain": true },
+    { "pattern": "www.myroomsearch.com", "custom_domain": true }
+  ],
+  "workers_dev": false
+}

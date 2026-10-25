@@ -14,7 +14,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCE = os.path.join(ROOT, "page", "results.html")
 TARGET = os.path.join(ROOT, "plugins", "myroomsearch", "skills", "myroomsearch", "assets", "results.html")
-# GitHub Pages serves docs/, so the published app lives at https://steverepo.github.io/myroomsearch/
+# Cloudflare serves docs/ (see wrangler.jsonc), so the published app lives at https://myroomsearch.com/
 PAGES = os.path.join(ROOT, "docs", "index.html")
 NOTE = "<!-- Built by tools/build_page.py from page/results.html. Edit that file, not this one. -->\n"
 

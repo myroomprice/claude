@@ -65,7 +65,9 @@ claude plugin validate --strict .
 
 The partner ID, the disclosure text and the results page's web address are in `plugins/myroomsearch/skills/myroomsearch/settings.json`. With the ID left empty, every link stays a plain link.
 
-The results page is `page/results.html`. The build also writes `docs/index.html`, which GitHub Pages publishes at https://steverepo.github.io/myroomsearch/. That address is `results_page` in `settings.json`. After editing it, run `python3 tools/build_page.py`, which bakes the fonts into the copy the skill ships (`assets/results.html`).
+The results page is `page/results.html`. After editing it, run `python3 tools/build_page.py`, which bakes the fonts and images into the copy the skill ships (`assets/results.html`) and into `docs/index.html`, the copy the website serves.
+
+The website is https://myroomsearch.com/, a Cloudflare Worker that serves the `docs/` folder (set up in `wrangler.jsonc`, with security headers in `docs/_headers`). That address is `results_page` in `settings.json`. To publish a new build, run `npx wrangler deploy`. Search results travel after the `#` in the address, which browsers never send to the server, so the site never sees them.
 
 The logo files are in `brand/`. To re-render them after changing `brand/logo.html`, run `python3 tools/build_logos.py`, which needs Google Chrome and Pillow.
 
