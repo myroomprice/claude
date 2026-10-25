@@ -5,6 +5,8 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
 ## Contents
 - Google Hotels: the way into every other site
 - Trivago: the second price list
+- Kayak: the third price list
+- YouTube and blogs: reviews
 - The hotel's own booking page
 - Booking.com
 - Expedia and Hotels.com
@@ -39,6 +41,23 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
 - **Cookie banner:** use Settings to choose necessary cookies only, not "OK".
 - **Sign-in prompt:** "Sign in to save more" appears for users who aren't signed in. Close it.
 
+## Kayak: the third price list
+
+*Checked (no bot check in testing).* Kayak lists deals from many booking sites, like Trivago.
+1. **Open its hotels page** for the user's country in the worker tab, for example `https://www.kayak.com.au/hotels`. Don't guess a city address: the city code in Kayak's links is internal, and a wrong one opens a different town.
+2. **Search by the hotel's name.** Click the destination box, type the hotel's name, and pick the hotel itself (bed icon) from the suggestions. The dates and guests carry over; check them in the box below before you click Search. Leave "Compare vs KAYAK" boxes unticked: they open other sites in new tabs.
+3. **Read the result.** The hotel's own address then looks like `/hotels/Sheraton-Grand-Sydney-Hyde-Park,Sydney,New-South-Wales,Australia-p24040-h11749/2026-11-20/2026-11-22/2adults`, with the hotel first in the list. Its price is the **total for the stay including estimated taxes** ("Total includes estimated local taxes & fees payable on check out"), with the number of sites under it. "View Deal" lists each site. Kayak also shows the hotel's rating and review count.
+- **Order isn't a guide:** Kayak says payments affect its ranking, so read the prices, not the order.
+- **Bot checks:** if Kayak shows a "please confirm you're a human" page, stop and list Kayak under "couldn't check".
+- **Cookie banner:** choose reject, or necessary only.
+
+## YouTube and blogs: reviews
+
+*Not yet checked.*
+- **YouTube search:** `https://www.youtube.com/results?search_query=the+langham+boston+review`. Read titles, channels and upload dates from the results; open a video only if you need to confirm it's about this hotel. Use the video's `watch?v=` address as its link.
+- **Blogs:** a Google search for the hotel's name and "review" finds travel blogs and newspaper reviews. Prefer recent ones and independent writers over the hotel's own pages or booking sites.
+- **Ratings:** Google Hotels' Reviews tab, or Tripadvisor, shows an overall rating and count.
+
 ## The hotel's own booking page
 
 *Checked on The Langham's booking page; most hotel booking pages work the same way.*
@@ -68,7 +87,7 @@ They redirect to the user's country site. "Member Price" deals need a free One K
 
 ## Other aggregators
 
-- **Agoda, Trip.com, Priceline, Tripadvisor, Kayak:** their search links need internal city IDs, so reach them through Google Hotels' "Visit site", Trivago, or their own search box.
+- **Agoda, Trip.com, Priceline, Tripadvisor:** their search links need internal city IDs, so reach them through Google Hotels' "Visit site", Trivago, or their own search box.
 - **Super.com** (*Checked*): its headline price matched Google's. It also shows a lower "Member Price", but that needs a **paid Super+ subscription** (free 5-day trial, then a monthly fee). Don't count that as the price. Mention it only as "lower with a paid subscription".
 - **SKYLARK** (*Checked*): its headline price is per night **before tax**. Click a rate to see the stay total including tax. Booking needs a SKYLARK membership ("become a friend"), and the page doesn't show what that costs. It charges in USD.
 - **Qantas Hotels and Luxury Escapes:** treat them like any other booking site, and rank them by the price paid.

@@ -21,8 +21,16 @@ Results format (only "hotel", "stay" and "offers" are required):
      "this_page": false, "link": "https://...", "keep_link": false}
   ],
   "couldnt_check": [{"site": "Agoda", "why": "CAPTCHA"}],
+  "reviews": [
+    {"kind": "video", "title": "The Langham Boston: full hotel tour", "source": "Travel with Sam",
+     "url": "https://www.youtube.com/watch?v=...", "date": "Mar 2026", "verdict": "Grand rooms, slow check-in",
+     "summary": "Two or three sentences in your own words.", "rating": ""}
+  ],
   "fees": ["Valet parking USD 75 a day"]
 }
+Each review's "kind" is "video", "article" or "review" (an overall rating, given in "rating").
+The page lists up to 8 and opens each in a viewer; YouTube videos play there.
+
 "kind" is "official" for the hotel's own site, otherwise "aggregator". "pay" is "now",
 "at hotel" or "". "total" is the whole stay including taxes and fees. Set "keep_link": true
 for a link the user gave you, so it is passed through exactly as it was.

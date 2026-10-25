@@ -16,3 +16,14 @@
   .mrs-option { @apply tw-w-full tw-cursor-pointer tw-rounded-xl tw-border-[1.5px] tw-border-solid tw-border-line tw-bg-white tw-px-4 tw-py-3 tw-text-left tw-text-ink tw-transition hover:tw-border-ocean hover:tw-bg-ocean-soft; }
   .mrs-pill { @apply tw-inline-flex tw-h-11 tw-min-w-[88px] tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-full tw-border-[1.5px] tw-border-solid tw-border-ocean tw-bg-white tw-px-5 tw-font-bold tw-text-ocean tw-transition hover:tw-bg-ocean hover:tw-text-white; }
 }
+
+@layer components {
+  /* FAQ: one question per row, the answer opening below it */
+  .mrs-faq { @apply tw-border-0 tw-border-b tw-border-solid tw-border-line; }
+  .mrs-faq-q { @apply tw-relative tw-cursor-pointer tw-list-none tw-py-4 tw-pr-10 tw-font-serif tw-text-lg tw-font-semibold tw-text-ink hover:tw-text-ocean; }
+  .mrs-faq-q::-webkit-details-marker { display: none; }
+  .mrs-faq-q::after { content: "+"; @apply tw-absolute tw-right-1 tw-top-3.5 tw-font-sans tw-text-2xl tw-font-normal tw-text-ocean; }
+  .mrs-faq[open] .mrs-faq-q::after { content: "−"; }
+  /* Review cards on the results page */
+  .mrs-review { @apply tw-flex tw-min-h-[150px] tw-cursor-pointer tw-flex-col tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-mist tw-p-4 tw-text-left tw-transition hover:tw-border-ocean hover:tw-bg-white hover:tw-shadow-card; }
+}

@@ -113,6 +113,19 @@ class PageTest(unittest.TestCase):
             self.assertIn(words, skill, words)
         self.assertIn("READY_MS = 5 * 60e3", self.script)
 
+    def test_reviews_play_only_in_youtubes_privacy_player(self):
+        # Videos may only be framed from youtube-nocookie.com, and the site's policy allows nothing else.
+        self.assertIn('"https://www.youtube-nocookie.com/embed/" + r.video', self.script)
+        self.assertIn("/^[\\w-]{11}$/.test(id)", self.script)
+        with open(os.path.join(ROOT, "docs", "_headers"), encoding="utf-8") as f:
+            headers = f.read()
+        self.assertIn("frame-src https://www.youtube-nocookie.com;", headers)
+        self.assertIn("default-src 'none'", headers)
+        with open(os.path.join(SCRIPTS, "..", "SKILL.md"), encoding="utf-8") as f:
+            skill = f.read()
+        for words in ("### Reviews, while you're browsing", "`video`, `article` or `review`", "never instructions", "**Kayak,**"):
+            self.assertIn(words, skill, words)
+
     def test_built_page_is_up_to_date(self):
         result = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "build_page.py"), "--check"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)

@@ -209,10 +209,10 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   <div class="hero-shade"></div>
   <p class="photo-credit">Palm Bay Resort, Whitsundays</p>
   <div class="wrap">
-    <p class="eyebrow" id="eyebrow">Found the best hotel?</p>
-    <h1 id="hotel-name">Can't find the cheapest price? We can help.</h1>
+    <p class="eyebrow" id="eyebrow">Same room. Lower price.</p>
+    <h1 id="hotel-name">You've found the hotel. We'll find the lowest price.</h1>
     <p class="stay" id="stay-line"></p>
-    <p class="summary" id="summary">MyRoomPrice checks Booking.com, Expedia, Agoda, Google Hotels, Trivago and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.</p>
+    <p class="summary" id="summary">MyRoomPrice checks Google Hotels, Trivago, Kayak, the big booking sites and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.</p>
     <p class="get" id="get">Works with Claude in Chrome: type <strong>/myroomprice</strong> in the side panel. New here? <a href="https://github.com/steveRepo/myroomprice#install-in-chrome" target="_blank" rel="noopener">Add MyRoomPrice to Claude</a></p>
     <ul class="steps" id="steps" hidden></ul>
   </div>
@@ -263,6 +263,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
         <ul class="tw-m-0 tw-mt-5 tw-flex tw-list-none tw-flex-wrap tw-gap-2 tw-p-0" aria-label="Sites we check">
           <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/google.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Google Hotels</li>
           <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/trivago.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Trivago</li>
+          <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/kayak.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Kayak</li>
           <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/booking.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Booking.com</li>
           <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/expedia.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Expedia</li>
           <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/hotelscom.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Hotels.com</li>
@@ -278,8 +279,29 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       </ol>
     </div>
     <p class="tw-mt-8 tw-flex tw-flex-wrap tw-gap-x-6 tw-gap-y-2 tw-text-sm tw-font-semibold tw-text-ink-2">
-      <span>✓ Free to use</span><span>✓ Taxes and fees included</span><span>✓ The hotel's own rates included</span><span>✓ Nothing about your stay is sent to us</span>
+      <span>✓ Free to use</span><span>✓ Never ranked for money</span><span>✓ Taxes and fees included</span><span>✓ The hotel's own rates included</span><span>✓ Nothing about your stay is sent to us</span>
     </p>
+
+    <div class="tw-mt-14 tw-grid tw-gap-8 lg:tw-grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" id="faq">
+      <div>
+        <p class="eyebrow tw-text-ocean">Questions</p>
+        <h2 class="tw-mt-2 tw-text-[clamp(26px,3.4vw,36px)] tw-leading-tight">Everything you might want to know</h2>
+        <div class="tw-mt-5 tw-rounded-2xl tw-bg-sun-soft tw-p-5">
+          <p class="tw-font-bold">We don't rank anything.</p>
+          <p class="tw-mt-1 tw-text-[15px] tw-text-ink-2">The cheapest confirmed price always comes first, whether or not a site pays us. We want you to get the cheapest price.</p>
+        </div>
+      </div>
+      <div class="tw-border-0 tw-border-t tw-border-solid tw-border-line">
+      <details class="mrs-faq" open><summary class="mrs-faq-q">What is MyRoomPrice?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">A free tool for Claude that finds the cheapest way to book a hotel you've already chosen. Tell it the hotel and your dates, and Claude checks the price comparison sites, the big booking sites and the hotel's own website, then shows every price side by side, with taxes and fees included.</p></div></details>
+      <details class="mrs-faq"><summary class="mrs-faq-q">Why use it instead of a comparison site?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Comparison sites show listed prices, which are often per night, before tax, or out of date, and they rarely show the hotel's own member rates. MyRoomPrice opens each site live in your browser, reads the real total for your whole stay, and puts the hotel's own website alongside.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">It also tells you what you give up for a lower price, such as free cancellation, and finds recent reviews of the hotel while it checks.</p></div></details>
+      <details class="mrs-faq"><summary class="mrs-faq-q">How does it work?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">MyRoomPrice is a skill for Claude in Chrome. Claude looks the hotel up on Google Hotels, Trivago and Kayak to see which sites sell it and for how much. Then it visits the hotel's own website and the cheapest booking sites in a background tab and confirms each total. Results appear on this page as each price is confirmed.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">It only looks. It never books, signs in, or types your personal or payment details.</p></div></details>
+      <details class="mrs-faq"><summary class="mrs-faq-q">How do I use it?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">1. <a class="tw-font-bold tw-text-ocean" href="https://github.com/steveRepo/myroomprice#install-in-chrome" target="_blank" rel="noopener">Add MyRoomPrice to Claude</a>. 2. Open Claude in Chrome's side panel and type <strong>/myroomprice</strong>. 3. Fill in the hotel, where it is, your dates and guests on this page, and click Check prices. 4. Answer any question Claude asks here, such as which hotel you meant. 5. Choose an option and continue to that site to book.</p></div></details>
+      <details class="mrs-faq"><summary class="mrs-faq-q">Do you rank results for money?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed"><strong>No. We don't rank anything.</strong> Results are always sorted by the total you'd pay, cheapest first, and you can filter and re-sort them yourself. We want you to get the cheapest price.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Some booking links go through our partner Stay22 and may earn us a small commission, at no extra cost to you. Whether a site pays us never changes where it appears: the cheapest confirmed price comes first, even when it pays us nothing.</p></div></details>
+      <details class="mrs-faq"><summary class="mrs-faq-q">Is it free?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Yes, MyRoomPrice is free. It runs inside Claude, so you need a Claude plan that includes Claude in Chrome.</p></div></details>
+      <details class="mrs-faq"><summary class="mrs-faq-q">What happens to my data?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Your search stays in your browser. Results travel inside this page's own link, after the #, which browsers never send to a server, so we never see them. Claude visits the booking sites in your own browser, just as you would. A review video loads from YouTube only when you choose to play it.</p></div></details>
+      <details class="mrs-faq"><summary class="mrs-faq-q">Can I rely on the prices?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">They're the prices each site showed when Claude checked. Prices and availability change often, some sites add fees at checkout, and we can't guarantee any price. Always check the total and the cancellation terms on the booking site before you pay.</p></div></details>
+      </div>
+    </div>
   </section>
 
   <div class="highlights" id="highlights"></div>
@@ -313,12 +335,16 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
 
 <div class="bar" id="bar" hidden></div>
 
+<!-- Review viewer (see openReview). Closing it removes the video, which stops it playing. -->
+<dialog id="viewer" aria-label="Review" class="tw-w-[min(760px,calc(100vw-24px))] tw-max-h-[calc(100dvh-24px)] tw-overflow-auto tw-rounded-[20px] tw-border-0 tw-bg-white tw-p-0 tw-text-ink tw-shadow-card backdrop:tw-bg-ink/60 backdrop:tw-backdrop-blur-sm"></dialog>
+
 <footer>
   <div class="wrap">
     <div class="logo" role="img" aria-label="MyRoomPrice, by Londoner in Sydney"><span class="mark" aria-hidden="true">myroom<span class="p">pr<span class="i">ı<svg viewBox="0 0 24 32" aria-hidden="true"><path fill="#ffc53d" fill-rule="evenodd" d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 32 12 32s12-11.4 12-20.1C24 5.3 18.6 0 12 0zm0 7.2a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2z"/></svg></span>ce</span></span><span class="by" aria-hidden="true">By Londoner in Sydney</span></div>
     <p><strong>Prices change often.</strong> <span id="foot-checked">Check the total on the booking site before you pay.</span></p>
-    <p>Everything on this page comes from the link you opened. Nothing about your stay is sent anywhere until you choose a site.</p>
+    <p>Everything on this page comes from the link you opened. Nothing about your stay is sent anywhere until you choose a site or play a video.</p>
     <p id="disclosure"></p>
+    <p class="tw-mt-2 tw-text-[13px] tw-text-white/60">MyRoomPrice is independent and isn't affiliated with the hotels or booking sites shown; their names and logos belong to their owners. Prices and availability change often and aren't guaranteed, so check the total and terms on the booking site before you pay. We never rank results for money: some links may earn us a commission from our partner Stay22, at no extra cost to you, and that never changes the order.</p>
   </div>
 </footer>
 
@@ -440,6 +466,15 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       summary: str(raw.summary),
       disclosure: str(raw.disclosure),
       fees: list(raw.fees).map(str).filter(Boolean).slice(0, 10),
+      reviews: list(raw.reviews).slice(0, 8).map((r) => {
+        const link = safeUrl(r && r.url);
+        return {
+          kind: ["video", "article", "review"].includes(r && r.kind) ? r.kind : "article",
+          title: str(r && r.title), source: str(r && r.source), date: str(r && r.date),
+          verdict: str(r && r.verdict), summary: str(r && r.summary), rating: str(r && r.rating),
+          link, video: youtubeId(link),
+        };
+      }).filter((r) => r.title && r.link),
       couldnt: list(raw.couldnt_check).map((c) => ({ site: str(c && c.site), why: str(c && c.why) })).filter((c) => c.site).slice(0, 15),
       offers: [],
     };
@@ -468,6 +503,16 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       data.offers.push(offer);
     });
     return data;
+  }
+
+  // A YouTube video's id, from any of its usual addresses, so the viewer can play it in YouTube's privacy-enhanced player.
+  function youtubeId(u) {
+    if (!u) return "";
+    const host = u.hostname.replace(/^(www|m)\./, "");
+    let id = "";
+    if (host === "youtu.be") id = u.pathname.slice(1);
+    else if (host === "youtube.com" || host === "youtube-nocookie.com") id = u.searchParams.get("v") || (u.pathname.match(/^\/(?:shorts|embed|live)\/([^/]+)/) || [])[1] || "";
+    return /^[\w-]{11}$/.test(id) ? id : "";
   }
 
   // ---------- formatting ----------
@@ -607,10 +652,61 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     if (own && own !== best) tile("Hotel's own site", own, best ? money(own.total - best.total) + " more than the cheapest" : "");
   }
 
+  const REVIEW_ICON = { video: "▶", article: "✎", review: "★" };
+  const REVIEW_KIND = { video: "Video", article: "Article", review: "Reviews" };
+  function renderReviews() {
+    const d = state.data;
+    if (!d.reviews.length) return null;
+    return el("section", { class: "tw-rounded-[20px] tw-border tw-border-solid tw-border-line tw-bg-white tw-p-5 sm:tw-p-6", "aria-labelledby": "reviews-title" },
+      el("div", { class: "tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2" },
+        el("h2", { class: "tw-text-2xl", id: "reviews-title", text: "What reviewers say" }),
+        el("p", { class: "tw-text-sm tw-text-ink-3", text: "Found by Claude while it checked prices" })),
+      el("div", { class: "tw-mt-4 tw-grid tw-gap-3 sm:tw-grid-cols-2 lg:tw-grid-cols-3" }, d.reviews.map((r) =>
+        el("button", { type: "button", class: "mrs-review", onclick: () => openReview(r), "aria-haspopup": "dialog" },
+          el("span", { class: "tw-flex tw-items-center tw-gap-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider " + (r.kind === "video" ? "tw-text-[#c4302b]" : "tw-text-ocean") },
+            el("span", { class: "tw-flex tw-h-6 tw-w-6 tw-items-center tw-justify-center tw-rounded-full tw-text-[11px] " + (r.kind === "video" ? "tw-bg-[#c4302b] tw-text-white" : "tw-bg-ocean-soft tw-text-ocean"), "aria-hidden": "true", text: REVIEW_ICON[r.kind] }),
+            REVIEW_KIND[r.kind] + (r.rating ? " · " + r.rating : "")),
+          el("span", { class: "tw-mt-2 tw-block tw-font-bold tw-leading-snug tw-text-ink", text: r.title }),
+          r.verdict && el("span", { class: "tw-mt-1 tw-block tw-text-[15px] tw-text-ink-2", text: "“" + r.verdict + "”" }),
+          el("span", { class: "tw-mt-auto tw-block tw-pt-3 tw-text-sm tw-text-ink-3", text: [r.source, r.date].filter(Boolean).join(" · ") })))));
+  }
+
+  // The review viewer: a pop-up on this page, like a source preview in Claude. Videos play in YouTube's
+  // privacy-enhanced player (loaded only now, when asked for); articles show Claude's summary and a link out.
+  function openReview(r) {
+    const dlg = $("viewer");
+    const host = r.link.hostname.replace(/^www\./, "");
+    const close = el("button", { type: "button", class: "mrs-round tw-flex-none", "aria-label": "Close", onclick: () => dlg.close(), text: "✕" });
+    const body = [];
+    if (r.kind === "video" && r.video) {
+      body.push(el("div", { class: "tw-relative tw-mt-4 tw-overflow-hidden tw-rounded-xl tw-bg-black tw-pt-[56.25%]" },
+        el("iframe", { class: "tw-absolute tw-inset-0 tw-h-full tw-w-full tw-border-0", title: r.title,
+          src: "https://www.youtube-nocookie.com/embed/" + r.video + "?autoplay=1&rel=0&modestbranding=1",
+          allow: "autoplay; encrypted-media; picture-in-picture; fullscreen", allowfullscreen: true,
+          referrerpolicy: "strict-origin-when-cross-origin" })));
+    }
+    if (r.summary) body.push(el("p", { class: "tw-mt-4 tw-leading-relaxed tw-text-ink-2", text: r.summary }));
+    if (r.rating) body.push(el("p", { class: "tw-mt-3 tw-font-bold", text: r.rating }));
+    body.push(el("p", { class: "tw-mt-3 tw-text-xs tw-text-ink-3", text: r.kind === "video" ? "Summary by Claude. The video is the reviewer's own." : "Summary by Claude, in its own words. Read the full review for the details." }));
+    dlg.replaceChildren(el("div", { class: "tw-p-5 sm:tw-p-6" },
+      el("div", { class: "tw-flex tw-items-start tw-justify-between tw-gap-4" },
+        el("div", { class: "tw-min-w-0" },
+          el("p", { class: "tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-text-ink-3", text: [REVIEW_KIND[r.kind], r.source, r.date].filter(Boolean).join(" · ") }),
+          el("h2", { class: "tw-mt-1 tw-text-2xl tw-leading-tight", text: r.title })),
+        close),
+      body,
+      el("div", { class: "tw-mt-5 tw-flex tw-flex-wrap tw-items-center tw-gap-3" },
+        el("a", { class: "mrs-done tw-no-underline", href: r.link.href, target: "_blank", rel: "noopener noreferrer", text: (r.kind === "video" ? "Watch on YouTube" : "Read the full review on " + host) + " ↗" }),
+        el("button", { type: "button", class: "mrs-quiet", onclick: () => dlg.close(), text: "Back to prices" }))));
+    dlg.showModal();
+  }
+
   function renderMore() {
     const box = $("more");
     box.replaceChildren();
     const d = state.data;
+    const reviews = renderReviews();
+    if (reviews) box.append(reviews);
     if (d.couldnt.length) box.append(el("div", { class: "box" }, el("h2", { text: "Couldn't check" }),
       el("ul", {}, d.couldnt.map((c) => el("li", { text: c.site + (c.why ? ": " + c.why : "") })))));
     if (d.fees.length) box.append(el("div", { class: "box" }, el("h2", { text: "Paid at the hotel" }),
@@ -697,12 +793,12 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     const status = $("status");
     status.hidden = !ready;
     if (ready) { status.className = "status ready"; status.replaceChildren(el("span", { class: "pulse" }), "Claude ready"); }
-    $("eyebrow").replaceChildren(...(ready ? [el("span", { class: "pulse" }), "Claude is ready"] : ["Found the best hotel?"]));
-    $("hotel-name").textContent = "Can't find the cheapest price? We can help.";
+    $("eyebrow").replaceChildren(...(ready ? [el("span", { class: "pulse" }), "Claude is ready"] : ["Same room. Lower price."]));
+    $("hotel-name").textContent = "You've found the hotel. We'll find the lowest price.";
     $("stay-line").textContent = "";
     $("summary").textContent = broken ? "This link looks incomplete, so there are no results to show. Type /myroomprice in Claude to start again."
       : ready ? "Claude is ready. Fill in the hotel, where it is and your dates, then click Check prices."
-      : "MyRoomPrice checks Booking.com, Expedia, Agoda, Google Hotels, Trivago and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.";
+      : "MyRoomPrice checks Google Hotels, Trivago, Kayak, the big booking sites and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.";
     $("get").hidden = ready;
     document.title = ready ? "Ready · MyRoomPrice" : "MyRoomPrice";
   }
@@ -1005,6 +1101,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     }, PICKUP_MS);
   });
   document.querySelector(".topbar .logo").addEventListener("click", (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); });
+  $("viewer").addEventListener("close", () => $("viewer").replaceChildren());
+  $("viewer").addEventListener("click", (e) => { if (e.target === $("viewer")) $("viewer").close(); });  // a click on the backdrop
   window.addEventListener("hashchange", start);
   start();
 })();
