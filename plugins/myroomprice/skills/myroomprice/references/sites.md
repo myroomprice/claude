@@ -56,12 +56,19 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
 
 ## Reaching each site in the worker tab
 
-Go to each site by its address in the worker tab, never through another site's "Visit site" or "View deal" button. Put the dates in the address where the site allows it.
-- **Booking.com** (*Checked*): `https://www.booking.com/searchresults.html?ss=<hotel+name+and+city>&checkin=YYYY-MM-DD&checkout=YYYY-MM-DD&group_adults=2&no_rooms=1&group_children=0`. The hotel is usually first, and its card shows the stay total and whether taxes are included, so you can often read the price there. **This is a list, not the booking link.** Get the hotel's own page address from the link on its name (see "From a list to the hotel's page" below) and use that.
-- **Expedia, Hotels.com and Wotif** (*Not yet checked*): `https://www.expedia.com.au/Hotel-Search?destination=<hotel name>&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&adults=2&rooms=1` (and the same path on hotels.com or wotif.com). If the dates don't hold, use the site's own date picker. This is a list too: take the hotel's page address from its name.
-- **Agoda and Trip.com:** open the home page, type the hotel's name into the search box, pick the hotel from the suggestions, and set the dates. If that lands on a list, take the hotel's page address from its name.
+**Search each site for the hotel yourself, and confirm on that site's own hotel page.** Never take a site's price or link from somewhere else (Google Hotels, Trivago, Kayak or a results list): those only tell you which sites to check. On each site:
+1. Search the site for the hotel, in the worker tab, with the dates (the addresses below put them in for you).
+2. Find the hotel in the results and read the address of its own page from the link on its name (see "From a list to the hotel's page"). Don't click it; on several sites that opens a new tab.
+3. Go to that hotel page in the worker tab, with the dates added (see "Booking links").
+4. Read the room, the total with taxes and fees, and the cancellation terms there, on the hotel's page.
+5. Use that page, with the dates, as the offer's `link`.
+
+How to search each site:
+- **Booking.com** (*Checked*): `https://www.booking.com/searchresults.html?ss=<hotel+name+and+city>&checkin=YYYY-MM-DD&checkout=YYYY-MM-DD&group_adults=2&no_rooms=1&group_children=0`. The hotel is usually first in the list; take its page address from its name and go to it.
+- **Expedia, Hotels.com and Wotif** (*Not yet checked*): `https://www.expedia.com.au/Hotel-Search?destination=<hotel name>&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&adults=2&rooms=1` (and the same path on hotels.com or wotif.com). If the dates don't hold, use the site's own date picker. Take the hotel's page address from its name in the list and go to it.
+- **Agoda and Trip.com:** open the home page, type the hotel's name into the search box, pick the hotel from the suggestions, and set the dates. If that lands on a list, take the hotel's page address from its name and go to it.
 - **Kayak** (*Checked*): see "Kayak" above.
-- **The hotel's own site:** go to the website address Google Hotels shows for it and use its "Book" or "Check availability" box. If its booking page only opens through Google's "Get price" button, use that, last (see "Tabs" in SKILL.md).
+- **The hotel's own site:** search for the hotel's official website (or use the address Google Hotels shows for it), go to it, and use its own "Book" or "Check availability" box, so the price comes from the hotel's own booking page. If its booking page only opens through Google's "Get price" button, use that, last (see "Tabs" in SKILL.md).
 - **A link the user pasted:** open it directly; it's usually the quickest page of all.
 
 ## Booking links: the hotel's own page, with the dates

@@ -58,3 +58,13 @@
   /* Share button in the Your choice panel */
   .mrs-share { @apply tw-inline-flex tw-h-10 tw-w-full tw-cursor-pointer tw-items-center tw-justify-center tw-gap-2 tw-rounded-full tw-border-[1.5px] tw-border-solid tw-border-line tw-bg-white tw-px-4 tw-text-sm tw-font-bold tw-text-ink tw-transition hover:tw-border-ocean hover:tw-text-ocean; }
 }
+
+@layer components {
+  /* Filter chips above the results list */
+  .mrs-chip { @apply tw-inline-flex tw-h-10 tw-cursor-pointer tw-items-center tw-gap-2 tw-rounded-full tw-border-[1.5px] tw-border-solid tw-border-line tw-bg-white tw-px-4 tw-text-sm tw-font-semibold tw-text-ink tw-transition hover:tw-border-ocean has-[:checked]:tw-border-ocean has-[:checked]:tw-bg-ocean has-[:checked]:tw-text-white; }
+  .mrs-chip input { @apply tw-sr-only; }
+}
+
+@layer components {
+  #trip-bar-note:not([hidden]) { display: inline-flex; }
+}

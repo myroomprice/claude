@@ -253,7 +253,7 @@ class PageTest(unittest.TestCase):
         # After a check, "ready": true keeps the page sending searches to Claude for a few minutes.
         self.assertIn("ready: raw.ready === true,", self.script)
         self.assertIn('(d.status === "done" && d.ready)', self.script)
-        self.assertIn('"Check another stay?"', self.script)
+        self.assertIn("Claude's still here: check another stay", self.html)
         with open(os.path.join(SCRIPTS, "..", "SKILL.md"), encoding="utf-8") as f:
             skill = f.read()
         for words in ("## Another search", '`"ready": true`', "**Watch for 5 minutes,**"):

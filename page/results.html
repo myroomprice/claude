@@ -89,6 +89,9 @@ button, input, select { font: inherit; color: inherit; }
 .hero.photo .photo-credit { display: block; position: absolute; top: 12px; right: 16px; font-size: 11px; color: rgb(255 255 255 / .8); }
 .hero .eyebrow { color: var(--sun); display: flex; align-items: center; gap: 8px; }
 .hero h1 { margin-top: 8px; font-size: clamp(34px, 5.6vw, 62px); line-height: 1; max-width: 20ch; }
+/* Results: a compact header, so the prices come sooner. */
+.hero.compact { padding: 28px 0 96px; }
+.hero.compact h1 { font-size: clamp(28px, 4vw, 42px); max-width: 28ch; }
 .hero .stay { margin-top: 14px; font-weight: 700; }
 .hero .summary { margin-top: 10px; max-width: 62ch; color: rgb(255 255 255 / .88); font-size: clamp(16px, 2vw, 18px); }
 .steps { display: flex; flex-wrap: wrap; gap: 14px 16px; margin: 22px 0 0; padding: 0; list-style: none; }
@@ -121,9 +124,9 @@ button, input, select { font: inherit; color: inherit; }
 
 /* Highlights */
 .highlights:empty, .more:empty { display: none; }
-.highlights { display: grid; gap: 12px; grid-template-columns: 1fr; margin: 28px 0 8px; }
+.highlights { display: grid; gap: 12px; grid-template-columns: 1fr; margin: 24px 0 8px; }
 @media (min-width: 640px) { .highlights { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1000px) { .highlights { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1000px) { .highlights { grid-template-columns: 2fr 1fr 1fr; } }
 .tile { text-align: left; border: 0; cursor: pointer; background: var(--mist); border-radius: 16px; padding: 14px 16px; display: grid; gap: 2px; }
 .tile:hover { background: var(--ocean-soft); }
 .tile .label { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ocean); }
@@ -133,7 +136,7 @@ button, input, select { font: inherit; color: inherit; }
 
 /* Main layout */
 .main { display: grid; gap: 24px; grid-template-columns: 1fr; padding: 20px 0 64px; }
-@media (min-width: 1000px) { .main { grid-template-columns: 220px 1fr 330px; align-items: start; padding-bottom: 64px; } }
+@media (min-width: 1000px) { .main { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; padding-bottom: 64px; } }
 .filters h2, .choice h2, .more h2 { font-size: 20px; }
 .filters { display: grid; gap: 10px; }
 .filters .opts { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -229,7 +232,6 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     <h1 id="hotel-name">You've found the hotel. We'll find the lowest price.</h1>
     <p class="stay" id="stay-line"></p>
     <p class="summary" id="summary">MyRoomPrice checks Google Hotels, Trivago, Kayak, the big booking sites and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.</p>
-    <p class="get" id="get">Works with Claude in Chrome: type <strong>/myroomprice</strong> in the side panel. New here? <a href="https://myroomprice.com/setup/" target="_blank" rel="noopener">How to set it up</a></p>
     <ul class="steps" id="steps" hidden></ul>
     <p class="tw-mt-5 tw-flex tw-max-w-[62ch] tw-items-start tw-gap-2.5 tw-rounded-xl tw-bg-white/10 tw-px-3.5 tw-py-2.5 tw-text-sm tw-text-white/90 [text-shadow:none]" id="keep-open" hidden>
       <span class="tw-mt-px tw-flex tw-h-5 tw-w-5 tw-flex-none tw-items-center tw-justify-center tw-rounded-full tw-bg-sun tw-text-xs tw-font-bold tw-text-ink" aria-hidden="true">i</span>
@@ -251,7 +253,14 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       </label>
       <div id="link-found" hidden></div>
     </div>
-    <div class="tw-grid tw-gap-3 md:tw-grid-cols-2 lg:tw-grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)_auto] lg:tw-items-end">
+    <!-- On results pages the search folds into this one line, with Edit search to open it again. -->
+    <div class="tw-flex tw-flex-wrap tw-items-center tw-gap-x-4 tw-gap-y-2" id="trip-bar" hidden>
+      <svg class="tw-h-5 tw-w-5 tw-flex-none tw-text-ocean" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <p class="tw-min-w-0 tw-flex-1"><span class="tw-font-bold" id="trip-bar-hotel"></span> <span class="tw-text-ink-2" id="trip-bar-stay"></span></p>
+      <span class="tw-items-center tw-gap-1.5 tw-rounded-full tw-bg-reef-soft tw-px-3 tw-py-1 tw-text-sm tw-font-semibold tw-text-reef-ink" id="trip-bar-note" hidden><span class="pulse" aria-hidden="true"></span>Claude's still here: check another stay</span>
+      <button class="mrs-round tw-w-auto tw-rounded-full tw-px-4 tw-text-sm" type="button" id="edit-search">Edit search</button>
+    </div>
+    <div class="tw-grid tw-gap-3 md:tw-grid-cols-2 lg:tw-grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)_auto] lg:tw-items-end" id="fields">
       <label class="mrs-label">Hotel
         <input class="mrs-input" id="q-hotel" name="hotel" maxlength="200" placeholder="Hotel name">
       </label>
@@ -279,6 +288,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     <div class="mrs-pop md:tw-right-auto md:tw-w-[680px]" id="picker" role="dialog" aria-label="Choose your dates" hidden></div>
     <div class="mrs-pop md:tw-right-auto md:tw-w-[320px]" id="guests-pop" role="dialog" aria-label="Guests" hidden></div>
   </form>
+  <!-- Before a search: "Claude is ready", or the three setup steps for someone new (see renderGetReady). -->
+  <div class="tw-mt-4" id="getready" hidden></div>
   <!-- What Claude is doing or asking, and the user's answers. -->
   <div class="tw-mt-3" id="claude" aria-live="polite" hidden></div>
   <!-- Claude reads this line to pick up a search or an answer. Keep its wording in step with SKILL.md. -->
@@ -307,11 +318,14 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
           <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-bold tw-text-ocean"><svg viewBox="0 0 30 30" aria-hidden="true" class="tw-h-6 tw-w-6 tw-rounded-md"><rect width="30" height="30" rx="7" fill="#0a6e7d"/><path d="M8 24V9.5L15 6l7 3.5V24z" fill="#fff"/><path d="M11 12h2v2h-2zM17 12h2v2h-2zM11 16h2v2h-2zM17 16h2v2h-2zM13.5 20h3v4h-3z" fill="#0a6e7d"/></svg>The hotel's own site</li>
         </ul>
       </div>
-      <ol class="tw-m-0 tw-grid tw-list-none tw-gap-7 tw-p-0 tw-scroll-mt-24" aria-label="How it works" id="how">
+      <div class="tw-scroll-mt-24" id="how">
+        <p class="eyebrow tw-mb-4 tw-text-ocean">How it works</p>
+        <ol class="tw-m-0 tw-grid tw-list-none tw-gap-7 tw-p-0" aria-label="How it works">
         <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">1</span><div><h3 class="tw-text-xl">Tell us the hotel</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Add the hotel, where it is and your dates. If the name matches more than one hotel, Claude asks which you mean.</p></div></li>
         <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">2</span><div><h3 class="tw-text-xl">Claude checks every site</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Live, in your own browser, so you see today's prices, member rates and refundable rates, not old listings.</p></div></li>
         <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">3</span><div><h3 class="tw-text-xl">Book the lowest real price</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Every total includes taxes and fees, and we show what you give up for it, like free cancellation.</p></div></li>
       </ol>
+      </div>
     </div>
     <p class="tw-mt-8 tw-flex tw-flex-wrap tw-gap-x-6 tw-gap-y-2 tw-text-sm tw-font-semibold tw-text-ink-2">
       <span>✓ Free to use</span><span>✓ Never ranked for money</span><span>✓ Taxes and fees included</span><span>✓ The hotel's own rates included</span><span>✓ Nothing about your stay is sent to us</span>
@@ -329,8 +343,6 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       <div class="tw-border-0 tw-border-t tw-border-solid tw-border-line">
       <details class="mrs-faq" open><summary class="mrs-faq-q">What is MyRoomPrice?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">A free tool for Claude that finds the cheapest way to book a hotel you've already chosen. Tell it the hotel and your dates, and Claude checks the price comparison sites, the big booking sites and the hotel's own website, then shows every price side by side, with taxes and fees included.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Why use it instead of a comparison site?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Comparison sites show listed prices, which are often per night, before tax, or out of date, and they rarely show the hotel's own member rates. MyRoomPrice opens each site live in your browser, reads the real total for your whole stay, and puts the hotel's own website alongside.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">It also tells you what you give up for a lower price, such as free cancellation, and finds recent reviews of the hotel while it checks.</p></div></details>
-      <details class="mrs-faq"><summary class="mrs-faq-q">How does it work?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">MyRoomPrice is a skill for Claude in Chrome. Claude looks the hotel up on Google Hotels, Trivago and Kayak to see which sites sell it and for how much. Then it visits the hotel's own website and the cheapest booking sites in a background tab and confirms each total. Results appear on this page as each price is confirmed.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">It only looks. It never books, signs in, or types your personal or payment details.</p></div></details>
-      <details class="mrs-faq"><summary class="mrs-faq-q">How do I use it?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">1. <a class="tw-font-bold tw-text-ocean" href="https://myroomprice.com/setup/" target="_blank" rel="noopener">Add MyRoomPrice to Claude</a> (step-by-step guide). 2. Open Claude in Chrome's side panel and type <strong>/myroomprice</strong>. 3. Fill in the hotel, where it is, your dates and guests on this page, and click Check prices. 4. Answer any question Claude asks here, such as which hotel you meant. 5. Choose an option and continue to that site to book.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Do you rank results for money?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed"><strong>No. We don't rank anything.</strong> Results are always sorted by the total you'd pay, cheapest first, and you can filter and re-sort them yourself. We want you to get the cheapest price.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Some booking links go through our partner Stay22 and may earn us a small commission, at no extra cost to you. Whether a site pays us never changes where it appears: the cheapest confirmed price comes first, even when it pays us nothing.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Why does Chrome say “Claude started debugging this browser”?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">That's normal for MyRoomPrice. Chrome shows this bar whenever an extension, here Claude in Chrome, is working in your browser, and it goes away when Claude finishes.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">While a check is running, don't click <strong>Cancel</strong> on that bar and don't close the background tab Claude is using: either one stops the check. Claude uses just one background tab, besides this page, and closes it when it's done.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Is it free?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Yes, MyRoomPrice is free. It runs inside Claude, so you need a Claude plan that includes Claude in Chrome.</p></div></details>
@@ -343,22 +355,18 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   <div class="highlights" id="highlights"></div>
 
   <div class="main" id="main" hidden>
-    <aside class="filters" aria-label="Filter and sort">
-      <h2>Filter</h2>
-      <div class="opts">
-        <label class="check"><input type="checkbox" id="f-refundable">Free cancellation</label>
-        <label class="check"><input type="checkbox" id="f-payhotel">Pay at the hotel</label>
-        <label class="check"><input type="checkbox" id="f-confirmed">Confirmed prices only</label>
-      </div>
-      <label class="sort">Sort by
-        <select id="sort">
-          <option value="total">Lowest total</option>
-          <option value="refundable">Free cancellation first</option>
-        </select>
-      </label>
-    </aside>
-
     <section aria-label="Options">
+      <div class="tw-mb-3 tw-flex tw-flex-wrap tw-items-center tw-gap-2" role="group" aria-label="Filter and sort">
+        <label class="mrs-chip"><input type="checkbox" id="f-refundable">Free cancellation</label>
+        <label class="mrs-chip"><input type="checkbox" id="f-payhotel">Pay at the hotel</label>
+        <label class="mrs-chip"><input type="checkbox" id="f-confirmed">Checked prices only</label>
+        <label class="tw-ml-auto tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-semibold tw-text-ink-2">Sort
+          <select class="tw-h-10 tw-rounded-full tw-border-[1.5px] tw-border-solid tw-border-line tw-bg-white tw-px-3 tw-text-sm tw-font-semibold tw-text-ink" id="sort">
+            <option value="total">Lowest total</option>
+            <option value="refundable">Free cancellation first</option>
+          </select>
+        </label>
+      </div>
       <p class="count" id="count" aria-live="polite"></p>
       <div class="list" id="list"></div>
     </section>
@@ -400,7 +408,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   // seen: offers already on screen, so only new ones animate in.
   // ready: Claude is watching this page for a search or an answer. requested: the user clicked Check prices.
   // answered: the user answered Claude's question.
-  const state = { data: null, selected: null, picked: false, seen: new Set(), ready: false, requested: false, answered: false, link: null };
+  const state = { data: null, selected: null, picked: false, seen: new Set(), ready: false, requested: false, answered: false, link: null, editing: false };
 
   // Site logos, built into the page by tools/build_page.py. Each is the site's own small icon.
   const SITE_LOGOS = {
@@ -760,20 +768,36 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     catch (e) { done("Copy the address bar to share"); }
   }
 
+  // The answer first: the best price in a big card, with the saving and a button straight to it, then the
+  // cheapest you can cancel and the hotel's own price beside it.
   function renderHighlights() {
     const box = $("highlights");
     box.replaceChildren();
     const conf = confirmedOffers();
     const sofar = live() ? " so far" : "";
+    const best = cheapest(conf);
+    if (!best) return;
+    const rival = cheapest(conf.filter((o) => o !== best && o.site !== best.site && o.taxes === best.taxes));
+    const saving = rival && rival.total > best.total ? money(rival.total - best.total) + " less than " + rival.site : "";
+    const bestCard = el("div", { class: "tw-grid tw-gap-3 tw-rounded-[20px] tw-border-2 tw-border-solid tw-border-reef tw-bg-white tw-p-5 tw-shadow-card sm:tw-col-span-2 lg:tw-col-span-1 md:tw-grid-cols-[1fr_auto] md:tw-items-end" },
+      el("div", { class: "tw-min-w-0" },
+        el("p", { class: "tw-text-xs tw-font-bold tw-uppercase tw-tracking-[.12em] tw-text-reef-ink", text: "Best price" + sofar }),
+        el("p", { class: "tw-mt-1 tw-font-serif tw-text-[40px] tw-font-semibold tw-leading-none tw-text-ink", text: money(best.total) }),
+        el("p", { class: "tw-mt-2 tw-font-bold tw-text-ink", text: best.site + (best.room ? " · " + best.room : "") }),
+        el("p", { class: "tw-mt-0.5 tw-text-sm tw-text-ink-2", text: [TAX_LONG[best.taxes], cancelText(best)].join(" · ") }),
+        saving && el("p", { class: "tw-mt-2 tw-inline-flex tw-rounded-full tw-bg-reef-soft tw-px-3 tw-py-1 tw-text-sm tw-font-bold tw-text-reef-ink", text: "Saves " + saving })),
+      el("div", { class: "tw-flex tw-flex-wrap tw-gap-2 lg:tw-flex-col lg:tw-items-stretch" },
+        best.link && continueLink(best, (stayLink(best).search ? "Find it on " : "Book on ") + best.site + " ↗", false),
+        el("button", { type: "button", class: "mrs-quiet", onclick: () => select(best.key, true), text: "See details" })));
+    box.append(bestCard);
     const tile = (label, o, sub) => o && box.append(el("button", { class: "tile", type: "button", onclick: () => select(o.key, true) },
       el("span", { class: "label", text: label + sofar }), el("span", { class: "price", text: money(o.total) }),
       el("span", { class: "who", text: o.site }), el("span", { class: "sub", text: sub })));
-    const best = cheapest(conf);
-    tile("Cheapest", best, best && [best.room, cancelText(best)].filter(Boolean).join(" · "));
     const refund = cheapest(conf.filter((o) => o.refundable === true));
     if (refund && refund !== best) tile("Cheapest you can cancel", refund, [refund.room, cancelText(refund)].filter(Boolean).join(" · "));
     const own = cheapest(conf.filter((o) => o.kind === "official"));
-    if (own && own !== best) tile("Hotel's own site", own, best ? money(own.total - best.total) + " more than the cheapest" : "");
+    if (own && own !== best) tile("Hotel's own site", own, money(own.total - best.total) + " more than the best price");
+    if (box.children.length === 1) bestCard.classList.add("lg:tw-col-span-3");  // the only answer: use the whole row
   }
 
   const REVIEW_ICON = { video: "▶", article: "✎", review: "★" };
@@ -781,7 +805,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   function renderReviews() {
     const d = state.data;
     if (!d.reviews.length) return null;
-    return el("section", { class: "tw-rounded-[20px] tw-border tw-border-solid tw-border-line tw-bg-white tw-p-5 sm:tw-p-6", "aria-labelledby": "reviews-title" },
+    return el("section", { class: "tw-col-span-full tw-rounded-[20px] tw-border tw-border-solid tw-border-line tw-bg-white tw-p-5 sm:tw-p-6", "aria-labelledby": "reviews-title" },
       el("div", { class: "tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2" },
         el("h2", { class: "tw-text-2xl", id: "reviews-title", text: "What reviewers say" }),
         el("p", { class: "tw-text-sm tw-text-ink-3", text: "Found by Claude while it checked prices" })),
@@ -911,7 +935,9 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     state.data = null;
     const ready = state.ready;
     $("hero").classList.add("photo");
+    $("hero").classList.remove("compact");
     $("intro").hidden = false;
+    foldSearch(false);
     renderRecent();
     document.querySelectorAll("[data-go]").forEach((b) => (b.hidden = false));
     $("main").hidden = true;
@@ -930,8 +956,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     $("summary").textContent = broken ? "This link looks incomplete, so there are no results to show. Type /myroomprice in Claude to start again."
       : ready ? "Claude is ready. Fill in the hotel, where it is and your dates, then click Check prices."
       : "MyRoomPrice checks Google Hotels, Trivago, Kayak, the big booking sites and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.";
-    $("get").hidden = ready;
     document.title = ready ? "Ready · MyRoomPrice" : "MyRoomPrice: the lowest price for the hotel you've chosen";
+    renderGetReady();
   }
 
   // ---------- handing a search to Claude ----------
@@ -991,7 +1017,51 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     }, PICKUP_MS);
   }
 
+  // ---------- folding the search on results pages ----------
+  function foldSearch(fold) {
+    $("trip-bar").hidden = !fold;
+    $("fields").hidden = fold;
+    $("link-row").hidden = fold;
+    if (fold && state.data) {
+      const d = state.data;
+      $("trip-bar-hotel").textContent = d.hotel.name || "Your stay";
+      $("trip-bar-stay").textContent = [d.stay.checkin ? day(d.stay.checkin) + " – " + day(d.stay.checkout) : "", guests(d.stay)].filter(Boolean).join(" · ");
+    }
+  }
+  function editSearch() {
+    state.editing = true;
+    foldSearch(false);
+    $("q-hotel").focus();
+  }
+
+  // ---------- getting ready: shown on the search page before a search ----------
+  // If Claude is watching, a one-line "ready". If not, the three things a newcomer needs, with the guide.
+  function renderGetReady() {
+    const box = $("getready");
+    if (state.data) { box.hidden = true; return; }
+    box.hidden = false;
+    if (state.ready) {
+      box.replaceChildren(el("p", { class: "tw-flex tw-items-center tw-gap-2.5 tw-rounded-xl tw-bg-reef-soft tw-px-4 tw-py-3 tw-text-[15px] tw-text-reef-ink" },
+        badge("✓", "tw-bg-reef tw-text-white"), el("span", {}, el("strong", { text: "Claude is ready. " }), "Fill in your stay and click Check prices.")));
+      return;
+    }
+    const stepEl = (n, title, sub) => el("li", { class: "tw-flex tw-items-start tw-gap-3" },
+      el("span", { class: "mrs-step-n tw-h-8 tw-w-8", "aria-hidden": "true", text: String(n) }),
+      el("span", {}, el("span", { class: "tw-block tw-font-bold tw-text-ink", text: title }), el("span", { class: "tw-block tw-text-sm tw-text-ink-2", text: sub })));
+    box.replaceChildren(el("div", { class: "tw-grid tw-gap-4 tw-rounded-[20px] tw-border tw-border-solid tw-border-line tw-bg-mist tw-p-5 lg:tw-grid-cols-[minmax(0,1fr)_auto] lg:tw-items-center" },
+      el("div", {},
+        el("p", { class: "tw-font-bold tw-text-ink", text: "MyRoomPrice works inside Claude in Chrome" }),
+        el("ol", { class: "tw-m-0 tw-mt-3 tw-grid tw-list-none tw-gap-3 tw-p-0 md:tw-grid-cols-3" },
+          stepEl(1, "Add Claude to Chrome", "Once, from the Chrome Web Store"),
+          stepEl(2, "Add MyRoomPrice to Claude", "Once, in Customize, Plugins"),
+          stepEl(3, "Type /myroomprice", "In Claude's side panel, then fill this in"))),
+      el("div", { class: "tw-flex tw-flex-wrap tw-items-center tw-gap-3 lg:tw-flex-col lg:tw-items-stretch" },
+        el("a", { class: "mrs-done tw-justify-center tw-no-underline", href: "https://myroomprice.com/setup/", target: "_blank", rel: "noopener", text: "How to set it up" }),
+        el("p", { class: "tw-text-xs tw-text-ink-3", text: "Already set up? Type /myroomprice in Claude." }))));
+  }
+
   function tryAgain() {
+    editSearch();
     card("note", badge("✎", "tw-bg-sun tw-text-ink"), "Change your search",
       para("Fix the hotel, where it is or the dates above, then click Check prices. Claude is still watching this page."));
     $("q-hotel").focus();
@@ -1007,7 +1077,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       stopReady();
       if (!state.data) showEmpty(false);
       else if (watching()) card("note", badge("!", "tw-bg-sun tw-text-ink"), "Claude has stopped waiting", para("Click Check prices to start again."));
-      else $("claude").hidden = true;  // after a finished check: the "Check another stay?" offer has run out
+      else $("trip-bar-note").hidden = true;  // after a finished check: Claude has stopped listening
     }, READY_MS);
   }
 
@@ -1030,12 +1100,15 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     // While Claude thinks or asks, or for a few minutes after a check it says it's still watching,
     // a search sent from this page goes straight to Claude.
     setReady(d.status === "thinking" || d.status === "question" || (d.status === "done" && d.ready));
-    $("get").hidden = true;
     const sameStay = state.data && state.data.hotel.name === d.hotel.name && state.data.stay.checkin === d.stay.checkin && state.data.stay.checkout === d.stay.checkout;
     if (!sameStay) { state.seen = new Set(); state.selected = null; state.picked = false; }
     state.data = d;
     $("hero").classList.remove("photo");
+    $("hero").classList.add("compact");
     $("intro").hidden = true;
+    $("getready").hidden = true;
+    if (!sameStay) state.editing = false;
+    foldSearch(!state.editing && d.status !== "question");
     $("recent").hidden = true;
     document.querySelectorAll("[data-go]").forEach((b) => (b.hidden = true));
     fillSearch(d);
@@ -1048,10 +1121,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     rememberResult(d);
     if (d.status === "thinking") card("claude", spinner(), "Claude is thinking", d.message && para(d.message));
     if (d.status === "question" && d.question) showQuestion(d.question);
-    if (d.status === "done" && d.ready) {
-      card("claude", badge("↻", "tw-bg-reef tw-text-white"), "Check another stay?",
-        para("Claude is still here for a few minutes. Change the hotel, place or dates above and click Check prices, and it starts straight away."));
-    }
+    // After a check, while Claude still listens: a short note in the folded search line, not a box.
+    $("trip-bar-note").hidden = !(d.status === "done" && d.ready);
   }
 
   // ---------- reading a pasted hotel link ----------
@@ -1493,6 +1564,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     }, PICKUP_MS);
   });
   document.querySelector(".topbar .logo").addEventListener("click", (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); });
+  $("edit-search").addEventListener("click", () => (state.editing ? (state.editing = false, foldSearch(true)) : editSearch()));
   $("viewer").addEventListener("close", () => $("viewer").replaceChildren());
   $("viewer").addEventListener("click", (e) => { if (e.target === $("viewer")) $("viewer").close(); });  // a click on the backdrop
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => $(b.dataset.go).scrollIntoView({ behavior: "smooth" })));

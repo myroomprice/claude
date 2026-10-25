@@ -182,7 +182,7 @@ Note each site's listed price. These lists tell you where to look, but they aren
 
 The final answer has to come from the sites themselves. Check, in this order:
 1. **The hotel's own site, every time.** Booking direct is often the same price or cheaper once member rates count. Hotel booking pages usually show prices before tax, so find the total with tax.
-2. **The two cheapest other sites** across the lists, plus the page the user started on if it isn't among them. Go to each one in the worker tab, by its address (see "Reaching each site" in `references/sites.md`), because a listed price can be stale: in testing, Google listed Booking.com at the going rate while Booking.com had no rooms.
+2. **The two cheapest other sites** across the lists, plus the page the user started on if it isn't among them. On each one, **search that site for the hotel yourself and read the price on its own hotel page** (see "Reaching each site" in `references/sites.md`), never from a list or another site's link: a listed price can be stale, and in testing Google listed Booking.com at the going rate while Booking.com had no rooms. That hotel page, with the dates, is the offer's link.
 
 For each site, write down:
 - the room name
