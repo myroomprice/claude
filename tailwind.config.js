@@ -4,7 +4,7 @@
 // Tailwind doesn't reset the parts of the page that aren't built with it.
 module.exports = {
   prefix: "tw-",
-  content: ["./page/results.html"],
+  content: ["./page/results.html", "./page/setup.html"],
   corePlugins: { preflight: false },
   theme: {
     extend: {

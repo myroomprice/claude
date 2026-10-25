@@ -200,6 +200,12 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
 <header class="topbar">
   <div class="wrap">
     <a class="logo" href="#" aria-label="MyRoomPrice, by Londoner in Sydney"><span class="mark" aria-hidden="true">myroom<span class="p">pr<span class="i">ı<svg viewBox="0 0 24 32" aria-hidden="true"><path fill="#ffc53d" fill-rule="evenodd" d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 32 12 32s12-11.4 12-20.1C24 5.3 18.6 0 12 0zm0 7.2a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2z"/></svg></span>ce</span></span><span class="by" aria-hidden="true">By Londoner in Sydney</span></a>
+    <!-- How it works and FAQ scroll this page; Set up opens the guide in a new tab, so a check here isn't lost. -->
+    <nav class="tw-ml-auto tw-flex tw-items-center tw-gap-1" aria-label="Main" id="nav">
+      <button type="button" class="mrs-navlink tw-hidden md:tw-inline-flex" data-go="how">How it works</button>
+      <button type="button" class="mrs-navlink tw-hidden md:tw-inline-flex" data-go="faq">FAQ</button>
+      <a class="mrs-navlink mrs-navcta tw-hidden sm:tw-inline-flex" href="https://myroomprice.com/setup/" target="_blank" rel="noopener">Set up</a>
+    </nav>
     <div class="trip"><span class="what" id="trip"></span><span class="status" id="status" hidden></span></div>
   </div>
 </header>
@@ -213,7 +219,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     <h1 id="hotel-name">You've found the hotel. We'll find the lowest price.</h1>
     <p class="stay" id="stay-line"></p>
     <p class="summary" id="summary">MyRoomPrice checks Google Hotels, Trivago, Kayak, the big booking sites and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.</p>
-    <p class="get" id="get">Works with Claude in Chrome: type <strong>/myroomprice</strong> in the side panel. New here? <a href="https://github.com/steveRepo/myroomprice#install-in-chrome" target="_blank" rel="noopener">Add MyRoomPrice to Claude</a></p>
+    <p class="get" id="get">Works with Claude in Chrome: type <strong>/myroomprice</strong> in the side panel. New here? <a href="https://myroomprice.com/setup/" target="_blank" rel="noopener">How to set it up</a></p>
     <ul class="steps" id="steps" hidden></ul>
   </div>
 </section>
@@ -273,7 +279,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
           <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-bold tw-text-ocean"><svg viewBox="0 0 30 30" aria-hidden="true" class="tw-h-6 tw-w-6 tw-rounded-md"><rect width="30" height="30" rx="7" fill="#0a6e7d"/><path d="M8 24V9.5L15 6l7 3.5V24z" fill="#fff"/><path d="M11 12h2v2h-2zM17 12h2v2h-2zM11 16h2v2h-2zM17 16h2v2h-2zM13.5 20h3v4h-3z" fill="#0a6e7d"/></svg>The hotel's own site</li>
         </ul>
       </div>
-      <ol class="tw-m-0 tw-grid tw-list-none tw-gap-7 tw-p-0" aria-label="How it works">
+      <ol class="tw-m-0 tw-grid tw-list-none tw-gap-7 tw-p-0 tw-scroll-mt-24" aria-label="How it works" id="how">
         <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">1</span><div><h3 class="tw-text-xl">Tell us the hotel</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Add the hotel, where it is and your dates. If the name matches more than one hotel, Claude asks which you mean.</p></div></li>
         <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">2</span><div><h3 class="tw-text-xl">Claude checks every site</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Live, in your own browser, so you see today's prices, member rates and refundable rates, not old listings.</p></div></li>
         <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">3</span><div><h3 class="tw-text-xl">Book the lowest real price</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Every total includes taxes and fees, and we show what you give up for it, like free cancellation.</p></div></li>
@@ -283,7 +289,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       <span>✓ Free to use</span><span>✓ Never ranked for money</span><span>✓ Taxes and fees included</span><span>✓ The hotel's own rates included</span><span>✓ Nothing about your stay is sent to us</span>
     </p>
 
-    <div class="tw-mt-14 tw-grid tw-gap-8 lg:tw-grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" id="faq">
+    <div class="tw-mt-14 tw-grid tw-scroll-mt-24 tw-gap-8 lg:tw-grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" id="faq">
       <div>
         <p class="eyebrow tw-text-ocean">Questions</p>
         <h2 class="tw-mt-2 tw-text-[clamp(26px,3.4vw,36px)] tw-leading-tight">Everything you might want to know</h2>
@@ -296,7 +302,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       <details class="mrs-faq" open><summary class="mrs-faq-q">What is MyRoomPrice?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">A free tool for Claude that finds the cheapest way to book a hotel you've already chosen. Tell it the hotel and your dates, and Claude checks the price comparison sites, the big booking sites and the hotel's own website, then shows every price side by side, with taxes and fees included.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Why use it instead of a comparison site?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Comparison sites show listed prices, which are often per night, before tax, or out of date, and they rarely show the hotel's own member rates. MyRoomPrice opens each site live in your browser, reads the real total for your whole stay, and puts the hotel's own website alongside.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">It also tells you what you give up for a lower price, such as free cancellation, and finds recent reviews of the hotel while it checks.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">How does it work?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">MyRoomPrice is a skill for Claude in Chrome. Claude looks the hotel up on Google Hotels, Trivago and Kayak to see which sites sell it and for how much. Then it visits the hotel's own website and the cheapest booking sites in a background tab and confirms each total. Results appear on this page as each price is confirmed.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">It only looks. It never books, signs in, or types your personal or payment details.</p></div></details>
-      <details class="mrs-faq"><summary class="mrs-faq-q">How do I use it?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">1. <a class="tw-font-bold tw-text-ocean" href="https://github.com/steveRepo/myroomprice#install-in-chrome" target="_blank" rel="noopener">Add MyRoomPrice to Claude</a>. 2. Open Claude in Chrome's side panel and type <strong>/myroomprice</strong>. 3. Fill in the hotel, where it is, your dates and guests on this page, and click Check prices. 4. Answer any question Claude asks here, such as which hotel you meant. 5. Choose an option and continue to that site to book.</p></div></details>
+      <details class="mrs-faq"><summary class="mrs-faq-q">How do I use it?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">1. <a class="tw-font-bold tw-text-ocean" href="https://myroomprice.com/setup/" target="_blank" rel="noopener">Add MyRoomPrice to Claude</a> (step-by-step guide). 2. Open Claude in Chrome's side panel and type <strong>/myroomprice</strong>. 3. Fill in the hotel, where it is, your dates and guests on this page, and click Check prices. 4. Answer any question Claude asks here, such as which hotel you meant. 5. Choose an option and continue to that site to book.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Do you rank results for money?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed"><strong>No. We don't rank anything.</strong> Results are always sorted by the total you'd pay, cheapest first, and you can filter and re-sort them yourself. We want you to get the cheapest price.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Some booking links go through our partner Stay22 and may earn us a small commission, at no extra cost to you. Whether a site pays us never changes where it appears: the cheapest confirmed price comes first, even when it pays us nothing.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Is it free?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Yes, MyRoomPrice is free. It runs inside Claude, so you need a Claude plan that includes Claude in Chrome.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">What happens to my data?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Your search stays in your browser. Results travel inside this page's own link, after the #, which browsers never send to a server, so we never see them. Claude visits the booking sites in your own browser, just as you would. A review video loads from YouTube only when you choose to play it.</p></div></details>
@@ -785,6 +791,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     const ready = state.ready;
     $("hero").classList.add("photo");
     $("intro").hidden = false;
+    document.querySelectorAll("[data-go]").forEach((b) => (b.hidden = false));
     $("main").hidden = true;
     $("highlights").replaceChildren();
     $("more").replaceChildren();
@@ -904,6 +911,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     state.data = d;
     $("hero").classList.remove("photo");
     $("intro").hidden = true;
+    document.querySelectorAll("[data-go]").forEach((b) => (b.hidden = true));
     fillSearch(d);
     $("main").hidden = (d.status === "thinking" || d.status === "question") && !d.offers.length;
     if (!d.offers.some((o) => o.key === state.selected)) { state.selected = null; state.picked = false; }
@@ -1104,8 +1112,12 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   document.querySelector(".topbar .logo").addEventListener("click", (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); });
   $("viewer").addEventListener("close", () => $("viewer").replaceChildren());
   $("viewer").addEventListener("click", (e) => { if (e.target === $("viewer")) $("viewer").close(); });  // a click on the backdrop
+  document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => $(b.dataset.go).scrollIntoView({ behavior: "smooth" })));
   window.addEventListener("hashchange", start);
   start();
+  // The setup guide links here with ?show=how or ?show=faq.
+  const show = new URLSearchParams(location.search).get("show");
+  if ((show === "how" || show === "faq") && !state.data) requestAnimationFrame(() => $(show).scrollIntoView());
 })();
 </script>
 </body>
