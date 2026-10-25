@@ -192,6 +192,21 @@ class PageTest(unittest.TestCase):
         self.assertIn('(state.link ? " Link: " + state.link.link : "")', self.script)
         self.assertIn('if (u.protocol !== "https:" && u.protocol !== "http:") return null;', self.script)
 
+    def test_recent_searches_stay_in_the_browser(self):
+        # Kept in localStorage only, every access allowed to fail, capped, and hidden while results show.
+        self.assertIn('const RECENT_KEY = "myroomprice.recent.v1";', self.script)
+        self.assertIn("const RECENT_MAX = 5;", self.script)
+        self.assertIn('try { localStorage.setItem(RECENT_KEY', self.script)
+        self.assertIn('JSON.parse(localStorage.getItem(RECENT_KEY) || "[]")', self.script)
+        self.assertNotIn("fetch(", self.script)
+        self.assertNotIn("XMLHttpRequest", self.script)
+        self.assertIn("box.hidden = !!state.data || !list.length;", self.script)
+        self.assertIn("Your recent searches are kept only in this browser", self.html)
+
+    def test_share_uses_the_pages_own_link(self):
+        self.assertIn("navigator.share({ title: d.hotel.name + \" · MyRoomPrice\", text, url: location.href })", self.script)
+        self.assertIn("navigator.clipboard.writeText(text + ", self.script)
+
     def test_built_page_is_up_to_date(self):
         result = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "build_page.py"), "--check"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)

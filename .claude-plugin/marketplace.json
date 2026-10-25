@@ -9,7 +9,7 @@
     {
       "name": "myroomprice",
       "description": "MyRoomPrice, by Londoner in Sydney, finds the lowest real price for a hotel stay. It compares Booking.com, Expedia, Hotels.com, Agoda, Google Hotels, Trivago and the hotel's own site in your Chrome, and shows the results in a live web-app tab.",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "author": {
         "name": "Stephen M"
       },

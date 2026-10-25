@@ -280,6 +280,9 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   <!-- Claude reads this line to pick up a search or an answer. Keep its wording in step with SKILL.md. -->
   <p class="tw-sr-only" id="request"></p>
 
+  <!-- Recent searches, kept only in this browser (see "Recent searches" in the script). Hidden once there are results. -->
+  <section class="tw-mt-6" id="recent" aria-labelledby="recent-title" hidden></section>
+
   <!-- The search page's pitch and how it works. Hidden once there are results. -->
   <section id="intro" class="tw-pb-12 tw-pt-10" aria-labelledby="intro-title">
     <div class="tw-grid tw-gap-10 lg:tw-grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:tw-gap-20 lg:tw-items-start">
@@ -326,7 +329,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       <details class="mrs-faq"><summary class="mrs-faq-q">How do I use it?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">1. <a class="tw-font-bold tw-text-ocean" href="https://myroomprice.com/setup/" target="_blank" rel="noopener">Add MyRoomPrice to Claude</a> (step-by-step guide). 2. Open Claude in Chrome's side panel and type <strong>/myroomprice</strong>. 3. Fill in the hotel, where it is, your dates and guests on this page, and click Check prices. 4. Answer any question Claude asks here, such as which hotel you meant. 5. Choose an option and continue to that site to book.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Do you rank results for money?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed"><strong>No. We don't rank anything.</strong> Results are always sorted by the total you'd pay, cheapest first, and you can filter and re-sort them yourself. We want you to get the cheapest price.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Some booking links go through our partner Stay22 and may earn us a small commission, at no extra cost to you. Whether a site pays us never changes where it appears: the cheapest confirmed price comes first, even when it pays us nothing.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Is it free?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Yes, MyRoomPrice is free. It runs inside Claude, so you need a Claude plan that includes Claude in Chrome.</p></div></details>
-      <details class="mrs-faq"><summary class="mrs-faq-q">What happens to my data?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Your search stays in your browser. Results travel inside this page's own link, after the #, which browsers never send to a server, so we never see them. Claude visits the booking sites in your own browser, just as you would. A review video loads from YouTube only when you choose to play it.</p></div></details>
+      <details class="mrs-faq"><summary class="mrs-faq-q">What happens to my data?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Your search stays in your browser. Results travel inside this page's own link, after the #, which browsers never send to a server, so we never see them. Claude visits the booking sites in your own browser, just as you would. A review video loads from YouTube only when you choose to play it. Your recent searches are kept only in this browser, so you can check one again in a click; clear them any time with Clear all.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Can I rely on the prices?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">They're the prices each site showed when Claude checked. Prices and availability change often, some sites add fees at checkout, and we can't guarantee any price. Always check the total and the cancellation terms on the booking site before you pay.</p></div></details>
       </div>
     </div>
@@ -554,9 +557,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   function parseDay(s) { if (!s) return null; const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
   function nightsBetween(a, b) { const x = parseDay(a), y = parseDay(b); return x && y ? Math.max(1, Math.round((y - x) / 864e5)) : 1; }
   function day(s) { const d = parseDay(s); return d ? d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }) : ""; }
-  function money(n) {
+  function money(n, cur = state.data && state.data.currency) {
     if (n === null) return "";
-    const cur = state.data && state.data.currency;
     try { return new Intl.NumberFormat("en-US", { style: "currency", currency: cur || "USD", maximumFractionDigits: 0 }).format(n).replace(/^\$/, cur === "USD" ? "US$" : "$"); }
     catch (e) { return (cur ? cur + " " : "") + Math.round(n).toLocaleString(); }
   }
@@ -678,10 +680,43 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     } else {
       box.append(el("p", { class: "fine", text: "No link was saved for this option. Search for it on " + o.site + "." }));
     }
+    if (!live() && !watching()) {
+      box.append(el("div", { class: "tw-mt-1 tw-border-0 tw-border-t tw-border-solid tw-border-line tw-pt-3" },
+        el("button", { type: "button", class: "mrs-share", id: "share-btn", onclick: shareResults },
+          el("svg", {}), "Share these results"),
+        el("p", { class: "tw-mt-1.5 tw-text-xs tw-leading-snug tw-text-ink-3",
+          text: "Anyone with the link sees these prices" + (state.data.checked ? ", as checked " + state.data.checked : "") + ". Prices change, so they should check before booking." })));
+      // The share icon (el can't make SVG, so it's swapped in here).
+      const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      icon.setAttribute("viewBox", "0 0 24 24"); icon.setAttribute("aria-hidden", "true");
+      icon.setAttribute("class", "tw-h-4 tw-w-4 tw-flex-none");
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", "M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6");
+      path.setAttribute("fill", "none"); path.setAttribute("stroke", "currentColor"); path.setAttribute("stroke-width", "2");
+      path.setAttribute("stroke-linecap", "round"); path.setAttribute("stroke-linejoin", "round");
+      icon.append(path);
+      $("share-btn").firstChild.replaceWith(icon);
+    }
     bar.hidden = false;
     bar.replaceChildren(
       el("div", {}, el("div", { class: "who", text: o.site }), el("div", { class: "amt", text: money(o.total) })),
       o.link ? continueLink(o, "Continue ↗", false) : el("span", { class: "fine", text: "No link saved" }));
+  }
+
+  // Share the results: they live in this page's own link, so sharing the link shares the whole comparison.
+  // Phones (and Chrome on a Mac) get the system share sheet; otherwise the link is copied.
+  async function shareResults() {
+    const d = state.data;
+    const best = cheapest(confirmedOffers());
+    const text = [d.hotel.name, day(d.stay.checkin) + " to " + day(d.stay.checkout),
+      best ? "cheapest " + money(best.total) + " at " + best.site : ""].filter(Boolean).join(", ") + ". Compared by MyRoomPrice.";
+    const done = (label) => { const b = $("share-btn"); if (!b) return; const was = b.lastChild.textContent; b.lastChild.textContent = label; setTimeout(() => { if (b.isConnected) b.lastChild.textContent = was; }, 2500); };
+    if (navigator.share) {
+      try { await navigator.share({ title: d.hotel.name + " · MyRoomPrice", text, url: location.href }); return; }
+      catch (e) { if (e && e.name === "AbortError") return; }
+    }
+    try { await navigator.clipboard.writeText(text + "\n" + location.href); done("Link copied"); }
+    catch (e) { done("Copy the address bar to share"); }
   }
 
   function renderHighlights() {
@@ -835,6 +870,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     const ready = state.ready;
     $("hero").classList.add("photo");
     $("intro").hidden = false;
+    renderRecent();
     document.querySelectorAll("[data-go]").forEach((b) => (b.hidden = false));
     $("main").hidden = true;
     $("highlights").replaceChildren();
@@ -955,6 +991,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     state.data = d;
     $("hero").classList.remove("photo");
     $("intro").hidden = true;
+    $("recent").hidden = true;
     document.querySelectorAll("[data-go]").forEach((b) => (b.hidden = true));
     fillSearch(d);
     $("main").hidden = (d.status === "thinking" || d.status === "question") && !d.offers.length;
@@ -963,6 +1000,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     renderHeader();
     renderMore();
     render();
+    rememberResult(d);
     if (d.status === "thinking") card("claude", spinner(), "Claude is thinking", d.message && para(d.message));
     if (d.status === "question" && d.question) showQuestion(d.question);
   }
@@ -1108,6 +1146,93 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     $("q-link").value = "";
     showLink();
     $("q-link").focus();
+  }
+
+  // ---------- recent searches ----------
+  // The last few searches, and the best price each one found, kept in this browser's own storage so the
+  // user can check one again in a click. Nothing here leaves the browser. Storage can be blocked or
+  // cleared at any time, so every read and write is allowed to fail quietly.
+  const RECENT_KEY = "myroomprice.recent.v1";
+  const RECENT_MAX = 5;
+  const sameSearch = (a, b) => ["hotel", "where", "checkin", "checkout"].every((k) => (a[k] || "").toLowerCase() === (b[k] || "").toLowerCase());
+  function loadRecent() {
+    try {
+      const list = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+      return Array.isArray(list) ? list.filter((r) => r && typeof r.hotel === "string" && ISO.test(r.checkin) && ISO.test(r.checkout)).slice(0, RECENT_MAX) : [];
+    } catch (e) { return []; }
+  }
+  function storeRecent(list) {
+    try { localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, RECENT_MAX))); } catch (e) { /* storage blocked: the list just isn't kept */ }
+  }
+  // Put a search at the top of the list, keeping the price found last time unless a new one is given.
+  function rememberSearch(search, result) {
+    const list = loadRecent();
+    const old = list.find((r) => sameSearch(r, search)) || {};
+    const entry = Object.assign({}, old, {
+      hotel: str(search.hotel), where: str(search.where), checkin: search.checkin, checkout: search.checkout,
+      adults: num(search.adults) || 2, children: num(search.children) || 0, link: str(search.link || old.link || ""), saved: Date.now(),
+    }, result || {});
+    storeRecent([entry].concat(list.filter((r) => !sameSearch(r, search))));
+    renderRecent();
+  }
+  // When a check finishes, note its cheapest checked price beside the search.
+  // Only finished checks are noted. A search typed a moment ago for the same dates is the same trip, now with
+  // the hotel's proper name (for example "hyde park sydney" became the Sheraton), so it's replaced.
+  function rememberResult(d) {
+    if (d.status !== "done" || !d.hotel.name || !d.stay.checkin || !d.stay.checkout) return;
+    const search = { hotel: d.hotel.name, where: d.hotel.where, checkin: d.stay.checkin, checkout: d.stay.checkout, adults: d.stay.adults, children: d.stay.children };
+    const typed = loadRecent().find((r) => !sameSearch(r, search) && r.checkin === search.checkin && r.checkout === search.checkout && Date.now() - (r.saved || 0) < 3 * 3600e3);
+    if (typed) { search.where = search.where || typed.where; search.link = typed.link; storeRecent(loadRecent().filter((r) => r !== typed && !sameSearch(r, typed))); }
+    const best = cheapest(confirmedOffers());
+    rememberSearch(search, best ? { price: best.total, currency: d.currency, site: best.site, checked: Date.now() } : null);
+  }
+  function forgetSearch(r) { storeRecent(loadRecent().filter((x) => !sameSearch(x, r))); renderRecent(); }
+
+  function renderRecent() {
+    const box = $("recent");
+    const list = loadRecent();
+    box.hidden = !!state.data || !list.length;
+    if (box.hidden) { box.replaceChildren(); return; }
+    const today = isoDay(new Date());
+    const ago = (t) => { const d = new Date(t); return d.toLocaleDateString(undefined, { day: "numeric", month: "short" }); };
+    box.replaceChildren(
+      el("div", { class: "tw-flex tw-items-baseline tw-justify-between tw-gap-3" },
+        el("h2", { class: "tw-font-sans tw-text-sm tw-font-bold tw-uppercase tw-tracking-[.12em] tw-text-ink-3", id: "recent-title", text: "Your recent searches" }),
+        el("button", { type: "button", class: "mrs-quiet tw-h-8 tw-text-xs", onclick: () => { storeRecent([]); renderRecent(); }, text: "Clear all" })),
+      el("ul", { class: "tw-m-0 tw-mt-2 tw-grid tw-list-none tw-gap-3 tw-p-0 sm:tw-grid-cols-2 lg:tw-grid-cols-3" }, list.map((r) => {
+        const passed = r.checkin < today;
+        return el("li", { class: "tw-relative" },
+          el("button", { type: "button", class: "mrs-recent", onclick: () => recheck(r),
+            "aria-label": (passed ? "Choose new dates for " : "Check again: ") + r.hotel + ", " + day(r.checkin) + " to " + day(r.checkout) },
+            el("span", { class: "tw-block tw-truncate tw-pr-7 tw-font-bold tw-text-ink", text: r.hotel }),
+            el("span", { class: "tw-mt-0.5 tw-block tw-truncate tw-text-sm tw-text-ink-2",
+              text: [r.where, day(r.checkin) + " – " + day(r.checkout), guests({ adults: r.adults, children: r.children })].filter(Boolean).join(" · ") }),
+            el("span", { class: "tw-mt-2 tw-flex tw-items-center tw-justify-between tw-gap-2 tw-text-sm" },
+              el("span", { class: "tw-truncate tw-text-ink-3",
+                text: r.price ? money(r.price, r.currency) + (r.site ? " at " + r.site : "") + " · " + ago(r.checked) : "Searched " + ago(r.saved) }),
+              el("span", { class: "tw-flex-none tw-font-bold " + (passed ? "tw-text-ink-3" : "tw-text-ocean"), text: passed ? "Dates passed" : "Check again ↻" }))),
+          el("button", { type: "button", class: "mrs-recent-x", "aria-label": "Forget " + r.hotel, onclick: () => forgetSearch(r), text: "✕" }));
+      })));
+  }
+
+  // One click: fill in the form and send it, or ask for new dates if these have passed.
+  function recheck(r) {
+    state.link = null;
+    $("q-link").value = "";
+    if (r.link) applyLink(r.link);
+    $("q-hotel").value = r.hotel;
+    $("q-where").value = r.where || "";
+    $("q-adults").value = r.adults || 2;
+    $("q-children").value = r.children || 0;
+    showGuests();
+    $("search").scrollIntoView({ block: "nearest", behavior: "smooth" });
+    if (r.checkin < isoDay(new Date())) {
+      setDates("", "");
+      setTimeout(openPicker, 0);  // after this click has finished, or the click-outside rule closes it again
+      return needMore("Those dates have passed. Choose new dates, then click Check prices.");
+    }
+    setDates(r.checkin, r.checkout);
+    $("search").requestSubmit();
   }
 
   // ---------- date picker ----------
@@ -1301,6 +1426,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     $("request").textContent = "Check requested. Hotel: " + hotel + ". Where: " + (where || "see link") + ". Check-in: " + a + ". Check-out: " + b +
       ". Adults: " + adults + ". Children: " + children + "." + (state.link ? " Link: " + state.link.link : "");
     document.title = "Check requested · MyRoomPrice";
+    rememberSearch({ hotel, where, checkin: a, checkout: b, adults, children, link: state.link ? state.link.link : "" });
     state.requested = true;
     state.answered = false;
     clearTimeout(pickupTimer);

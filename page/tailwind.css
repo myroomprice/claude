@@ -47,3 +47,14 @@
   .mrs-paste { @apply tw-flex tw-cursor-text tw-items-center tw-gap-2.5 tw-rounded-xl tw-border-[1.5px] tw-border-dashed tw-border-ocean/40 tw-bg-ocean-soft/40 tw-py-1 tw-pl-3.5 tw-pr-1.5 tw-transition focus-within:tw-border-solid focus-within:tw-border-reef focus-within:tw-bg-white focus-within:tw-ring-4 focus-within:tw-ring-reef/20 hover:tw-border-ocean; }
   .mrs-paste-btn { @apply tw-inline-flex tw-h-9 tw-flex-none tw-cursor-pointer tw-items-center tw-rounded-lg tw-border-0 tw-bg-white tw-px-3.5 tw-text-sm tw-font-bold tw-text-ocean tw-shadow-sm tw-transition hover:tw-bg-ocean hover:tw-text-white; }
 }
+
+@layer components {
+  /* Recent searches */
+  .mrs-recent { @apply tw-block tw-w-full tw-cursor-pointer tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-white tw-p-4 tw-text-left tw-shadow-sm tw-transition hover:tw-border-ocean hover:tw-shadow-card; }
+  .mrs-recent-x { @apply tw-absolute tw-right-2.5 tw-top-2.5 tw-flex tw-h-7 tw-w-7 tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-bg-transparent tw-text-xs tw-text-ink-3 tw-transition hover:tw-bg-mist hover:tw-text-ink; }
+}
+
+@layer components {
+  /* Share button in the Your choice panel */
+  .mrs-share { @apply tw-inline-flex tw-h-10 tw-w-full tw-cursor-pointer tw-items-center tw-justify-center tw-gap-2 tw-rounded-full tw-border-[1.5px] tw-border-solid tw-border-line tw-bg-white tw-px-4 tw-text-sm tw-font-bold tw-text-ink tw-transition hover:tw-border-ocean hover:tw-text-ocean; }
+}
