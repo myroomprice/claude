@@ -59,6 +59,9 @@ Before the check, while you work out the details or wait for the user's answer:
                            {"label": "Hyde Park Inn", "detail": "271 Elizabeth St"}]}
   Options can also be plain strings, such as ["Yes", "No"]. The page adds "Try again" itself.
 
+At the end, "status": "done" with "ready": true tells the page you're still watching it for a few
+minutes, so another search sent from the page reaches you (see "Another search" in SKILL.md).
+
 While the check is running, the same tab is updated with these as well:
   "status": "checking" (or "done" at the end, which is the default)
   "message": "Reading the Langham's own rates"

@@ -249,6 +249,16 @@ class PageTest(unittest.TestCase):
         self.assertNotIn("2026-11-20", booking_dated["href"])
         self.assertEqual(own["href"], links[-1])
 
+    def test_another_search_without_typing_again(self):
+        # After a check, "ready": true keeps the page sending searches to Claude for a few minutes.
+        self.assertIn("ready: raw.ready === true,", self.script)
+        self.assertIn('(d.status === "done" && d.ready)', self.script)
+        self.assertIn('"Check another stay?"', self.script)
+        with open(os.path.join(SCRIPTS, "..", "SKILL.md"), encoding="utf-8") as f:
+            skill = f.read()
+        for words in ("## Another search", '`"ready": true`', "**Watch for 5 minutes,**"):
+            self.assertIn(words, skill, words)
+
     def test_built_page_is_up_to_date(self):
         result = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "build_page.py"), "--check"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)

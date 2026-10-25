@@ -491,6 +491,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
         adults: num(stay.adults) || 2, children: num(stay.children) || 0, rooms: num(stay.rooms) || 1,
       },
       status: ["thinking", "question", "checking"].includes(raw.status) ? raw.status : "done",
+      // A finished check with "ready": Claude is still watching this page for a few minutes, for another search.
+      ready: raw.ready === true,
       question: raw.question && typeof raw.question === "object" && str(raw.question.text) ? {
         id: str(raw.question.id) || "question",
         text: str(raw.question.text),
@@ -1004,6 +1006,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       stopReady();
       if (!state.data) showEmpty(false);
       else if (watching()) card("note", badge("!", "tw-bg-sun tw-text-ink"), "Claude has stopped waiting", para("Click Check prices to start again."));
+      else $("claude").hidden = true;  // after a finished check: the "Check another stay?" offer has run out
     }, READY_MS);
   }
 
@@ -1023,8 +1026,9 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     $("claude").hidden = true;
     closePops();
     if (!d || d.broken) { setReady(!d && hashHas("ready")); fillSearch(null); showEmpty(d && d.broken); return; }
-    // While Claude thinks or asks, it's watching this page for an answer or a new search.
-    setReady(d.status === "thinking" || d.status === "question");
+    // While Claude thinks or asks, or for a few minutes after a check it says it's still watching,
+    // a search sent from this page goes straight to Claude.
+    setReady(d.status === "thinking" || d.status === "question" || (d.status === "done" && d.ready));
     $("get").hidden = true;
     const sameStay = state.data && state.data.hotel.name === d.hotel.name && state.data.stay.checkin === d.stay.checkin && state.data.stay.checkout === d.stay.checkout;
     if (!sameStay) { state.seen = new Set(); state.selected = null; state.picked = false; }
@@ -1043,6 +1047,10 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     rememberResult(d);
     if (d.status === "thinking") card("claude", spinner(), "Claude is thinking", d.message && para(d.message));
     if (d.status === "question" && d.question) showQuestion(d.question);
+    if (d.status === "done" && d.ready) {
+      card("claude", badge("↻", "tw-bg-reef tw-text-white"), "Check another stay?",
+        para("Claude is still here for a few minutes. Change the hotel, place or dates above and click Check prices, and it starts straight away."));
+    }
   }
 
   // ---------- reading a pasted hotel link ----------
