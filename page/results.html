@@ -656,8 +656,32 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
           onclick: () => select(o.key, false) }, selected ? "Selected" : "Select")));
   }
 
+  // Safety net for booking links. A hotel page on Booking.com, Agoda, Expedia, Wotif or Trip.com that arrives
+  // without dates gets this stay's dates added in the site's own format (patterns tested live, see the skill's
+  // references/sites.md), and a search-results page is flagged so the button can say so. Partner (Stay22)
+  // links already carry the dates and are left as they are.
+  function stayLink(o) {
+    const u = new URL(o.link.href);
+    const path = u.pathname;
+    const search = /searchresults|hotel-search|\/search|\/hotels\/list|\/list\b/i.test(path) && !/hotel-detail|\/hotel\/|hotel-information/i.test(path);
+    const s = state.data.stay;
+    if (o.partner || !s.checkin || !s.checkout) return { href: u.href, search };
+    const q = u.searchParams, host = u.hostname.toLowerCase(), has = (...k) => k.some((x) => q.has(x));
+    const set = (pairs) => pairs.forEach(([k, v]) => q.set(k, String(v)));
+    if (/(^|\.)booking\.com$/.test(host) && /\/hotel\/[a-z]{2}\//.test(path) && !has("checkin")) {
+      set([["checkin", s.checkin], ["checkout", s.checkout], ["group_adults", s.adults], ["no_rooms", s.rooms], ["group_children", s.children]]);
+    } else if (/(^|\.)agoda\.com$/.test(host) && /\/hotel\//.test(path) && !has("checkIn", "checkin")) {
+      set([["checkIn", s.checkin], ["los", state.data.nights], ["adults", s.adults], ["rooms", s.rooms], ["children", s.children]]);
+    } else if (/(^|\.)(expedia|wotif)\.[a-z.]+$/.test(host) && /\.hotel-information/i.test(path) && !has("chkin", "startDate")) {
+      set([["chkin", s.checkin], ["chkout", s.checkout], ["rm1", "a" + s.adults]]);
+    } else if (/(^|\.)trip\.com$/.test(host) && /hotel-detail-\d+/.test(path) && !has("checkIn", "checkin")) {
+      set([["checkIn", s.checkin], ["checkOut", s.checkout], ["adult", s.adults], ["children", s.children], ["crn", s.rooms]]);
+    }
+    return { href: u.href, search };
+  }
+
   function continueLink(o, label, wide) {
-    return el("a", { class: "btn btn-sun" + (wide ? " btn-wide" : ""), href: o.link.href, target: "_blank",
+    return el("a", { class: "btn btn-sun" + (wide ? " btn-wide" : ""), href: stayLink(o).href, target: "_blank",
       rel: o.partner ? "sponsored noopener noreferrer" : "noopener noreferrer" }, label);
   }
 
@@ -688,7 +712,9 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     if (o.taxes !== "included" && o.total !== null) box.append(el("p", { class: "warn", text: o.taxes === "excluded" ? "Taxes and fees are extra on top of this price." : "It isn't confirmed whether this price includes taxes and fees." }));
     if (o.link) {
       box.append(continueLink(o, "Continue to " + o.site + " ↗", true),
-        el("p", { class: "domain", text: "Opens " + o.link.hostname.replace(/^www\./, "") + " in a new tab" + (o.partner ? " · partner link" : "") }));
+        el("p", { class: "domain", text: stayLink(o).search
+          ? "Opens a search on " + o.link.hostname.replace(/^www\./, "") + ": pick " + (state.data.hotel.name || "the hotel") + " there"
+          : "Opens " + o.link.hostname.replace(/^www\./, "") + " in a new tab" + (o.partner ? " · partner link" : "") }));
     } else {
       box.append(el("p", { class: "fine", text: "No link was saved for this option. Search for it on " + o.site + "." }));
     }

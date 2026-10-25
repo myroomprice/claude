@@ -223,7 +223,7 @@ Lead with the answer. (Amounts below say AUD because a skill file can't contain 
 - the totals and terms you confirmed, each with how sure it is: `"verified"` is `"checked"` only for prices you saw on the booking site itself, `"listed"` for prices only seen on a comparison site, and `"unavailable"` for sites with no rooms. The page never treats a price as checked unless you say so.
 - `"taxes": "included"` only when the site showed the total with taxes and fees; `"excluded"` when it showed the price before them; otherwise leave it out (the page says taxes aren't confirmed)
 - `"refundable": true` or `false` only when you saw the cancellation terms; leave it out when you didn't (the page says the terms weren't checked)
-- the link you found for each offer
+- the link for each offer: **that hotel's own page on that site, with the dates**, never a search-results page. Build it from the patterns in "Booking links" in `references/sites.md`, because your tools can hide the dates in the address bar.
 - `"this_page": true` on the offer from the page the user started on
 - `"keep_link": true` on any link the user gave you
 - a one- or two-sentence `summary` with the answer and its main catch

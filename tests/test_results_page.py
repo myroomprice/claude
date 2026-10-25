@@ -219,6 +219,36 @@ class PageTest(unittest.TestCase):
         self.assertIn('$("keep-open").hidden = !(live() || watching());', self.script)
         self.assertIn("Why does Chrome say", self.html)
 
+    def test_booking_links_get_the_dates_and_search_pages_are_flagged(self):
+        node = subprocess.run(["which", "node"], capture_output=True, text=True).stdout.strip()
+        if not node:
+            self.skipTest("node not installed")
+        fn = self.script[self.script.index("  function stayLink(o) {"):self.script.index("  function continueLink(")]
+        links = [
+            "https://www.booking.com/hotel/au/sheraton-on-the-park-sydney.en-gb.html",
+            "https://www.agoda.com/sheraton-grand-sydney-hyde-park/hotel/sydney-au.html",
+            "https://www.expedia.com.au/Sydney-Hotels-Sheraton-Grand-Sydney-Hyde-Park.h4807.Hotel-Information",
+            "https://au.trip.com/hotels/sydney-hotel-detail-826040/sheraton-grand-sydney-hyde-park/",
+            "https://au.trip.com/hotels/list?city=1&checkIn=2026-11-20",
+            "https://www.booking.com/hotel/au/x.html?checkin=2026-12-01&checkout=2026-12-03",
+            "https://reservations.example-hotel.com/rooms?hotel=1",
+        ]
+        code = ("const state = { data: { nights: 2, stay: { checkin: '2026-11-20', checkout: '2026-11-22', adults: 2, children: 1, rooms: 1 } } };\n"
+                + fn + "\nconsole.log(JSON.stringify(" + json.dumps(links) + ".map((l) => stayLink({ link: new URL(l), partner: false }))));")
+        result = subprocess.run([node, "-e", code], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        booking, agoda, expedia, trip, trip_search, booking_dated, own = json.loads(result.stdout)
+        self.assertIn("checkin=2026-11-20&checkout=2026-11-22&group_adults=2&no_rooms=1&group_children=1", booking["href"])
+        self.assertIn("checkIn=2026-11-20&los=2&adults=2&rooms=1&children=1", agoda["href"])
+        self.assertIn("chkin=2026-11-20&chkout=2026-11-22&rm1=a2", expedia["href"])
+        self.assertIn("checkIn=2026-11-20&checkOut=2026-11-22&adult=2&children=1&crn=1", trip["href"])
+        self.assertTrue(trip_search["search"])
+        self.assertFalse(trip["search"])
+        # Dates already in a link are never replaced, and other sites are left alone.
+        self.assertIn("checkin=2026-12-01", booking_dated["href"])
+        self.assertNotIn("2026-11-20", booking_dated["href"])
+        self.assertEqual(own["href"], links[-1])
+
     def test_built_page_is_up_to_date(self):
         result = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "build_page.py"), "--check"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)

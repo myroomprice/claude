@@ -7,6 +7,7 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
 - Trivago: the second price list
 - Kayak: the third price list
 - Reaching each site in the worker tab
+- Booking links: the hotel's own page, with the dates
 - YouTube and blogs: reviews
 - The hotel's own booking page
 - Booking.com
@@ -62,6 +63,23 @@ Go to each site by its address in the worker tab, never through another site's "
 - **Kayak** (*Checked*): see "Kayak" above.
 - **The hotel's own site:** go to the website address Google Hotels shows for it and use its "Book" or "Check availability" box. If its booking page only opens through Google's "Get price" button, use that, last (see "Tabs" in SKILL.md).
 - **A link the user pasted:** open it directly; it's usually the quickest page of all.
+
+## Booking links: the hotel's own page, with the dates
+
+Each offer's `link` must open **that hotel's own page on that site, with the dates and guests filled in**, never a search-results page. A search link makes the user find the hotel again, and in testing a Trip.com search link did exactly that.
+
+Your browser tools can hide everything after the `?` in an address, so don't rely on copying the address bar. Build the link instead: take the hotel's page address (the part before `?`, which you can see) and add the dates in that site's own format. All of these were *Checked* for The Sheraton Grand Sydney Hyde Park, 20 to 22 Nov 2026, 2 adults; each opened the hotel's page with those dates set.
+
+| Site | Hotel page with dates |
+|---|---|
+| Booking.com | `https://www.booking.com/hotel/au/sheraton-on-the-park-sydney.en-gb.html?checkin=2026-11-20&checkout=2026-11-22&group_adults=2&no_rooms=1&group_children=0` |
+| Agoda | `https://www.agoda.com/sheraton-grand-sydney-hyde-park/hotel/sydney-au.html?checkIn=2026-11-20&los=2&adults=2&rooms=1&children=0` (`los` is the number of nights) |
+| Expedia (and Wotif) | `https://www.expedia.com.au/Sydney-Hotels-Sheraton-Grand-Sydney-Hyde-Park.h4807.Hotel-Information?chkin=2026-11-20&chkout=2026-11-22&rm1=a2` (`rm1=a2` is one room, 2 adults; add `:c7` per child aged 7) |
+| Trip.com | `https://au.trip.com/hotels/sydney-hotel-detail-826040/sheraton-grand-sydney-hyde-park/?checkIn=2026-11-20&checkOut=2026-11-22&adult=2&children=0&crn=1` |
+| Kayak | the hotel's address from "Kayak" above, with the dates in the path |
+| The hotel's own site | the booking page you read the price on; if its dates are hidden after the `?`, use the hotel's booking page address and say the user may need to re-enter the dates |
+
+How to find the hotel's page address on each site: open the hotel from the site's own search (in the worker tab), then read the address up to the `?`. Booking.com's is `/hotel/<country>/<name>.html`, Agoda's `/<name>/hotel/<city>.html`, Expedia's ends `.h<number>.Hotel-Information`, and Trip.com's is `/hotels/<city>-hotel-detail-<number>/<name>/`. If you only have a search page, don't save it as the link: open the hotel from the results first.
 
 ## YouTube and blogs: reviews
 
