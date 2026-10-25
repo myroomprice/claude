@@ -27,3 +27,10 @@
   /* Review cards on the results page */
   .mrs-review { @apply tw-flex tw-min-h-[150px] tw-cursor-pointer tw-flex-col tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-mist tw-p-4 tw-text-left tw-transition hover:tw-border-ocean hover:tw-bg-white hover:tw-shadow-card; }
 }
+
+@layer components {
+  /* How it works: a quiet numbered timeline, so the steps read as a process rather than buttons */
+  .mrs-step { @apply tw-relative tw-flex tw-gap-4; }
+  .mrs-step:not(:last-child)::after { content: ""; @apply tw-absolute tw-bottom-[-28px] tw-left-[17px] tw-top-11 tw-w-0.5 tw-rounded-full tw-bg-line; }
+  .mrs-step-n { @apply tw-relative tw-flex tw-h-9 tw-w-9 tw-flex-none tw-items-center tw-justify-center tw-rounded-full tw-bg-sun-soft tw-font-serif tw-text-base tw-font-bold tw-text-sun-ink tw-ring-1 tw-ring-sun; }
+}
