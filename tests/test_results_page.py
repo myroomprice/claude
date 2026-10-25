@@ -259,6 +259,21 @@ class PageTest(unittest.TestCase):
         for words in ("## Another search", '`"ready": true`', "**Watch for 5 minutes,**"):
             self.assertIn(words, skill, words)
 
+    def test_list_links_are_flagged(self):
+        found = results_link.list_links({"offers": [
+            {"site": "Booking list", "link": "https://www.booking.com/searchresults.html?ss=Sheraton"},
+            {"site": "Booking hotel", "link": "https://www.booking.com/hotel/au/sheraton-on-the-park-sydney.html?checkin=2026-11-20"},
+            {"site": "Expedia list", "link": "https://www.expedia.com.au/Hotel-Search?destination=Sheraton"},
+            {"site": "Expedia hotel", "link": "https://www.expedia.com.au/Sydney-Hotels-Sheraton.h4807.Hotel-Information"},
+            {"site": "Trip list", "link": "https://au.trip.com/hotels/list?city=1"},
+            {"site": "Trip hotel", "link": "https://au.trip.com/hotels/sydney-hotel-detail-826040/sheraton/"},
+            {"site": "Kayak hotel", "link": "https://www.kayak.com.au/hotels/Sheraton,Sydney-p24040-h11749/2026-11-20/2026-11-22/2adults"},
+        ]})
+        self.assertEqual(found, ["Booking list", "Expedia list", "Trip list"])
+        self.assertIn('(stayLink(o).search ? "Find it on " : "Continue to ")', self.script)
+        with open(os.path.join(SCRIPTS, "..", "SKILL.md"), encoding="utf-8") as f:
+            self.assertIn("**Check every link before the final update.**", f.read())
+
     def test_built_page_is_up_to_date(self):
         result = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "build_page.py"), "--check"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)

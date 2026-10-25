@@ -1,6 +1,6 @@
 {
   "name": "myroomprice",
-  "version": "0.19.0",
+  "version": "0.19.1",
   "description": "MyRoomPrice, by Londoner in Sydney, finds the lowest real price for a hotel stay, checking booking sites and the hotel's own site in your Chrome and showing the results in a live web-app tab.",
   "author": {
     "name": "Stephen M"

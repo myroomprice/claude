@@ -713,7 +713,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     else if (!o.confirmed) box.append(el("p", { class: "warn", text: "This price was listed on a comparison site but not checked on " + o.site + " itself. Check it before you book." }));
     if (o.taxes !== "included" && o.total !== null) box.append(el("p", { class: "warn", text: o.taxes === "excluded" ? "Taxes and fees are extra on top of this price." : "It isn't confirmed whether this price includes taxes and fees." }));
     if (o.link) {
-      box.append(continueLink(o, "Continue to " + o.site + " ↗", true),
+      // A list link can't pretend to be the hotel: the button says it opens a search.
+      box.append(continueLink(o, (stayLink(o).search ? "Find it on " : "Continue to ") + o.site + " ↗", true),
         el("p", { class: "domain", text: stayLink(o).search
           ? "Opens a search on " + o.link.hostname.replace(/^www\./, "") + ": pick " + (state.data.hotel.name || "the hotel") + " there"
           : "Opens " + o.link.hostname.replace(/^www\./, "") + " in a new tab" + (o.partner ? " · partner link" : "") }));
@@ -740,7 +741,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     bar.hidden = false;
     bar.replaceChildren(
       el("div", {}, el("div", { class: "who", text: o.site }), el("div", { class: "amt", text: money(o.total) })),
-      o.link ? continueLink(o, "Continue ↗", false) : el("span", { class: "fine", text: "No link saved" }));
+      o.link ? continueLink(o, stayLink(o).search ? "Find it ↗" : "Continue ↗", false) : el("span", { class: "fine", text: "No link saved" }));
   }
 
   // Share the results: they live in this page's own link, so sharing the link shares the whole comparison.

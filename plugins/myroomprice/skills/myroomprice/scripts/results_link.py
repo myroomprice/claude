@@ -76,6 +76,8 @@ While the check is running, the same tab is updated with these as well:
 import argparse
 import base64
 import json
+import urllib.parse
+import re
 import os
 import sys
 import types
@@ -124,6 +126,23 @@ def make_url(results, settings):
     return page_address(settings) + "#d=" + encoded
 
 
+# A booking link should open the hotel's own page. These path patterns mean a search or list page,
+# which makes the user find the hotel again (see "Booking links" in references/sites.md).
+LIST_PATH = re.compile(r"searchresults|hotel-search|/search|/hotels/list|/list\b", re.I)
+HOTEL_PATH = re.compile(r"hotel-detail|/hotel/|hotel-information|-h\d+/", re.I)
+
+
+def list_links(results):
+    """Offers whose link is a search or list page rather than the hotel's own page."""
+    found = []
+    for o in results.get("offers") or []:
+        link = (o or {}).get("link") or ""
+        path = urllib.parse.urlsplit(link).path
+        if link and LIST_PATH.search(path) and not HOTEL_PATH.search(path):
+            found.append(o.get("site") or link)
+    return found
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("results", help="results JSON file, or - for standard input")
@@ -137,6 +156,9 @@ def main():
         if key not in results:
             sys.exit('Results need a "%s" field.' % key)
     settings = book_link.load_settings()
+    for site in list_links(results):
+        print("Warning: the link for %s opens a list, not the hotel's own page. Replace it with the hotel's page "
+              "(see \"From a list to the hotel's page\" in references/sites.md)." % site, file=sys.stderr)
     print(make_url(add_partner_links(results, settings), settings))
 
 

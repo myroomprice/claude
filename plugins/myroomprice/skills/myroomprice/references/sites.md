@@ -57,9 +57,9 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
 ## Reaching each site in the worker tab
 
 Go to each site by its address in the worker tab, never through another site's "Visit site" or "View deal" button. Put the dates in the address where the site allows it.
-- **Booking.com** (*Checked*): `https://www.booking.com/searchresults.html?ss=<hotel+name+and+city>&checkin=YYYY-MM-DD&checkout=YYYY-MM-DD&group_adults=2&no_rooms=1&group_children=0`. The hotel is usually first, and its card shows the stay total and whether taxes are included, so you can often read the price there without opening the hotel.
-- **Expedia, Hotels.com and Wotif** (*Not yet checked*): `https://www.expedia.com.au/Hotel-Search?destination=<hotel name>&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&adults=2&rooms=1` (and the same path on hotels.com or wotif.com). If the dates don't hold, use the site's own date picker.
-- **Agoda and Trip.com:** open the home page, type the hotel's name into the search box, pick the hotel from the suggestions, and set the dates. Agoda's hotel page then keeps them in its address (`checkIn=YYYY-MM-DD&los=<nights>`).
+- **Booking.com** (*Checked*): `https://www.booking.com/searchresults.html?ss=<hotel+name+and+city>&checkin=YYYY-MM-DD&checkout=YYYY-MM-DD&group_adults=2&no_rooms=1&group_children=0`. The hotel is usually first, and its card shows the stay total and whether taxes are included, so you can often read the price there. **This is a list, not the booking link.** Get the hotel's own page address from the link on its name (see "From a list to the hotel's page" below) and use that.
+- **Expedia, Hotels.com and Wotif** (*Not yet checked*): `https://www.expedia.com.au/Hotel-Search?destination=<hotel name>&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&adults=2&rooms=1` (and the same path on hotels.com or wotif.com). If the dates don't hold, use the site's own date picker. This is a list too: take the hotel's page address from its name.
+- **Agoda and Trip.com:** open the home page, type the hotel's name into the search box, pick the hotel from the suggestions, and set the dates. If that lands on a list, take the hotel's page address from its name.
 - **Kayak** (*Checked*): see "Kayak" above.
 - **The hotel's own site:** go to the website address Google Hotels shows for it and use its "Book" or "Check availability" box. If its booking page only opens through Google's "Get price" button, use that, last (see "Tabs" in SKILL.md).
 - **A link the user pasted:** open it directly; it's usually the quickest page of all.
@@ -80,6 +80,16 @@ Your browser tools can hide everything after the `?` in an address, so don't rel
 | The hotel's own site | the booking page you read the price on; if its dates are hidden after the `?`, use the hotel's booking page address and say the user may need to re-enter the dates |
 
 How to find the hotel's page address on each site: open the hotel from the site's own search (in the worker tab), then read the address up to the `?`. Booking.com's is `/hotel/<country>/<name>.html`, Agoda's `/<name>/hotel/<city>.html`, Expedia's ends `.h<number>.Hotel-Information`, and Trip.com's is `/hotels/<city>-hotel-detail-<number>/<name>/`. If you only have a search page, don't save it as the link: open the hotel from the results first.
+
+## From a list to the hotel's page
+
+Search pages list hotels; each hotel's name is a link to its own page. **Don't click it** (on Booking.com and Expedia it opens a new tab). Read its address instead: find the link on the hotel's name (for example with a find for "<hotel name> link", or the page's accessibility tree) and take the address up to the `?`. That's the hotel's page; add the dates as in "Booking links" above. What it looks like on each site:
+- Booking.com: `https://www.booking.com/hotel/au/sheraton-on-the-park-sydney.html`
+- Expedia: `https://www.expedia.com.au/Sydney-Hotels-Sheraton-Grand-Sydney-Hyde-Park.h4807.Hotel-Information`
+- Agoda: `https://www.agoda.com/sheraton-grand-sydney-hyde-park/hotel/sydney-au.html`
+- Trip.com: `https://au.trip.com/hotels/sydney-hotel-detail-826040/sheraton-grand-sydney-hyde-park/`
+
+If you can't find the hotel's own address, say so in the offer's `notes` ("link opens a list"), rather than passing a list off as the hotel.
 
 ## YouTube and blogs: reviews
 
