@@ -494,16 +494,23 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
         kind: o.kind === "official" ? "official" : "aggregator",
         room: str(o.room), roomNote: str(o.room_note),
         total: num(o.total),
-        refundable: o.refundable === true, cancelUntil: str(o.cancel_until),
+        // Cancellation: true (free), false (no refund) or null (not checked). Missing is never read as either.
+        refundable: o.refundable === true ? true : o.refundable === false ? false : null, cancelUntil: str(o.cancel_until),
+        // Taxes: "included", "excluded" or "unknown". Only said to be included when the site said so.
+        taxes: ["included", "excluded"].includes(o.taxes) ? o.taxes : o.taxes_included === true ? "included" : o.taxes_included === false ? "excluded" : "unknown",
         pay: o.pay === "at hotel" || o.pay === "now" ? o.pay : "",
         member: str(o.member), includes: list(o.includes).map(str).filter(Boolean).slice(0, 6),
         notes: str(o.notes),
-        confirmed: o.confirmed !== false, checking: o.checking === true, thisPage: o.this_page === true,
+        // How sure the price is: "listed" (seen on a comparison site), "checked" (seen on the booking site itself)
+        // or "unavailable" (no rooms, or it couldn't be confirmed). Without a state it's only listed.
+        verified: ["listed", "checked", "unavailable"].includes(o.verified) ? o.verified : o.confirmed === true ? "checked" : "listed",
+        checking: o.checking === true, thisPage: o.this_page === true,
         link: safeUrl(o.link), partner: o.partner === true,
       };
+      offer.confirmed = offer.verified === "checked";
       offer.logo = logoKey(offer.site, str(o.logo), offer.kind === "official");
       // A key that stays the same between updates, so a choice survives as results arrive.
-      let key = str(o.id) || [offer.site, offer.room, offer.refundable ? "r" : "n", offer.member].join("|");
+      let key = str(o.id) || [offer.site, offer.room, offer.refundable === true ? "r" : offer.refundable === false ? "n" : "u", offer.member].join("|");
       while (keys.has(key)) key += "+";
       keys.add(key);
       offer.key = key;
@@ -538,7 +545,12 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     if (s.rooms > 1) parts.push(s.rooms + " rooms");
     return parts.join(", ");
   }
-  function cancelText(o) { return o.refundable ? "Free cancellation" + (o.cancelUntil ? " until " + o.cancelUntil : "") : "No refund"; }
+  function cancelText(o) {
+    if (o.refundable === true) return "Free cancellation" + (o.cancelUntil ? " until " + o.cancelUntil : "");
+    return o.refundable === false ? "No refund" : "Cancellation terms not checked";
+  }
+  const TAX_SHORT = { included: "total incl. taxes", excluded: "total before taxes", unknown: "total, taxes not confirmed" };
+  const TAX_LONG = { included: "taxes and fees included", excluded: "before taxes and fees", unknown: "taxes and fees not confirmed" };
   const live = () => state.data && state.data.status === "checking";
   // Claude is working something out, or waiting for the user's answer, before it checks prices.
   const watching = () => state.data && (state.data.status === "thinking" || state.data.status === "question");
@@ -547,18 +559,23 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   function filtered() {
     const f = (id) => $(id).checked;
     const out = state.data.offers.filter((o) =>
-      (!f("f-refundable") || o.refundable) && (!f("f-payhotel") || o.pay === "at hotel") && (!f("f-confirmed") || (o.confirmed && !o.checking)));
+      (!f("f-refundable") || o.refundable === true) && (!f("f-payhotel") || o.pay === "at hotel") && (!f("f-confirmed") || (o.confirmed && !o.checking)));
     const mode = $("sort").value;
     const key = (o) => o.total;
-    const sure = (o) => o.confirmed && !o.checking;
+    // Checked prices first, then listed ones, then sites that had no rooms.
+    const sureness = (o) => (o.verified === "unavailable" ? 2 : o.confirmed && !o.checking ? 0 : 1);
+    const cancelRank = (o) => (o.refundable === true ? 0 : o.refundable === null ? 1 : 2);
     out.sort((a, b) =>
-      (sure(a) === sure(b) ? 0 : sure(a) ? -1 : 1) ||
-      (mode === "refundable" ? (a.refundable === b.refundable ? 0 : a.refundable ? -1 : 1) : 0) ||
+      (sureness(a) - sureness(b)) || (TAX_RANK[a.taxes] - TAX_RANK[b.taxes]) ||
+      (mode === "refundable" ? cancelRank(a) - cancelRank(b) : 0) ||
       ((key(a) ?? Infinity) - (key(b) ?? Infinity)));
     return out;
   }
   const confirmedOffers = () => state.data.offers.filter((o) => o.confirmed && !o.checking && o.total !== null);
-  const cheapest = (arr, key = "total") => arr.slice().sort((a, b) => a[key] - b[key])[0] || null;
+  // Like with like: totals with taxes come before unconfirmed ones, and those before pre-tax prices,
+  // so a price before tax never looks cheaper than an all-in one.
+  const TAX_RANK = { included: 0, unknown: 1, excluded: 2 };
+  const cheapest = (arr, key = "total") => arr.slice().sort((a, b) => (TAX_RANK[a.taxes] - TAX_RANK[b.taxes]) || (a[key] - b[key]))[0] || null;
 
   // ---------- drawing ----------
   function select(key, scroll) {
@@ -576,10 +593,11 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       o.thisPage && el("span", { class: "chip ink", text: "This page" }),
       o.kind === "official" && el("span", { class: "chip ocean", text: "Hotel's own site" }),
       o.checking && el("span", { class: "chip sun" }, el("span", { class: "pulse" }), "Checking"),
-      el("span", { class: "chip " + (o.refundable ? "reef" : "sun"), text: cancelText(o) }),
+      o.verified !== "unavailable" && el("span", { class: "chip" + (o.refundable === true ? " reef" : o.refundable === false ? " sun" : ""), text: cancelText(o) }),
       o.pay === "at hotel" && el("span", { class: "chip", text: "Pay at the hotel" }),
       o.member && el("span", { class: "chip ocean", text: o.member }),
-      !o.confirmed && !o.checking && el("span", { class: "chip", text: "Listed, not confirmed" }));
+      o.verified === "listed" && !o.checking && el("span", { class: "chip", text: "Listed price, not checked" }),
+      o.verified === "unavailable" && el("span", { class: "chip", text: "Not available" }));
   }
 
   function offerCard(o, rank) {
@@ -597,8 +615,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
         o.notes && el("p", { class: "notes", text: o.notes })),
       el("div", { class: "side" },
         el("div", {},
-          el("div", { class: "price-big", text: o.total === null ? "No price" : (o.confirmed && !o.checking ? "" : "listed ") + money(amount) }),
-          o.total !== null && el("div", { class: "price-small", text: "total incl. taxes · " + money(amount / nights) + " a night" })),
+          el("div", { class: "price-big", text: o.total === null ? (o.verified === "unavailable" ? "Unavailable" : "No price") : (o.confirmed && !o.checking ? "" : "listed ") + money(amount) }),
+          o.total !== null && el("div", { class: "price-small", text: TAX_SHORT[o.taxes] + " · " + money(amount / nights) + " a night" })),
         el("button", { class: selected ? "btn btn-ghost" : "btn btn-primary", type: "button", "aria-pressed": selected ? "true" : "false",
           onclick: () => select(o.key, false) }, selected ? "Selected" : "Select")));
   }
@@ -621,7 +639,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     const s = state.data.stay;
     box.append(
       el("div", {}, el("div", { class: "eyebrow", style: "color: var(--ocean)", text: o.site }), o.room && el("div", { text: o.room })),
-      el("div", {}, el("div", { class: "total", text: money(o.total) }), el("div", { class: "fine", text: "Total for " + state.data.nights + (state.data.nights === 1 ? " night" : " nights") + ", taxes and fees included" })),
+      el("div", {}, el("div", { class: "total", text: money(o.total) }), el("div", { class: "fine", text: "Total for " + state.data.nights + (state.data.nights === 1 ? " night" : " nights") + ", " + TAX_LONG[o.taxes] })),
       el("ul", {},
         el("li", { text: day(s.checkin) + " to " + day(s.checkout) + ", " + guests(s) }),
         el("li", { text: cancelText(o) }),
@@ -630,7 +648,9 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
         o.includes.length > 0 && el("li", { text: "Includes " + o.includes.join(", ") }),
         o.notes && el("li", { text: o.notes })));
     if (o.checking) box.append(el("p", { class: "warn", text: "Claude is still checking this price on the site." }));
-    else if (!o.confirmed) box.append(el("p", { class: "warn", text: "This price was listed but not confirmed on the site. Check it before you book." }));
+    else if (o.verified === "unavailable") box.append(el("p", { class: "warn", text: "This site had no rooms, or the price couldn't be confirmed, when Claude checked." }));
+    else if (!o.confirmed) box.append(el("p", { class: "warn", text: "This price was listed on a comparison site but not checked on " + o.site + " itself. Check it before you book." }));
+    if (o.taxes !== "included" && o.total !== null) box.append(el("p", { class: "warn", text: o.taxes === "excluded" ? "Taxes and fees are extra on top of this price." : "It isn't confirmed whether this price includes taxes and fees." }));
     if (o.link) {
       box.append(continueLink(o, "Continue to " + o.site + " ↗", true),
         el("p", { class: "domain", text: "Opens " + o.link.hostname.replace(/^www\./, "") + " in a new tab" + (o.partner ? " · partner link" : "") }));
@@ -653,7 +673,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       el("span", { class: "who", text: o.site }), el("span", { class: "sub", text: sub })));
     const best = cheapest(conf);
     tile("Cheapest", best, best && [best.room, cancelText(best)].filter(Boolean).join(" · "));
-    const refund = cheapest(conf.filter((o) => o.refundable));
+    const refund = cheapest(conf.filter((o) => o.refundable === true));
     if (refund && refund !== best) tile("Cheapest you can cancel", refund, [refund.room, cancelText(refund)].filter(Boolean).join(" · "));
     const own = cheapest(conf.filter((o) => o.kind === "official"));
     if (own && own !== best) tile("Hotel's own site", own, best ? money(own.total - best.total) + " more than the cheapest" : "");

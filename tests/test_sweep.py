@@ -15,7 +15,7 @@ def rate(after, before):
 
 ARGS = types.SimpleNamespace(hotel="The Langham Boston", check_in="2026-12-10", check_out="2026-12-12",
                              adults=2, rooms=1, children_ages="", currency="USD", gl="us",
-                             tripadvisor_key="g60745-d114149", tripadvisor_url=None)
+                             tripadvisor_key="g60745-d114149", tripadvisor_url=None, where="", property_token="")
 
 
 def empty_result():
@@ -65,6 +65,39 @@ class SerpApiTest(unittest.TestCase):
     def tearDown(self):
         sweep.get_json, sweep.serpapi_key = self._saved
 
+    def args(self, **changes):
+        return types.SimpleNamespace(**dict(vars(ARGS), **changes))
+
+    def test_unclear_hotel_gets_no_prices_and_a_list_to_ask_about(self):
+        # Two hotels match "hyde park sydney" about equally: no prices, and both offered as choices.
+        self.listing = {"properties": [
+            {"type": "hotel", "name": "Sheraton Grand Sydney Hyde Park", "property_token": "SHERATON"},
+            {"type": "hotel", "name": "Hyde Park Inn", "property_token": "INN"},
+        ]}
+        result = empty_result()
+        sweep.sweep_serpapi(self.args(hotel="hyde park sydney", where="Sydney"), 2, result)
+        self.assertEqual(result["offers"], [])
+        self.assertEqual(len(self.calls), 1, "no second search for an unclear hotel")
+        self.assertIn("Ask the user", result["skipped"][0]["reason"])
+        self.assertFalse(result["hotel_match"]["confident"])
+        self.assertEqual({c["property_token"] for c in result["hotel_match"]["candidates"]}, {"SHERATON", "INN"})
+
+    def test_a_different_hotel_is_not_priced(self):
+        # Google jumps straight to a hotel, but it isn't the one asked for.
+        self.details = dict(self.details, name="Langham Place Fifth Avenue", address="400 Fifth Ave, New York")
+        self.listing = self.details
+        result = empty_result()
+        sweep.sweep_serpapi(self.args(hotel="The Langham", where="Boston"), 2, result)
+        self.assertEqual(result["offers"], [])
+        self.assertFalse(result["hotel_match"]["confident"])
+
+    def test_a_known_property_is_used_directly(self):
+        result = empty_result()
+        sweep.sweep_serpapi(self.args(hotel="anything", property_token="RIGHT"), 2, result)
+        self.assertEqual(len(self.calls), 1)
+        self.assertIn("property_token=RIGHT", self.calls[0])
+        self.assertEqual(len(result["offers"]), 3)
+
     def test_picks_matching_hotel_and_ranks_all_in_prices_first(self):
         result = empty_result()
         sweep.sweep_serpapi(ARGS, 2, result)
@@ -101,3 +134,35 @@ class XoteloTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class MatchHotelTest(unittest.TestCase):
+    """The name matching on its own, with made-up candidate lists."""
+
+    def test_city_in_the_address_counts(self):
+        m = sweep.match_hotel([{"name": "The Langham", "address": "250 Franklin St, Boston, MA"}], "Langham Boston")
+        self.assertTrue(m["confident"])
+
+    def test_similar_names_are_a_question_not_a_guess(self):
+        m = sweep.match_hotel([{"name": "Sheraton Grand Sydney Hyde Park"}, {"name": "Hyde Park Inn"}],
+                              "hyde park sydney", "Sydney")
+        self.assertFalse(m["confident"])
+        self.assertEqual(len(m["alternatives"]), 2)
+
+    def test_a_partial_name_alone_is_not_enough(self):
+        m = sweep.match_hotel([{"name": "Hyde Park Inn"}], "Sheraton Grand Sydney Hyde Park")
+        self.assertFalse(m["confident"])
+
+    def test_the_wrong_city_is_rejected(self):
+        m = sweep.match_hotel([{"name": "The Langham", "address": "250 Franklin St, Boston, MA"}], "The Langham", "Melbourne")
+        self.assertFalse(m["confident"])
+
+    def test_exact_name_beats_a_lookalike(self):
+        m = sweep.match_hotel([{"name": "Langham Place Fifth Avenue"}, {"name": "The Langham, Boston"}], "The Langham Boston")
+        self.assertTrue(m["confident"])
+        self.assertEqual(m["best"]["name"], "The Langham, Boston")
+
+    def test_accents_and_ampersands(self):
+        m = sweep.match_hotel([{"name": "Hôtel Plaza Athénée"}], "Hotel Plaza Athenee Paris", "Paris")
+        self.assertTrue(m["confident"], m)
+        self.assertEqual(sweep.words("Mandarin & Co"), {"mandarin", "and", "co"})

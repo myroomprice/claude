@@ -9,7 +9,9 @@ link alone when it can't be a partner link:
   - no partner ID is set in settings.json yet.
 
 Covered sites go through Stay22 (https://dev.stay22.com/docs/allez), which
-sends the user to the same hotel page with the same dates.
+sends the user to the same hotel page with the same dates. The page link keeps its
+booking details (hotel, dates, guests, room); only tracking and other affiliates'
+codes are taken out (see TRACKING_PARAMS).
 
 Example:
   book_link.py --check-in 2026-12-10 --check-out 2026-12-12 --adults 2 \
@@ -68,10 +70,34 @@ def provider_for(host):
     return None
 
 
+# Query parameters that only track who sent the visitor, or carry someone else's
+# affiliate ID. These are dropped; everything else (hotel ID, dates, guests, the
+# chosen room or rate) is kept so the link still opens the same offer.
+TRACKING_PARAMS = {
+    # other affiliates' IDs and labels
+    "aid", "label", "affiliate", "affid", "affiliate_id", "affiliateid", "affcid", "afflid",
+    "affdtl", "my_ad", "cid", "tag", "partner", "partnerid", "partner_id", "subid", "sub_id",
+    "clickref", "irclickid", "irgwc", "sharedid", "rffrid", "semcid", "semdtl",
+    # session and referral codes
+    "sid", "ref", "refid", "ref_id", "src", "srsltid",
+    # ad-click IDs
+    "gclid", "gbraid", "wbraid", "fbclid", "msclkid", "yclid", "dclid", "ttclid", "twclid",
+    "mc_cid", "mc_eid",
+}
+TRACKING_PREFIXES = ("utm_",)
+
+
+def is_tracking(name):
+    name = name.lower()
+    return name in TRACKING_PARAMS or name.startswith(TRACKING_PREFIXES)
+
+
 def clean_hotel_url(url):
-    """The hotel page alone: no query string, so no one else's tracking codes."""
+    """The same booking page without other people's tracking: keeps the hotel, dates,
+    guests and room, and drops only the tracking and affiliate parameters listed above."""
     p = urllib.parse.urlsplit(url)
-    return urllib.parse.urlunsplit((p.scheme or "https", p.netloc, p.path, "", ""))
+    kept = [(k, v) for k, v in urllib.parse.parse_qsl(p.query, keep_blank_values=True) if not is_tracking(k)]
+    return urllib.parse.urlunsplit((p.scheme or "https", p.netloc, p.path, urllib.parse.urlencode(kept), p.fragment))
 
 
 def make_link(url, args, settings):

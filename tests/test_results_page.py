@@ -137,6 +137,22 @@ class PageTest(unittest.TestCase):
         self.assertNotIn('src="brand/', guide)
         self.assertIn('href="https://myroomprice.com/setup/"', self.html)
 
+    def test_nothing_is_assumed_about_a_price(self):
+        # A price is only "checked" when Claude says so; cancellation and taxes have an unknown state.
+        self.assertIn('o.confirmed === true ? "checked" : "listed"', self.script)
+        self.assertNotIn("o.confirmed !== false", self.script)
+        self.assertIn('o.refundable === true ? true : o.refundable === false ? false : null', self.script)
+        self.assertIn('"Cancellation terms not checked"', self.script)
+        self.assertIn('o.taxes_included === false ? "excluded" : "unknown"', self.script)
+        self.assertIn('unknown: "total, taxes not confirmed"', self.script)
+        # Only checked prices, and only confirmed free cancellation, make the highlight tiles.
+        self.assertIn("const confirmedOffers = () => state.data.offers.filter((o) => o.confirmed && !o.checking && o.total !== null);", self.script)
+        self.assertIn("conf.filter((o) => o.refundable === true)", self.script)
+        self.assertIn('offer.confirmed = offer.verified === "checked";', self.script)
+        # A price before tax never beats an all-in total.
+        self.assertIn("const TAX_RANK = { included: 0, unknown: 1, excluded: 2 };", self.script)
+        self.assertIn("(TAX_RANK[a.taxes] - TAX_RANK[b.taxes]) || (a[key] - b[key])", self.script)
+
     def test_built_page_is_up_to_date(self):
         result = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "build_page.py"), "--check"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)

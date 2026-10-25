@@ -16,8 +16,9 @@ Results format (only "hotel", "stay" and "offers" are required):
   "offers": [
     {"site": "Super.com", "logo": "supercom", "kind": "aggregator",
      "room": "Superior Room, 1 Queen", "room_note": "smaller room", "total": 1434,
+     "verified": "checked", "taxes": "included",
      "refundable": true, "cancel_until": "", "pay": "now", "member": "",
-     "includes": ["breakfast for two"], "notes": "", "confirmed": true,
+     "includes": ["breakfast for two"], "notes": "",
      "this_page": false, "link": "https://...", "keep_link": false}
   ],
   "couldnt_check": [{"site": "Agoda", "why": "CAPTCHA"}],
@@ -30,6 +31,16 @@ Results format (only "hotel", "stay" and "offers" are required):
 }
 Each review's "kind" is "video", "article" or "review" (an overall rating, given in "rating").
 The page lists up to 8 and opens each in a viewer; YouTube videos play there.
+
+"verified" says how sure the price is, and is never assumed:
+  "checked"      seen on the booking site itself (the room, the total and the terms)
+  "listed"       only seen on a comparison site (Google Hotels, Trivago, Kayak); the default
+  "unavailable"  the site had no rooms, or the price couldn't be confirmed
+Only "checked" prices count for Cheapest. Older links with "confirmed": true still read as "checked".
+
+"taxes" is "included", "excluded" or "unknown" (the default). Say "included" only when the site
+showed the total with taxes and fees. "refundable" is true (free cancellation), false (no refund),
+or left out when the terms weren't checked; the page then says "Cancellation terms not checked".
 
 "kind" is "official" for the hotel's own site, otherwise "aggregator". "pay" is "now",
 "at hotel" or "". "total" is the whole stay including taxes and fees. Set "keep_link": true

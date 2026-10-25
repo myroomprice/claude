@@ -21,6 +21,7 @@ import json
 import os
 import re
 import sys
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -52,24 +53,85 @@ def serpapi_key():
 
 # ---------- Google Hotels via SerpApi ----------
 
+# Words that say what kind of place it is, not which one. They don't help tell hotels apart.
+GENERIC = {"the", "a", "an", "and", "of", "at", "in", "on", "by", "hotel", "hotels", "resort", "resorts",
+           "inn", "suites", "suite", "spa", "apartments", "apartment", "lodge", "collection", "boutique"}
+# How sure a name match must be before its prices are used (see match_hotel).
+MIN_SCORE = 0.7      # overall: half how much of the query the hotel covers, half how much of its name the query has
+MIN_COVERAGE = 0.75  # share of the query's distinctive words found in the hotel's name or address
+CLOSE_CALL = 0.15    # another hotel within this score is a real alternative, so ask
+
+
 def words(text):
-    return set(re.findall(r"[a-z0-9]+", (text or "").lower()))
+    text = unicodedata.normalize("NFKD", (text or "").lower().replace("&", " and "))
+    text = "".join(c for c in text if not unicodedata.combining(c))
+    return set(re.findall(r"[a-z0-9]+", text))
 
 
-def best_match(properties, hotel):
-    """Pick the property whose name shares the most words with the query."""
-    wanted = words(hotel)
-    best, best_score = None, -1.0
-    for p in properties:
-        if p.get("type") not in (None, "hotel"):
+def match_score(query, name, address="", place=()):
+    """How well a hotel matches what the user asked for: (score, coverage), both 0 to 1.
+
+    coverage: the share of the query's distinctive words found in the hotel's name or address
+    (so "Langham Boston" covers "The Langham" at 250 Franklin St, Boston).
+    precision: the share of the hotel name's distinctive words that the query mentions
+    (so "Hyde Park" doesn't fully match "Sheraton Grand Sydney Hyde Park").
+    Words of the place (from --where) are left out here; in_place checks them separately.
+    """
+    wanted = words(query) - GENERIC - set(place)
+    name_words = words(name) - GENERIC - set(place)
+    if not wanted or not name_words:
+        return 0.0, 0.0
+    coverage = len(wanted & (name_words | words(address))) / len(wanted)
+    precision = len(name_words & wanted) / len(name_words)
+    return round((coverage + precision) / 2, 3), round(coverage, 3)
+
+
+def in_place(where, name, address):
+    """True when the place the user gave (a city, town or country) appears in the hotel's name or address,
+    or when there's nothing to check it against."""
+    place = words(where) - GENERIC
+    known = words(name) | words(address)
+    return not place or not words(address) or bool(place & known)
+
+
+def match_hotel(candidates, hotel, where=""):
+    """Choose the hotel the user meant from a list of {"name", "address", ...}, or decide it isn't clear.
+
+    Returns {"confident": bool, "best": candidate or None, "score", "coverage", "reason",
+    "alternatives": [candidates worth asking about]}. Prices are only used when confident.
+    """
+    place = words(where) - GENERIC
+    scored = []
+    for c in candidates:
+        if c.get("type") not in (None, "hotel"):
             continue
-        have = words(p.get("name"))
-        if not have:
-            continue
-        score = len(wanted & have) / len(wanted | have)
-        if score > best_score:
-            best, best_score = p, score
-    return best
+        score, coverage = match_score(hotel, c.get("name"), c.get("address") or "", place)
+        if not in_place(where, c.get("name"), c.get("address") or ""):
+            score, coverage = score / 2, coverage / 2
+        scored.append((score, coverage, c))
+    scored.sort(key=lambda t: (-t[0], -t[1]))
+    if not scored:
+        return {"confident": False, "best": None, "score": 0, "coverage": 0, "alternatives": [],
+                "reason": "no hotels found"}
+    score, coverage, best = scored[0]
+    # A rival is another hotel that also contains what the user typed, and scores close or covers as much.
+    rivals = [c for sc, cov, c in scored[1:] if cov >= MIN_COVERAGE and (sc >= score - CLOSE_CALL or cov >= coverage)]
+    result = {"best": best, "score": score, "coverage": coverage,
+              "alternatives": [c for sc, cov, c in scored[:6] if sc >= 0.4]}
+    if score < MIN_SCORE or coverage < MIN_COVERAGE:
+        result.update(confident=False, reason="no hotel matches the name closely enough")
+    elif rivals:
+        result.update(confident=False, reason="several hotels match the name about equally well")
+    else:
+        result.update(confident=True, reason="")
+    return result
+
+
+def candidate(p):
+    """The parts of a Google Hotels property that matter for choosing one."""
+    return {"name": p.get("name"), "address": p.get("address") or "", "type": p.get("type"),
+            "property_token": p.get("property_token"), "rating": p.get("overall_rating"),
+            "hotel_class": p.get("hotel_class") or p.get("extracted_hotel_class")}
 
 
 def num(rate, *keys):
@@ -140,6 +202,19 @@ def serpapi_offer(entry, nights, featured):
     return offer
 
 
+class Unsure(Exception):
+    """The hotel can't be identified for sure, so its prices mustn't be used."""
+
+
+def public_match(match):
+    """The match result as reported in the output."""
+    def show(c):
+        return {k: v for k, v in c.items() if k != "type" and v not in (None, "")}
+    return {"confident": match["confident"], "reason": match["reason"], "score": match["score"],
+            "chosen": show(match["best"]) if match["confident"] and match["best"] else None,
+            "candidates": [show(c) for c in match["alternatives"]] if not match["confident"] else []}
+
+
 def sweep_serpapi(args, nights, result):
     key = serpapi_key()
     if not key:
@@ -161,22 +236,37 @@ def sweep_serpapi(args, nights, result):
         params["children"] = len(args.children_ages.split(","))
         params["children_ages"] = args.children_ages
     base = "https://serpapi.com/search.json?"
+    token, where = getattr(args, "property_token", ""), getattr(args, "where", "")
+    if token:
+        # The user, or an earlier question on the page, already picked the exact property.
+        params["property_token"] = args.property_token
     try:
         data = get_json(base + urllib.parse.urlencode(params))
         searches = 1
         if data.get("error"):
             raise RuntimeError(data["error"])
-        # A specific hotel name usually lands straight on the property details.
-        # A vaguer one returns a list, so pick the closest name and ask again.
         if not (data.get("featured_prices") or data.get("prices")) and data.get("properties"):
-            match = best_match(data["properties"], args.hotel)
-            if not match or not match.get("property_token"):
-                raise RuntimeError("no matching hotel in Google Hotels results")
-            params["property_token"] = match["property_token"]
+            # A list of hotels came back: pick the one meant, or stop and ask.
+            match = match_hotel([candidate(p) for p in data["properties"]], args.hotel, where)
+            result["hotel_match"] = public_match(match)
+            if not match["confident"] or not match["best"].get("property_token"):
+                raise Unsure(match["reason"])
+            params["property_token"] = match["best"]["property_token"]
             data = get_json(base + urllib.parse.urlencode(params))
             searches += 1
             if data.get("error"):
                 raise RuntimeError(data["error"])
+        if not token:
+            # Google can also jump straight to one hotel. Check it's the one asked for.
+            match = match_hotel([{"name": data.get("name"), "address": data.get("address") or "",
+                                  "property_token": data.get("property_token")}], args.hotel, where)
+            result["hotel_match"] = public_match(match)
+            if not match["confident"]:
+                raise Unsure("Google Hotels found " + str(data.get("name")) + ", which may not be the hotel asked for")
+    except Unsure as e:
+        result["skipped"].append({"feed": "google_hotels", "reason": "hotel not identified for sure: " + str(e) +
+                                  ". Ask the user which hotel they mean (see hotel_match), then run again with --property-token."})
+        return
     except (urllib.error.URLError, RuntimeError, ValueError) as e:
         result["skipped"].append({"feed": "google_hotels", "reason": str(e)})
         return
@@ -297,11 +387,19 @@ def print_table(result):
                 name[:36], total, "yes" if o["total_includes_tax"] else "no", pn, cancel, extra))
     for s in result["skipped"]:
         print("\nSkipped {}: {}".format(s["feed"], s["reason"]))
+    match = result.get("hotel_match") or {}
+    if match.get("candidates"):
+        print("\nWhich hotel? Candidates:")
+        for c in match["candidates"]:
+            print("  - {}{}  (property_token {})".format(c.get("name"), " | " + c["address"] if c.get("address") else "",
+                                                       c.get("property_token", "?")))
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--hotel", required=True, help='hotel name with city, e.g. "The Langham Boston"')
+    ap.add_argument("--hotel", required=True, help='hotel name, e.g. "The Langham Boston"')
+    ap.add_argument("--where", default="", help='city, town or country, e.g. "Boston, USA"; checked against the hotel found')
+    ap.add_argument("--property-token", default="", help="Google Hotels property_token of the exact hotel, e.g. from hotel_match.candidates")
     ap.add_argument("--check-in", required=True, help="YYYY-MM-DD")
     ap.add_argument("--check-out", required=True, help="YYYY-MM-DD")
     ap.add_argument("--adults", type=int, default=2)
@@ -326,12 +424,13 @@ def main():
         sys.exit("Check-in is in the past.")
 
     result = {
-        "query": {"hotel": args.hotel, "check_in": args.check_in, "check_out": args.check_out,
+        "query": {"hotel": args.hotel, "where": args.where, "check_in": args.check_in, "check_out": args.check_out,
                   "adults": args.adults, "rooms": args.rooms, "children_ages": args.children_ages,
                   "currency": args.currency},
         "nights": nights,
         "checked_at": dt.datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %Z"),
         "hotel": None,
+        "hotel_match": None,
         "feeds_used": [],
         "skipped": [],
         "offers": [],

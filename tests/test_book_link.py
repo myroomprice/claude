@@ -25,11 +25,50 @@ class BookLinkTest(unittest.TestCase):
         self.assertTrue(r["url"].startswith("https://www.stay22.com/allez/booking?"))
         q = query(r["url"])
         self.assertEqual(q["aid"], "TESTAID")
-        # Other parties' tracking codes are dropped from the hotel page link.
-        self.assertEqual(q["link"], "https://www.booking.com/hotel/us/langham-boston.html")
+        # Other parties' affiliate codes are dropped; the booking details stay.
+        self.assertEqual(q["link"], "https://www.booking.com/hotel/us/langham-boston.html?checkin=2026-12-10")
         self.assertEqual((q["checkin"], q["checkout"], q["adults"], q["currency"]),
                          ("2026-12-10", "2026-12-12", "2", "AUD"))
         self.assertEqual(q["campaign"], "myroomprice")
+
+    def test_booking_details_survive_cleaning(self):
+        # Hotel, dates, guests and the chosen room stay in the link; tracking and other
+        # affiliates' IDs go. (Example links written for the test, not live pages.)
+        url = ("https://www.booking.com/hotel/au/sheraton-on-the-park.html?aid=304142&label=gen173nr&sid=abc"
+               "&checkin=2026-11-20&checkout=2026-11-22&group_adults=2&group_children=1&age=7&no_rooms=1"
+               "&highlighted_blocks=12345_67_2_1_0&utm_source=news&gclid=xyz#RD12345")
+        q = query(book_link.clean_hotel_url(url))
+        for kept, value in [("checkin", "2026-11-20"), ("checkout", "2026-11-22"), ("group_adults", "2"),
+                            ("group_children", "1"), ("age", "7"), ("no_rooms", "1"), ("highlighted_blocks", "12345_67_2_1_0")]:
+            self.assertEqual(q.get(kept), value, kept)
+        for gone in ("aid", "label", "sid", "utm_source", "gclid"):
+            self.assertNotIn(gone, q, gone)
+        self.assertTrue(book_link.clean_hotel_url(url).endswith("#RD12345"))
+
+    def test_other_sites_affiliate_codes_are_dropped(self):
+        agoda = "https://www.agoda.com/park-hyatt-tokyo/hotel/tokyo-jp.html?cid=1844104&tag=abc&checkIn=2027-03-01&los=3&adults=2&rooms=1"
+        q = query(book_link.clean_hotel_url(agoda))
+        self.assertEqual((q["checkIn"], q["los"], q["adults"], q["rooms"]), ("2027-03-01", "3", "2", "1"))
+        self.assertNotIn("cid", q)
+        self.assertNotIn("tag", q)
+        expedia = "https://www.expedia.com.au/Sydney-Hotels.h123.Hotel-Information?chkin=2026-11-20&chkout=2026-11-22&rm1=a2&AFFCID=x&afflid=y&my_ad=z"
+        q = query(book_link.clean_hotel_url(expedia))
+        self.assertEqual((q["chkin"], q["chkout"], q["rm1"]), ("2026-11-20", "2026-11-22", "a2"))
+        for gone in ("AFFCID", "afflid", "my_ad"):
+            self.assertNotIn(gone, q)
+
+    def test_partner_link_encodes_the_cleaned_page(self):
+        url = "https://www.booking.com/hotel/au/x.html?checkin=2026-11-20&checkout=2026-11-22&group_adults=2&aid=1"
+        r = book_link.make_link(url, ARGS, WITH_ID)
+        # The page link travels as one encoded parameter, so its own & and = can't leak into Stay22's.
+        self.assertIn("link=https%3A%2F%2Fwww.booking.com%2Fhotel%2Fau%2Fx.html%3Fcheckin%3D2026-11-20%26checkout%3D2026-11-22%26group_adults%3D2", r["url"])
+        self.assertEqual(query(r["url"])["aid"], "TESTAID")
+
+    def test_no_partner_id_leaves_the_link_untouched(self):
+        url = "https://www.booking.com/hotel/au/x.html?aid=1&checkin=2026-11-20"
+        r = book_link.make_link(url, ARGS, {"stay22_aid": ""})
+        self.assertFalse(r["affiliate"])
+        self.assertEqual(r["url"], url)
 
     def test_country_domains_are_recognised(self):
         cases = {

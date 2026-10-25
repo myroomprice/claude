@@ -46,8 +46,8 @@ MyRoomPrice shows its results in one browser tab that works like a booking site:
 
    Name each step after the site, so the page can show its logo as it checks: for example Google Hotels, Trivago, Kayak, the hotel's own site, then the booking sites. To be sure of a logo, give the step a `"logo"`. Use one of `google`, `trivago`, `booking`, `expedia`, `hotelscom`, `agoda`, `trip`, `priceline`, `supercom`, `skylark`, `kayak`, `tripadvisor`, `vrbo`, `qantas`, `luxuryescapes`, `wotif`, `webjet`, `lastminute` or `hoteltonight`, or `hotel` for the hotel's own site. Offers take the same `"logo"`. Any other site gets a lettered badge.
 3. **Update it as you go,** in that same tab, about 3 to 6 times in all, not after every click:
-   - **After the comparison sites:** add the listed offers. Mark the ones you're about to open with `"checking": true`, and the rest with `"confirmed": false`.
-   - **After each site you confirm:** fill in its real total and terms, set `"checking": false`, and mark its step `done`, or `blocked` if a CAPTCHA stopped you. Mark the step you're on now `checking`. The page draws a spinner around that site's logo.
+   - **After the comparison sites:** add the listed offers with `"verified": "listed"`. Mark the ones you're about to open with `"checking": true`.
+   - **After each site you confirm:** fill in its real total and terms, set `"verified": "checked"` and `"checking": false`, and mark its step `done`, or `blocked` if a CAPTCHA stopped you. If the site had no rooms, or you couldn't confirm the price, set `"verified": "unavailable"`. Mark the step you're on now `checking`. The page draws a spinner around that site's logo.
    - **Each time:** a short `message` saying what you're doing now, for example "Reading the Langham's own rates".
 
    The page redraws in place and keeps the user's filters and their chosen option.
@@ -110,7 +110,7 @@ This skill's scripts live in its own folder, `${CLAUDE_SKILL_DIR}`. If that vari
 
 ```bash
 python3 "${CLAUDE_SKILL_DIR}/scripts/sweep.py" \
-  --hotel "The Langham Boston" --check-in 2026-12-10 --check-out 2026-12-12 \
+  --hotel "The Langham" --where "Boston, USA" --check-in 2026-12-10 --check-out 2026-12-12 \
   --adults 2 --currency AUD --gl au \
   --tripadvisor-url "https://www.tripadvisor.com/Hotel_Review-g60745-d114149-Reviews-The_Langham_Boston-Boston_Massachusetts.html"
 ```
@@ -120,7 +120,7 @@ It asks two feeds and prints every offer, cheapest first. Add `--json` to read t
 - **Xotelo** is free and needs no key, but it needs the hotel's TripAdvisor page: find that with a web search (`tripadvisor Hotel_Review <hotel name> <city>`). Its prices are before tax and lag behind live prices, so treat them as a rough guide.
 - **Location:** set `--gl` to the country the user books from. Booking sites price differently by country.
 
-Check the hotel name the script matched. If it's the wrong property, run it again with the street or neighbourhood added.
+**Hotel matching.** The script only uses Google's prices when it's sure it found the hotel asked for: the name has to match closely, and the place given with `--where` has to appear in the hotel's address. If it isn't sure (several hotels match about equally, or none matches well), it reports no Google prices and lists the candidates under `hotel_match.candidates`, each with a `property_token`. Ask the user which one they mean (on the page if the MyRoomPrice tab is open), then run it again with `--property-token`. Never compare prices from different hotels.
 
 ## 3. The price-comparison sites
 
@@ -183,7 +183,9 @@ For each, note the `kind` (`video`, `article` or `review`), the `title`, the `so
 Lead with the answer. (Amounts below say AUD because a skill file can't contain a dollar sign followed by a digit. In your report, write amounts the way the sites show them.) The examples come from a live test: The Langham, Boston, 10-12 Dec 2026, 2 adults, seen from Australia.
 
 **The app tab** holds the full results (see "The app tab" above). The final update includes every offer you'd put in the table, with:
-- the totals and terms you confirmed
+- the totals and terms you confirmed, each with how sure it is: `"verified"` is `"checked"` only for prices you saw on the booking site itself, `"listed"` for prices only seen on a comparison site, and `"unavailable"` for sites with no rooms. The page never treats a price as checked unless you say so.
+- `"taxes": "included"` only when the site showed the total with taxes and fees; `"excluded"` when it showed the price before them; otherwise leave it out (the page says taxes aren't confirmed)
+- `"refundable": true` or `false` only when you saw the cancellation terms; leave it out when you didn't (the page says the terms weren't checked)
 - the link you found for each offer
 - `"this_page": true` on the offer from the page the user started on
 - `"keep_link": true` on any link the user gave you
