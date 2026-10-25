@@ -1097,7 +1097,16 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     $("request").textContent = "";
     $("claude").hidden = true;
     closePops();
-    if (!d || d.broken) { setReady(!d && hashHas("ready")); fillSearch(null); showEmpty(d && d.broken); return; }
+    if (!d || d.broken) {
+      setReady(!d && hashHas("ready"));
+      fillSearch(null);
+      showEmpty(d && d.broken);
+      // Claude can open this page in the tab the user was on and pass that tab's hotel page along:
+      // #ready&link=<address>. The form fills in from it, just like a pasted link.
+      const passed = new URLSearchParams(location.hash.slice(1)).get("link");
+      if (!d && passed) applyLink(passed);
+      return;
+    }
     // While Claude thinks or asks, or for a few minutes after a check it says it's still watching,
     // a search sent from this page goes straight to Claude.
     setReady(d.status === "thinking" || d.status === "question" || (d.status === "done" && d.ready));

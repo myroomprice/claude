@@ -274,6 +274,15 @@ class PageTest(unittest.TestCase):
         with open(os.path.join(SCRIPTS, "..", "SKILL.md"), encoding="utf-8") as f:
             self.assertIn("**Check every link before the final update.**", f.read())
 
+    def test_opening_in_the_users_tab(self):
+        # A hotel page passed as #ready&link=... fills in the form; the skill opens MyRoomPrice in the user's tab.
+        self.assertIn('const passed = new URLSearchParams(location.hash.slice(1)).get("link");', self.script)
+        self.assertIn("if (!d && passed) applyLink(passed);", self.script)
+        with open(os.path.join(SCRIPTS, "..", "SKILL.md"), encoding="utf-8") as f:
+            skill = f.read()
+        for words in ("**Open it once, in the tab the user is on.**", "#ready&link=", "open one new tab for MyRoomPrice instead"):
+            self.assertIn(words, skill, words)
+
     def test_built_page_is_up_to_date(self):
         result = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "build_page.py"), "--check"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)

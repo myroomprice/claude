@@ -19,7 +19,7 @@ The report's booking links are added last (step 7) and never affect the ranking.
 ## Where you're running
 
 - **Chrome side panel (Claude in Chrome):** you act in the user's own browser.
-  - Do the checking in the background (see "Tabs" below), and never navigate away from the page the user is on. They may want to come back to it.
+  - Do the checking in the background (see "Tabs" below). Open MyRoomPrice itself in the tab the user is on (see "The app tab"), carrying that tab's hotel page along if it shows one, so nothing is lost.
   - Scripts may not run here, or may not reach the internet. If the sweep fails, skip it; Google Hotels and Trivago in the browser cover the same ground.
   - Show the results in the MyRoomPrice tab (see "The app tab"), with a short summary in the panel.
 - **Claude Code or the desktop app, with Claude in Chrome connected:** the browser tools are `mcp__claude-in-chrome__*`. Read the chrome-browser skill first if it's available. Scripts run on the user's computer. Use the table report.
@@ -28,7 +28,7 @@ The report's booking links are added last (step 7) and never affect the ranking.
 ## Tabs
 
 Keep the user's browser calm: **two tabs at most**, the MyRoomPrice tab and one worker tab. Never more. The user should be able to watch the MyRoomPrice tab, or carry on in their own tabs, while you work.
-- **The MyRoomPrice tab** is the only tab meant for the user (see "The app tab").
+- **The MyRoomPrice tab** is the only tab meant for the user (see "The app tab"). It's usually the tab the user was already on.
 - **One worker tab** does all the checking. Open it in the background at the start and don't switch the user to it. Every site is visited in this one tab, by navigating it to the site's address.
 - **Don't click anything that opens a new tab.** That rules out Google Hotels' "Visit site" and "Get price" buttons, Trivago's and Kayak's "View deal" buttons, Kayak's "Compare vs" boxes, and any link that opens a new window. Read the listed price from the list instead, then go to the site yourself in the worker tab (see "Reaching each site" in `references/sites.md`).
 - **The one exception** is the hotel's own booking page, when Google's "Visit site" is the only way in with the dates filled in. Do that last, after you've read everything you need from Google. When the new tab opens, close the old worker tab straight away and carry on in the new one, so there are still only two.
@@ -70,7 +70,9 @@ What you'll meet:
 
 MyRoomPrice shows its results in one browser tab that works like a booking site: the user can filter, sort and select options, then continue to the chosen site. Keep everything in that one tab, and update it as you go so it feels like a live web app.
 
-1. **Open it once.** When the browser check starts, use the MyRoomPrice tab if the user is already on it, or the one you opened for the search page. Otherwise open one new tab for it. Never open a second results tab. If the user closed it, open a new one.
+1. **Open it once, in the tab the user is on.** When the browser check starts, use the MyRoomPrice tab if there is one, or the one you opened for the search page. Otherwise load MyRoomPrice into the tab the user is looking at, rather than opening a new tab:
+   - **If that tab shows a hotel or booking page,** read it first (its hotel, dates, guests and price become the "This page" offer), then pass its address along: `<results_page>#ready&link=<the address, percent-encoded>`. The page fills its form in from the link, as if the user had pasted it. If the address's details after the `?` are hidden from you, pass what you can see.
+   - **If that tab has something the user may be in the middle of** (a half-filled form, a checkout or payment page, an email being written), leave it alone and open one new tab for MyRoomPrice instead. Never open a second results tab. If the user closed it, open a new one.
 2. **Show that you've started.** Load it straight away with:
    - `"status": "checking"`
    - the hotel and the stay
@@ -103,7 +105,7 @@ The results travel in the part of the link after `#`, which never leaves the use
 When the user starts MyRoomPrice without a hotel or dates (for example, they type /myroomprice on its own), they fill in the search form on the MyRoomPrice page and you pick it up from there. Don't ask for the details in the chat.
 
 1. **Already filled in?** If the MyRoomPrice tab's title starts with "Check requested", the user filled in the form before asking. Read the request (step 3) and go on.
-2. **Open the page, ready for them.** Open `<results_page>#ready` (for example `https://myroomprice.com/#ready`; `results_page` is in `settings.json`) in the MyRoomPrice tab. Reuse that tab if it's open; otherwise open one new tab. Bring it to the front so they can type, and say one short line in the chat, such as "MyRoomPrice is open: fill in your hotel and dates, then click Check prices." The page tells them Claude is ready.
+2. **Open the page, ready for them, in the tab they're on.** Load `<results_page>#ready` (for example `https://myroomprice.com/#ready`; `results_page` is in `settings.json`) into the tab the user is looking at, as in "The app tab", step 1: reuse a MyRoomPrice tab if one is open, and if their tab shows a hotel or booking page, add `&link=<its address, percent-encoded>` so the form fills itself in. Say one short line in the chat, such as "MyRoomPrice is open: check the details and click Check prices." The page tells them Claude is ready.
 3. **Wait for Check prices.** About every 10 seconds, look at the tab's title, which listing your tabs shows. Do the wait and the look in one batched call if you can. When the title starts with "Check requested", read the page's text. One line reads "Check requested. Hotel: (name). Where: (city, town or country). Check-in: YYYY-MM-DD. Check-out: YYYY-MM-DD. Adults: (number). Children: (number)." Those are the trip details. If the user pasted a hotel link, the line ends "Link: (address)"; see "A pasted link" below. Straight away, update the tab with `"status": "thinking"` and a short `message` (for example "Looking up the Sheraton on Google Hotels"), so the user sees you've started. Then carry on with step 1 below (the hotel check still applies) and the browser check. Its first update with `"status": "checking"` takes over the page.
 4. **Stop after 5 minutes** with no request. The page tells the user to type /myroomprice again when they're ready; say the same in one line and finish.
 
