@@ -95,6 +95,20 @@ class PageTest(unittest.TestCase):
             os.remove(path)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_search_hand_off_matches_the_skill(self):
+        # Claude picks up a search by reading the tab title and the request line, so the
+        # page's wording and SKILL.md's must stay in step.
+        skill_path = os.path.join(SCRIPTS, "..", "SKILL.md")
+        with open(skill_path, encoding="utf-8") as f:
+            skill = f.read()
+        for words in ('"Check requested · MyRoomSearch"', '"Check requested. Hotel: "', '". Check-in: "',
+                      '". Check-out: "', '". Adults: "', '". Children: "', 'hashHas("ready")'):
+            self.assertIn(words, self.script, words)
+        for words in ('title starts with "Check requested"', "Check requested. Hotel:", "Check-in: YYYY-MM-DD",
+                      "Check-out: YYYY-MM-DD", "Adults:", "Children:", "#ready", "5 minutes"):
+            self.assertIn(words, skill, words)
+        self.assertIn("READY_MS = 5 * 60e3", self.script)
+
     def test_built_page_is_up_to_date(self):
         result = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "build_page.py"), "--check"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)

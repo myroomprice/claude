@@ -109,9 +109,19 @@ button, input, select { font: inherit; color: inherit; }
 .search input:focus { border-color: var(--reef); outline: none; }
 .search .hotel { grid-column: 1 / -1; }
 .search .go { grid-column: 1 / -1; align-self: end; }
-@media (min-width: 900px) { .search { grid-template-columns: 2.2fr 1fr 1fr .7fr .7fr auto; align-items: end; padding: 18px 20px; } .search .hotel, .search .go { grid-column: auto; } }
+@media (min-width: 640px) { .search { grid-template-columns: 1fr 1fr .6fr .6fr; } .search .hotel { grid-column: 1 / -1; } }
+/* One row only once the date boxes have room to show the whole date. */
+@media (min-width: 1040px) { .search { grid-template-columns: minmax(0, 2fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(64px, .55fr) minmax(64px, .55fr) auto; align-items: end; padding: 18px 20px; } .search .hotel, .search .go { grid-column: auto; } }
 .notice { margin-top: 12px; padding: 14px 16px; border-radius: 14px; background: var(--sun-soft); color: var(--ink); display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
-.notice q { font-weight: 700; quotes: "“" "”"; }
+.notice strong { font-weight: 700; }
+.notice.sent { background: var(--reef-soft); }
+.notice .pulse { color: var(--reef); flex: none; }
+.notice > span:last-child { flex: 1 1 240px; }
+.notice code { font: inherit; font-weight: 700; background: rgb(255 255 255 / .7); padding: 1px 6px; border-radius: 6px; }
+.hero .get { margin-top: 12px; font-size: 14.5px; color: rgb(255 255 255 / .8); }
+.hero .get a { color: #fff; font-weight: 700; }
+.status.ready { background: var(--reef-soft); color: #11615b; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 /* Highlights */
 .highlights { display: grid; gap: 12px; grid-template-columns: 1fr; margin: 28px 0 8px; }
@@ -214,7 +224,8 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
     <p class="eyebrow" id="eyebrow">Find the lowest price</p>
     <h1 id="hotel-name">Find the best price for your stay</h1>
     <p class="stay" id="stay-line"></p>
-    <p class="summary" id="summary">Fill in your hotel and dates, then ask Claude in the side panel to check them.</p>
+    <p class="summary" id="summary">Open Claude in the side panel and type /myroomsearch. Then fill in your stay here and click Check prices.</p>
+    <p class="get" id="get">New to MyRoomSearch? <a href="https://github.com/steveRepo/myroomsearch#install-in-chrome" target="_blank" rel="noopener">Add it to Claude</a></p>
     <ul class="steps" id="steps" hidden></ul>
   </div>
 </section>
@@ -228,10 +239,9 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
     <label>Children<input id="q-children" name="children" type="number" min="0" max="8" value="0"></label>
     <button class="btn btn-sun go" type="submit">Check prices</button>
   </form>
-  <div class="notice" id="notice" hidden role="status">
-    <span>Now send this to Claude in the side panel: <q id="ask-text">Check prices for the stay on this page.</q> Claude reads the hotel and dates from this page and shows the results here.</span>
-    <button class="btn btn-ghost" type="button" id="copy-ask">Copy</button>
-  </div>
+  <div class="notice" id="notice" hidden role="status"></div>
+  <!-- Claude reads this line to pick up the search. Keep its wording in step with SKILL.md. -->
+  <p class="sr-only" id="request"></p>
 
   <div class="highlights" id="highlights"></div>
 
@@ -280,7 +290,8 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
   const MAX_OFFERS = 40;
   // selected: the key of the chosen offer. picked: the user chose it themselves, so updates mustn't move it.
   // seen: offers already on screen, so only new ones animate in.
-  const state = { data: null, selected: null, picked: false, seen: new Set() };
+  // ready: Claude is watching this page for a search. requested: the user clicked Check prices.
+  const state = { data: null, selected: null, picked: false, seen: new Set(), ready: false, requested: false };
 
   // Site logos, built into the page by tools/build_page.py. Each is the site's own small icon.
   const SITE_LOGOS = {
@@ -617,26 +628,66 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
 
   function showEmpty(broken) {
     state.data = null;
+    const ready = state.ready;
     $("hero").classList.add("photo");
     $("main").hidden = true;
     $("highlights").replaceChildren();
     $("more").replaceChildren();
     $("bar").hidden = true;
-    $("status").hidden = true;
     $("steps").hidden = true;
     $("trip").textContent = "";
-    $("eyebrow").textContent = "Find the lowest price";
-    $("hotel-name").textContent = "Find the best price for your stay";
+    const status = $("status");
+    status.hidden = !ready;
+    if (ready) { status.className = "status ready"; status.replaceChildren(el("span", { class: "pulse" }), "Claude ready"); }
+    $("eyebrow").replaceChildren(...(ready ? [el("span", { class: "pulse" }), "Claude is ready"] : ["Find the lowest price"]));
+    $("hotel-name").textContent = ready ? "Where are you staying?" : "Find the best price for your stay";
     $("stay-line").textContent = "";
-    $("summary").textContent = broken ? "This link looks incomplete, so there are no results to show. Ask Claude to check the stay again."
-      : "Fill in your hotel and dates, then ask Claude in the side panel to check them.";
-    document.title = "MyRoomSearch";
+    $("summary").textContent = broken ? "This link looks incomplete, so there are no results to show. Type /myroomsearch in Claude to start again."
+      : ready ? "Fill in your hotel and dates, then click Check prices. Claude starts checking straight away."
+      : "Open Claude in the side panel and type /myroomsearch. Then fill in your stay here and click Check prices.";
+    $("get").hidden = ready;
+    document.title = ready ? "Ready · MyRoomSearch" : "MyRoomSearch";
+  }
+
+  // ---------- handing a search to Claude ----------
+  // "#ready" in the address means Claude has just opened this page and is watching it. Check prices then
+  // writes the search into the #request line and the tab title ("Check requested"), and Claude picks it up
+  // from there. SKILL.md relies on that wording, so change both together.
+  const READY_MS = 5 * 60e3;  // how long Claude waits for the form (SKILL.md says the same)
+  const PICKUP_MS = 60e3;     // a request still waiting after this gets a "type /myroomsearch" note
+  let readyTimer = 0, pickupTimer = 0;
+  const hashHas = (name) => new URLSearchParams(location.hash.slice(1)).has(name);
+  function longDay(s) { const d = parseDay(s); return d ? d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : ""; }
+
+  function notice(kind, pulse, ...children) {
+    const box = $("notice");
+    box.className = "notice" + (kind ? " " + kind : "");
+    box.replaceChildren(...(pulse ? [el("span", { class: "pulse", "aria-hidden": "true" })] : []), el("span", {}, ...children));
+    box.hidden = false;
+  }
+
+  function setReady(on) {
+    state.ready = on;
+    clearTimeout(readyTimer);
+    if (on) readyTimer = setTimeout(() => { if (!state.data && !state.requested) { stopReady(); showEmpty(false); } }, READY_MS);
+  }
+
+  // Claude has stopped watching: drop "#ready" from the address too, so a reload doesn't claim otherwise.
+  function stopReady() {
+    setReady(false);
+    if (hashHas("ready")) history.replaceState(null, "", location.pathname + location.search);
   }
 
   // Runs on load and every time Claude updates the link. Filters, sort and the user's own choice are kept.
   function start() {
     const d = clean(readData());
-    if (!d || d.broken) { fillSearch(null); showEmpty(d && d.broken); return; }
+    clearTimeout(pickupTimer);
+    state.requested = false;
+    $("request").textContent = "";
+    $("notice").hidden = true;
+    if (!d || d.broken) { setReady(!d && hashHas("ready")); fillSearch(null); showEmpty(d && d.broken); return; }
+    setReady(false);
+    $("get").hidden = true;
     const sameStay = state.data && state.data.hotel.name === d.hotel.name && state.data.stay.checkin === d.stay.checkin && state.data.stay.checkout === d.stay.checkout;
     if (!sameStay) { state.seen = new Set(); state.selected = null; state.picked = false; }
     state.data = d;
@@ -655,15 +706,31 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
   ["f-refundable", "f-payhotel", "f-confirmed", "sort"].forEach((id) => $(id).addEventListener("change", () => state.data && render()));
   $("search").addEventListener("submit", (e) => {
     e.preventDefault();
-    const hotel = $("q-hotel").value.trim();
+    const hotel = $("q-hotel").value.trim().slice(0, 200);
     const a = $("q-in").value, b = $("q-out").value;
-    $("ask-text").textContent = hotel && a && b ? "Check prices for " + hotel + ", " + day(a) + " to " + day(b) + ", on this page." : "Check prices for the stay on this page.";
-    $("notice").hidden = false;
-  });
-  $("copy-ask").addEventListener("click", (e) => {
-    const text = $("ask-text").textContent;
-    const done = () => { e.target.textContent = "Copied"; setTimeout(() => (e.target.textContent = "Copy"), 2000); };
-    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {}); else done();
+    const adults = Math.min(12, Math.max(1, parseInt($("q-adults").value, 10) || 2));
+    const children = Math.min(8, Math.max(0, parseInt($("q-children").value, 10) || 0));
+    if (!hotel || !a || !b) return notice("", false, "Add the hotel and both dates, then click Check prices.");
+    if (b <= a) return notice("", false, "Check-out needs to be after check-in.");
+    const stay = hotel + ", " + longDay(a) + " to " + longDay(b) + ", " + guests({ adults, children });
+    $("request").textContent = "Check requested. Hotel: " + hotel + ". Check-in: " + a + ". Check-out: " + b +
+      ". Adults: " + adults + ". Children: " + children + ".";
+    document.title = "Check requested · MyRoomSearch";
+    state.requested = true;
+    clearTimeout(pickupTimer);
+    const askClaude = (lead) => notice("", false, lead, "Open Claude in the side panel and type ", el("code", { text: "/myroomsearch" }),
+      ". It picks up ", el("strong", { text: stay }), " from this page.");
+    if (!state.ready) return askClaude("");
+    // Claude is watching: it reads the request within a few seconds and replaces this page with the live check.
+    clearTimeout(readyTimer);
+    notice("sent", true, "Sent to Claude: ", el("strong", { text: stay }), ". Checking starts in a few seconds.");
+    pickupTimer = setTimeout(() => {
+      if (!state.requested || state.data) return;
+      stopReady();
+      showEmpty(false);
+      document.title = "Check requested · MyRoomSearch";
+      askClaude("Claude hasn't picked this up. ");
+    }, PICKUP_MS);
   });
   document.querySelector(".topbar .logo").addEventListener("click", (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); });
   window.addEventListener("hashchange", start);
