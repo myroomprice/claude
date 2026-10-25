@@ -25,9 +25,11 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-CONFIG_DIR = os.path.expanduser("~/.config/myroomsearch")
+CONFIG_DIR = os.path.expanduser("~/.config/myroomprice")
+# Before the rename the key lived here; still read it so an existing setup keeps working.
+OLD_CONFIG_DIR = os.path.expanduser("~/.config/myroomsearch")
 KEY_FILE = os.path.join(CONFIG_DIR, "serpapi_key")
-USER_AGENT = "MyRoomSearch/1.0 (personal price comparison)"
+USER_AGENT = "MyRoomPrice/1.0 (personal price comparison)"
 TIMEOUT = 40
 
 
@@ -41,9 +43,10 @@ def serpapi_key():
     key = os.environ.get("SERPAPI_KEY", "").strip()
     if key:
         return key
-    if os.path.exists(KEY_FILE):
-        with open(KEY_FILE) as f:
-            return f.read().strip()
+    for path in (KEY_FILE, os.path.join(OLD_CONFIG_DIR, "serpapi_key")):
+        if os.path.exists(path):
+            with open(path) as f:
+                return f.read().strip()
     return ""
 
 

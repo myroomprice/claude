@@ -1,7 +1,7 @@
 {
   "network": "stay22",
   "stay22_aid": "",
-  "campaign": "myroomsearch",
+  "campaign": "myroomprice",
   "disclosure": "Some booking links go through our partner Stay22 and may earn the makers of this plugin a commission, at no extra cost to you. Commissions never change the ranking: the cheapest confirmed price always comes first, even when it pays us nothing.",
-  "results_page": "https://myroomsearch.com/"
+  "results_page": "https://myroomprice.com/"
 }

@@ -1,4 +1,4 @@
-// Tailwind for the MyRoomSearch page. tools/build_page.py compiles it and bakes the CSS into the page,
+// Tailwind for the MyRoomPrice page. tools/build_page.py compiles it and bakes the CSS into the page,
 // because the site allows no outside scripts or stylesheets (see docs/_headers).
 // The "tw-" prefix keeps Tailwind's classes apart from the page's own, and preflight is off so
 // Tailwind doesn't reset the parts of the page that aren't built with it.

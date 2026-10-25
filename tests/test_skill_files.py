@@ -3,7 +3,7 @@ import re
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SKILL_DIR = os.path.join(HERE, "..", "plugins", "myroomsearch", "skills", "myroomsearch")
+SKILL_DIR = os.path.join(HERE, "..", "plugins", "myroomprice", "skills", "myroomprice")
 
 
 def read(name):

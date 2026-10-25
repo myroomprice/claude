@@ -5,12 +5,12 @@ import unittest
 import urllib.parse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "plugins", "myroomsearch", "skills", "myroomsearch", "scripts"))
+sys.path.insert(0, os.path.join(HERE, "..", "plugins", "myroomprice", "skills", "myroomprice", "scripts"))
 import book_link  # noqa: E402
 
 ARGS = types.SimpleNamespace(check_in="2026-12-10", check_out="2026-12-12", adults=2,
                              children_ages="", currency="aud")
-WITH_ID = {"stay22_aid": "TESTAID", "campaign": "myroomsearch", "disclosure": "d"}
+WITH_ID = {"stay22_aid": "TESTAID", "campaign": "myroomprice", "disclosure": "d"}
 
 
 def query(url):
@@ -29,7 +29,7 @@ class BookLinkTest(unittest.TestCase):
         self.assertEqual(q["link"], "https://www.booking.com/hotel/us/langham-boston.html")
         self.assertEqual((q["checkin"], q["checkout"], q["adults"], q["currency"]),
                          ("2026-12-10", "2026-12-12", "2", "AUD"))
-        self.assertEqual(q["campaign"], "myroomsearch")
+        self.assertEqual(q["campaign"], "myroomprice")
 
     def test_country_domains_are_recognised(self):
         cases = {

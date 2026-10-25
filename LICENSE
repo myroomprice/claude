@@ -23,9 +23,10 @@ SOFTWARE.
 ---
 
 Not covered by this licence:
-- The MyRoomSearch name, logo (brand/, page/brand/pin.png, page/brand/favicon.png) and
-  hero photo (page/brand/hero.webp): (c) Londoner in Sydney. All rights reserved.
-- The fonts Fraunces and DM Sans: SIL Open Font License 1.1 (see the licence files
-  next to them).
+- The MyRoomPrice name, logo (brand/, and the wordmark and pin drawn in
+  page/results.html) and hero photo (page/brand/hero.webp): (c) Londoner in Sydney.
+  All rights reserved.
+- The fonts Fraunces and DM Sans (page/fonts/): SIL Open Font License 1.1 (see
+  brand/LICENSE-Fraunces.txt and brand/LICENSE-DM-Sans.txt).
 - The site icons in page/brand/sites/: trademarks of their owners, shown only to
   identify the sites being checked.

@@ -6,10 +6,10 @@
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#0b3a4e">
-<title>MyRoomSearch</title>
-<link rel="icon" type="image/png" href="brand/favicon.png">
+<title>MyRoomPrice</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"%3E%3Crect width="32" height="32" rx="8" fill="%230b3a4e"/%3E%3Cpath transform="translate%287 3.5%29 scale%28.75%29" fill="%23ffc53d" fill-rule="evenodd" d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 32 12 32s12-11.4 12-20.1C24 5.3 18.6 0 12 0zm0 7.2a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2z"/%3E%3C/svg%3E">
 <!--
-  MyRoomSearch, by Londoner in Sydney: the web app the MyRoomSearch Claude skill shows its results in.
+  MyRoomPrice, by Londoner in Sydney: the web app the MyRoomPrice Claude skill shows its results in.
   Everything on screen comes from the link itself (the part after #), which browsers never send to a server.
   While Claude checks prices it updates the link, and the page redraws in place without reloading.
   Styled after East Coast Guide. Hero photo: Palm Bay Resort, Whitsundays, from the East Coast Guide's own photos.
@@ -52,10 +52,13 @@ button, input, select { font: inherit; color: inherit; }
 /* Top bar with the logo: the guide's pin beside the name, as in brand/logo.html */
 .topbar { position: sticky; top: 0; z-index: 20; background: rgb(255 255 255 / .95); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
 .topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; }
-.logo { display: flex; align-items: center; gap: 9px; color: var(--ink); text-decoration: none; min-width: 0; }
-.logo img { display: block; height: 40px; width: auto; }
-.logo .name { font-family: var(--serif); font-weight: 700; font-size: 21px; line-height: 1; letter-spacing: -0.015em; white-space: nowrap; }
-.logo .by { font-size: 8px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; margin-top: 5px; color: var(--ink-2); white-space: nowrap; }
+/* The MyRoomPrice wordmark: "myroom" in ink, "price" in ocean, and the pin as the dot of the i (brand/logo.html). */
+.logo { display: inline-flex; flex-direction: column; align-items: flex-end; font-size: 27px; line-height: 1; color: var(--ink); text-decoration: none; min-width: 0; }
+.logo .mark { font-family: var(--serif); font-weight: 700; font-variation-settings: "opsz" 32; letter-spacing: -0.035em; white-space: nowrap; }
+.logo .p { color: var(--ocean); }
+.logo .i { position: relative; display: inline-block; }
+.logo .i svg { position: absolute; left: 50%; bottom: .56em; width: .34em; height: .46em; transform: translateX(-50%); }
+.logo .by { font-size: max(8px, .3em); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; margin: .45em .1em 0 0; color: var(--ink-3); white-space: nowrap; }
 .trip { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 14px; color: var(--ink-2); }
 .trip .what { display: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (min-width: 760px) { .trip .what { display: block; } }
@@ -69,13 +72,13 @@ button, input, select { font: inherit; color: inherit; }
    width, fading to navy at the bottom so the words stay readable. Results keep the plain navy band. */
 .hero { position: relative; isolation: isolate; overflow: hidden; background: var(--ocean-deep); color: #fff; padding: 36px 0 112px; }
 .hero-photo, .hero-shade, .photo-credit { display: none; }
-.hero.photo { min-height: max(460px, min(64svh, 620px)); display: flex; align-items: flex-end; padding-top: 96px; text-shadow: 0 1px 12px rgb(0 0 0 / .35); }
+.hero.photo { min-height: max(400px, min(54svh, 540px)); display: flex; align-items: flex-end; padding-top: 72px; text-shadow: 0 1px 12px rgb(0 0 0 / .35); }
 .hero.photo > .wrap { width: 100%; }
 .hero.photo .hero-photo { display: block; position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; }
 .hero.photo .hero-shade { display: block; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, var(--ocean-deep) 6%, rgb(11 58 78 / .45) 45%, rgb(0 0 0 / .3)); }
 .hero.photo .photo-credit { display: block; position: absolute; top: 12px; right: 16px; font-size: 11px; color: rgb(255 255 255 / .8); }
 .hero .eyebrow { color: var(--sun); display: flex; align-items: center; gap: 8px; }
-.hero h1 { margin-top: 8px; font-size: clamp(34px, 6.2vw, 66px); line-height: .98; max-width: 18ch; }
+.hero h1 { margin-top: 8px; font-size: clamp(34px, 5.6vw, 62px); line-height: 1; max-width: 20ch; }
 .hero .stay { margin-top: 14px; font-weight: 700; }
 .hero .summary { margin-top: 10px; max-width: 62ch; color: rgb(255 255 255 / .88); font-size: clamp(16px, 2vw, 18px); }
 .steps { display: flex; flex-wrap: wrap; gap: 14px 16px; margin: 22px 0 0; padding: 0; list-style: none; }
@@ -107,6 +110,7 @@ button, input, select { font: inherit; color: inherit; }
 .status.ready { background: var(--reef-soft); color: #11615b; }
 
 /* Highlights */
+.highlights:empty, .more:empty { display: none; }
 .highlights { display: grid; gap: 12px; grid-template-columns: 1fr; margin: 28px 0 8px; }
 @media (min-width: 640px) { .highlights { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1000px) { .highlights { grid-template-columns: repeat(4, 1fr); } }
@@ -118,7 +122,7 @@ button, input, select { font: inherit; color: inherit; }
 .tile .sub { font-size: 14px; color: var(--ink-2); }
 
 /* Main layout */
-.main { display: grid; gap: 24px; grid-template-columns: 1fr; padding: 20px 0 120px; }
+.main { display: grid; gap: 24px; grid-template-columns: 1fr; padding: 20px 0 64px; }
 @media (min-width: 1000px) { .main { grid-template-columns: 220px 1fr 330px; align-items: start; padding-bottom: 64px; } }
 .filters h2, .choice h2, .more h2 { font-size: 20px; }
 .filters { display: grid; gap: 10px; }
@@ -181,10 +185,12 @@ button, input, select { font: inherit; color: inherit; }
 .box p { margin-top: 8px; color: var(--ink-2); font-size: 15px; }
 
 footer { background: var(--ocean-deep); color: rgb(255 255 255 / .75); font-size: 14px; }
-footer .wrap { padding-top: 32px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); display: grid; gap: 8px; }
+footer .wrap { padding-top: 32px; padding-bottom: calc(36px + env(safe-area-inset-bottom)); display: grid; gap: 8px; }
+/* Room for the phone's booking bar, only while it shows. */
+.bar:not([hidden]) ~ footer .wrap { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 @media (min-width: 1000px) { footer .wrap { padding-bottom: 40px; } }
 footer strong { color: #fff; }
-footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(255 255 255 / .75); }
+footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .logo .p { color: var(--sun); } footer .logo .by { color: rgb(255 255 255 / .7); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .step.checking .disc::before { background: conic-gradient(var(--sun), var(--reef)); } }
 /* Tailwind (tw- classes), compiled and baked in by tools/build_page.py */
 /* @tailwind-output */
@@ -193,10 +199,7 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
 <body>
 <header class="topbar">
   <div class="wrap">
-    <a class="logo" href="#" aria-label="MyRoomSearch, by Londoner in Sydney">
-      <img src="brand/pin.png" alt="" width="31" height="40">
-      <span><span class="name">MyRoomSearch</span><span class="by" style="display:block">By Londoner in Sydney</span></span>
-    </a>
+    <a class="logo" href="#" aria-label="MyRoomPrice, by Londoner in Sydney"><span class="mark" aria-hidden="true">myroom<span class="p">pr<span class="i">ı<svg viewBox="0 0 24 32" aria-hidden="true"><path fill="#ffc53d" fill-rule="evenodd" d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 32 12 32s12-11.4 12-20.1C24 5.3 18.6 0 12 0zm0 7.2a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2z"/></svg></span>ce</span></span><span class="by" aria-hidden="true">By Londoner in Sydney</span></a>
     <div class="trip"><span class="what" id="trip"></span><span class="status" id="status" hidden></span></div>
   </div>
 </header>
@@ -206,11 +209,11 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
   <div class="hero-shade"></div>
   <p class="photo-credit">Palm Bay Resort, Whitsundays</p>
   <div class="wrap">
-    <p class="eyebrow" id="eyebrow">Find the lowest price</p>
-    <h1 id="hotel-name">Find the best price for your stay</h1>
+    <p class="eyebrow" id="eyebrow">Found the best hotel?</p>
+    <h1 id="hotel-name">Can't find the cheapest price? We can help.</h1>
     <p class="stay" id="stay-line"></p>
-    <p class="summary" id="summary">Open Claude in the side panel and type /myroomsearch. Then fill in your stay here and click Check prices.</p>
-    <p class="get" id="get">New to MyRoomSearch? <a href="https://github.com/steveRepo/myroomsearch#install-in-chrome" target="_blank" rel="noopener">Add it to Claude</a></p>
+    <p class="summary" id="summary">MyRoomPrice checks Booking.com, Expedia, Agoda, Google Hotels, Trivago and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.</p>
+    <p class="get" id="get">Works with Claude in Chrome: type <strong>/myroomprice</strong> in the side panel. New here? <a href="https://github.com/steveRepo/myroomprice#install-in-chrome" target="_blank" rel="noopener">Add MyRoomPrice to Claude</a></p>
     <ul class="steps" id="steps" hidden></ul>
   </div>
 </section>
@@ -250,6 +253,35 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
   <!-- Claude reads this line to pick up a search or an answer. Keep its wording in step with SKILL.md. -->
   <p class="tw-sr-only" id="request"></p>
 
+  <!-- The search page's pitch and how it works. Hidden once there are results. -->
+  <section id="intro" class="tw-pb-12 tw-pt-10" aria-labelledby="intro-title">
+    <div class="tw-grid tw-gap-8 lg:tw-grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:tw-items-start">
+      <div>
+        <p class="eyebrow tw-text-ocean">Why prices differ</p>
+        <h2 class="tw-mt-2 tw-text-[clamp(26px,3.4vw,36px)] tw-leading-tight" id="intro-title">The same room, the same night, very different prices.</h2>
+        <p class="tw-mt-3 tw-text-ink-2">Booking sites, comparison sites and the hotel's own website often charge different amounts, and some leave out taxes or hide member rates. MyRoomPrice checks them side by side and tells you where to book.</p>
+        <ul class="tw-m-0 tw-mt-5 tw-flex tw-list-none tw-flex-wrap tw-gap-2 tw-p-0" aria-label="Sites we check">
+          <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/google.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Google Hotels</li>
+          <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/trivago.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Trivago</li>
+          <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/booking.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Booking.com</li>
+          <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/expedia.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Expedia</li>
+          <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/hotelscom.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Hotels.com</li>
+          <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/agoda.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Agoda</li>
+          <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-line tw-bg-white tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/trip.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Trip.com</li>
+          <li class="tw-flex tw-items-center tw-gap-2 tw-rounded-full tw-border tw-border-solid tw-border-ocean/40 tw-bg-ocean-soft tw-py-1.5 tw-pl-1.5 tw-pr-3.5 tw-text-sm tw-font-bold tw-text-ocean"><svg viewBox="0 0 30 30" aria-hidden="true" class="tw-h-6 tw-w-6 tw-rounded-md"><rect width="30" height="30" rx="7" fill="#0a6e7d"/><path d="M8 24V9.5L15 6l7 3.5V24z" fill="#fff"/><path d="M11 12h2v2h-2zM17 12h2v2h-2zM11 16h2v2h-2zM17 16h2v2h-2zM13.5 20h3v4h-3z" fill="#0a6e7d"/></svg>The hotel's own site</li>
+        </ul>
+      </div>
+      <ol class="tw-m-0 tw-grid tw-list-none tw-gap-3 tw-p-0 sm:tw-grid-cols-3 lg:tw-grid-cols-1 xl:tw-grid-cols-3">
+        <li class="tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-white tw-p-5"><span class="tw-flex tw-h-8 tw-w-8 tw-items-center tw-justify-center tw-rounded-full tw-bg-sun tw-font-serif tw-text-base tw-font-bold tw-text-ink">1</span><h3 class="tw-mt-3 tw-text-xl">Tell us the hotel</h3><p class="tw-mt-1.5 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Add the hotel, where it is and your dates. If the name matches more than one hotel, Claude asks which you mean.</p></li>
+        <li class="tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-white tw-p-5"><span class="tw-flex tw-h-8 tw-w-8 tw-items-center tw-justify-center tw-rounded-full tw-bg-sun tw-font-serif tw-text-base tw-font-bold tw-text-ink">2</span><h3 class="tw-mt-3 tw-text-xl">Claude checks every site</h3><p class="tw-mt-1.5 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Live, in your own browser, so you see today's prices, member rates and refundable rates, not old listings.</p></li>
+        <li class="tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-white tw-p-5"><span class="tw-flex tw-h-8 tw-w-8 tw-items-center tw-justify-center tw-rounded-full tw-bg-sun tw-font-serif tw-text-base tw-font-bold tw-text-ink">3</span><h3 class="tw-mt-3 tw-text-xl">Book the lowest real price</h3><p class="tw-mt-1.5 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Every total includes taxes and fees, and we show what you give up for it, like free cancellation.</p></li>
+      </ol>
+    </div>
+    <p class="tw-mt-8 tw-flex tw-flex-wrap tw-gap-x-6 tw-gap-y-2 tw-text-sm tw-font-semibold tw-text-ink-2">
+      <span>✓ Free to use</span><span>✓ Taxes and fees included</span><span>✓ The hotel's own rates included</span><span>✓ Nothing about your stay is sent to us</span>
+    </p>
+  </section>
+
   <div class="highlights" id="highlights"></div>
 
   <div class="main" id="main" hidden>
@@ -283,7 +315,7 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
 
 <footer>
   <div class="wrap">
-    <div class="logo"><img src="brand/pin.png" alt="" width="31" height="40"><span><span class="name">MyRoomSearch</span><span class="by" style="display:block">By Londoner in Sydney</span></span></div>
+    <div class="logo" role="img" aria-label="MyRoomPrice, by Londoner in Sydney"><span class="mark" aria-hidden="true">myroom<span class="p">pr<span class="i">ı<svg viewBox="0 0 24 32" aria-hidden="true"><path fill="#ffc53d" fill-rule="evenodd" d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 32 12 32s12-11.4 12-20.1C24 5.3 18.6 0 12 0zm0 7.2a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2z"/></svg></span>ce</span></span><span class="by" aria-hidden="true">By Londoner in Sydney</span></div>
     <p><strong>Prices change often.</strong> <span id="foot-checked">Check the total on the booking site before you pay.</span></p>
     <p>Everything on this page comes from the link you opened. Nothing about your stay is sent anywhere until you choose a site.</p>
     <p id="disclosure"></p>
@@ -600,19 +632,19 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
       status.className = "status ready";
       status.replaceChildren(el("span", { class: "pulse" }), asking ? "Question" : "Thinking");
       $("summary").textContent = asking ? "Answer below and Claude carries on." : d.message || "Claude is getting ready to check prices.";
-      document.title = (asking ? "Question" : "Thinking…") + " · MyRoomSearch";
+      document.title = (asking ? "Question" : "Thinking…") + " · MyRoomPrice";
     } else if (live()) {
       eyebrow.replaceChildren(el("span", { class: "pulse" }), "Checking prices");
       status.className = "status live";
       status.replaceChildren(el("span", { class: "pulse" }), "Checking");
       $("summary").textContent = d.message || "Claude is checking each site in your browser. Keep this tab open: results appear here as each price is confirmed.";
-      document.title = "Checking… · MyRoomSearch";
+      document.title = "Checking… · MyRoomPrice";
     } else {
       eyebrow.textContent = "Lowest price found";
       status.className = "status done";
       status.textContent = d.checked ? "Checked " + d.checked : "Checked";
       $("summary").textContent = d.summary;
-      document.title = (d.hotel.name ? d.hotel.name + " · " : "") + "MyRoomSearch";
+      document.title = (d.hotel.name ? d.hotel.name + " · " : "") + "MyRoomPrice";
     }
     const steps = $("steps");
     steps.hidden = !d.steps.length;
@@ -655,6 +687,7 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
     state.data = null;
     const ready = state.ready;
     $("hero").classList.add("photo");
+    $("intro").hidden = false;
     $("main").hidden = true;
     $("highlights").replaceChildren();
     $("more").replaceChildren();
@@ -664,14 +697,14 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
     const status = $("status");
     status.hidden = !ready;
     if (ready) { status.className = "status ready"; status.replaceChildren(el("span", { class: "pulse" }), "Claude ready"); }
-    $("eyebrow").replaceChildren(...(ready ? [el("span", { class: "pulse" }), "Claude is ready"] : ["Find the lowest price"]));
-    $("hotel-name").textContent = ready ? "Where are you staying?" : "Find the best price for your stay";
+    $("eyebrow").replaceChildren(...(ready ? [el("span", { class: "pulse" }), "Claude is ready"] : ["Found the best hotel?"]));
+    $("hotel-name").textContent = "Can't find the cheapest price? We can help.";
     $("stay-line").textContent = "";
-    $("summary").textContent = broken ? "This link looks incomplete, so there are no results to show. Type /myroomsearch in Claude to start again."
-      : ready ? "Fill in the hotel, where it is and your dates, then click Check prices. Claude starts checking straight away."
-      : "Open Claude in the side panel and type /myroomsearch. Then fill in your stay here and click Check prices.";
+    $("summary").textContent = broken ? "This link looks incomplete, so there are no results to show. Type /myroomprice in Claude to start again."
+      : ready ? "Claude is ready. Fill in the hotel, where it is and your dates, then click Check prices."
+      : "MyRoomPrice checks Booking.com, Expedia, Agoda, Google Hotels, Trivago and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.";
     $("get").hidden = ready;
-    document.title = ready ? "Ready · MyRoomSearch" : "MyRoomSearch";
+    document.title = ready ? "Ready · MyRoomPrice" : "MyRoomPrice";
   }
 
   // ---------- handing a search to Claude ----------
@@ -679,7 +712,7 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
   // writes the search into the #request line and the tab title ("Check requested"), and Claude picks it up
   // from there. SKILL.md relies on that wording, so change both together.
   const READY_MS = 5 * 60e3;  // how long Claude waits for the form (SKILL.md says the same)
-  const PICKUP_MS = 60e3;     // a request still waiting after this gets a "type /myroomsearch" note
+  const PICKUP_MS = 60e3;     // a request still waiting after this gets a "type /myroomprice" note
   let readyTimer = 0, pickupTimer = 0;
   const hashHas = (name) => new URLSearchParams(location.hash.slice(1)).has(name);
   function longDay(s) { const d = parseDay(s); return d ? d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : ""; }
@@ -699,7 +732,7 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
   const spinner = () => el("span", { class: "tw-mt-0.5 tw-h-5 tw-w-5 tw-flex-none tw-animate-spin tw-rounded-full tw-border-[2.5px] tw-border-solid tw-border-reef/25 tw-border-t-reef", "aria-hidden": "true" });
   const badge = (text, colours) => el("span", { class: "tw-mt-px tw-flex tw-h-6 tw-w-6 tw-flex-none tw-items-center tw-justify-center tw-rounded-full tw-text-sm tw-font-bold " + colours, "aria-hidden": "true", text });
   const para = (...children) => el("p", { class: "tw-mt-1 tw-text-ink-2" }, ...children);
-  const slash = () => el("code", { class: "tw-rounded-md tw-bg-white/80 tw-px-1.5 tw-py-0.5 tw-font-sans tw-font-bold tw-text-ink", text: "/myroomsearch" });
+  const slash = () => el("code", { class: "tw-rounded-md tw-bg-white/80 tw-px-1.5 tw-py-0.5 tw-font-sans tw-font-bold tw-text-ink", text: "/myroomprice" });
   const needMore = (text) => card("note", badge("!", "tw-bg-sun tw-text-ink"), "Almost there", para(text));
   const typeSlash = (title, stay) => card("note", badge("/", "tw-bg-sun tw-text-ink"), title,
     para("Open Claude in the side panel and type ", slash(), ". It picks up ", el("strong", { text: stay }), " from this page."));
@@ -718,7 +751,7 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
   // The user's answer goes back to Claude the same way a search does: the tab title and the #request line.
   function answer(q, label) {
     $("request").textContent = "Answer given. Question: " + q.id + ". Answer: " + label + ".";
-    document.title = "Answer given · MyRoomSearch";
+    document.title = "Answer given · MyRoomPrice";
     state.answered = true;
     if (q.id === "hotel") $("q-hotel").value = label;  // the hotel they meant, ready for any later search
     clearTimeout(readyTimer);
@@ -773,6 +806,7 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
     if (!sameStay) { state.seen = new Set(); state.selected = null; state.picked = false; }
     state.data = d;
     $("hero").classList.remove("photo");
+    $("intro").hidden = true;
     fillSearch(d);
     $("main").hidden = (d.status === "thinking" || d.status === "question") && !d.offers.length;
     if (!d.offers.some((o) => o.key === state.selected)) { state.selected = null; state.picked = false; }
@@ -954,11 +988,11 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
     const stay = hotel + ", " + where + ", " + longDay(a) + " to " + longDay(b) + ", " + guests({ adults, children });
     $("request").textContent = "Check requested. Hotel: " + hotel + ". Where: " + where + ". Check-in: " + a + ". Check-out: " + b +
       ". Adults: " + adults + ". Children: " + children + ".";
-    document.title = "Check requested · MyRoomSearch";
+    document.title = "Check requested · MyRoomPrice";
     state.requested = true;
     state.answered = false;
     clearTimeout(pickupTimer);
-    if (!state.ready) return typeSlash("Now type /myroomsearch in Claude", stay);
+    if (!state.ready) return typeSlash("Now type /myroomprice in Claude", stay);
     // Claude is watching: it reads the request within a few seconds and takes over this page.
     clearTimeout(readyTimer);
     card("claude", spinner(), "Sent to Claude", para(el("strong", { text: stay }), ". Claude starts in a few seconds."));
@@ -966,7 +1000,7 @@ footer .logo { color: #fff; margin-bottom: 8px; } footer .logo .by { color: rgb(
       if (!state.requested) return;
       stopReady();
       if (!state.data) showEmpty(false);
-      document.title = "Check requested · MyRoomSearch";
+      document.title = "Check requested · MyRoomPrice";
       typeSlash("Claude hasn't picked this up", stay);
     }, PICKUP_MS);
   });

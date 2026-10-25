@@ -4,7 +4,7 @@ import types
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "plugins", "myroomsearch", "skills", "myroomsearch", "scripts"))
+sys.path.insert(0, os.path.join(HERE, "..", "plugins", "myroomprice", "skills", "myroomprice", "scripts"))
 import sweep  # noqa: E402
 
 

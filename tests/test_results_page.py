@@ -8,7 +8,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
-SCRIPTS = os.path.join(ROOT, "plugins", "myroomsearch", "skills", "myroomsearch", "scripts")
+SCRIPTS = os.path.join(ROOT, "plugins", "myroomprice", "skills", "myroomprice", "scripts")
 sys.path.insert(0, SCRIPTS)
 import results_link  # noqa: E402
 
@@ -101,8 +101,8 @@ class PageTest(unittest.TestCase):
         skill_path = os.path.join(SCRIPTS, "..", "SKILL.md")
         with open(skill_path, encoding="utf-8") as f:
             skill = f.read()
-        for words in ('"Check requested · MyRoomSearch"', '"Check requested. Hotel: "', '". Where: "', '". Check-in: "',
-                      '"Answer given · MyRoomSearch"', '"Answer given. Question: "', '". Answer: "', 'q.id === "hotel"',
+        for words in ('"Check requested · MyRoomPrice"', '"Check requested. Hotel: "', '". Where: "', '". Check-in: "',
+                      '"Answer given · MyRoomPrice"', '"Answer given. Question: "', '". Answer: "', 'q.id === "hotel"',
                       '["thinking", "question", "checking"]',
                       '". Check-out: "', '". Adults: "', '". Children: "', 'hashHas("ready")'):
             self.assertIn(words, self.script, words)

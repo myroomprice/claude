@@ -16,8 +16,8 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCE = os.path.join(ROOT, "page", "results.html")
-TARGET = os.path.join(ROOT, "plugins", "myroomsearch", "skills", "myroomsearch", "assets", "results.html")
-# Cloudflare serves docs/ (see wrangler.jsonc), so the published app lives at https://myroomsearch.com/
+TARGET = os.path.join(ROOT, "plugins", "myroomprice", "skills", "myroomprice", "assets", "results.html")
+# Cloudflare serves docs/ (see wrangler.jsonc), so the published app lives at https://myroomprice.com/
 PAGES = os.path.join(ROOT, "docs", "index.html")
 TAILWIND_IN = os.path.join(ROOT, "page", "tailwind.css")
 TAILWIND_OUT = os.path.join(ROOT, "page", "tailwind.out.css")

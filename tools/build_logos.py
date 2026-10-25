@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the MyRoomSearch logo PNGs from brand/logo.html with headless Chrome.
+"""Render the MyRoomPrice logo PNGs from brand/logo.html with headless Chrome.
 
 Transparent versions are trimmed to the logo's edges; the navy ones keep their fixed size.
 Run:  python3 tools/build_logos.py
@@ -28,7 +28,7 @@ VERSIONS = {
 
 
 def render(name, size, transparent):
-    out = os.path.join(BRAND, "myroomsearch-logo-%s.png" % name)
+    out = os.path.join(BRAND, "myroomprice-logo-%s.png" % name)
     cmd = [CHROME, "--headless=new", "--hide-scrollbars", "--allow-file-access-from-files",
            "--force-device-scale-factor=1", "--window-size=%d,%d" % size,
            "--screenshot=" + out, "file://%s#%s" % (os.path.join(BRAND, "logo.html"), name)]

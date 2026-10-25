@@ -42,7 +42,7 @@ SITES = {
 
 def fetch(domain):
     url = "https://www.google.com/s2/favicons?sz=64&domain=" + domain
-    req = urllib.request.Request(url, headers={"User-Agent": "MyRoomSearch logo fetcher"})
+    req = urllib.request.Request(url, headers={"User-Agent": "MyRoomPrice logo fetcher"})
     with urllib.request.urlopen(req, timeout=20) as resp:
         data = resp.read()
     img = Image.open(io.BytesIO(data))
