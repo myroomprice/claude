@@ -130,7 +130,7 @@ class PageTest(unittest.TestCase):
         # The guide is built from page/setup.html with the app's styles, and the app links to it.
         with open(os.path.join(ROOT, "docs", "setup", "index.html"), encoding="utf-8") as f:
             guide = f.read()
-        for words in ("steveRepo/myroomprice", "Add from a repository", "/myroomprice", "Claude started debugging this browser",
+        for words in ("myroomprice/myroomprice", "Add from a repository", "/myroomprice", "Claude started debugging this browser",
                       "data:image/webp;base64,", "@font-face"):
             self.assertIn(words, guide, words)
         self.assertNotIn("<script", guide)
