@@ -195,7 +195,7 @@ button, input, select { font: inherit; color: inherit; }
 .box p { margin-top: 8px; color: var(--ink-2); font-size: 15px; }
 
 footer { background: var(--ocean-deep); color: rgb(255 255 255 / .75); font-size: 14px; }
-footer .wrap { padding-top: 32px; padding-bottom: calc(36px + env(safe-area-inset-bottom)); display: grid; gap: 8px; }
+footer .wrap { padding-top: 32px; padding-bottom: calc(36px + env(safe-area-inset-bottom)); display: grid; }  /* gaps: Tailwind classes on the footer's wrap */
 /* Room for the phone's booking bar, only while it shows. */
 .bar:not([hidden]) ~ footer .wrap { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 @media (min-width: 1000px) { footer .wrap { padding-bottom: 40px; } }
@@ -375,15 +375,19 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
 <dialog id="viewer" aria-label="Review" class="tw-w-[min(760px,calc(100vw-24px))] tw-max-h-[calc(100dvh-24px)] tw-overflow-auto tw-rounded-[20px] tw-border-0 tw-bg-white tw-p-0 tw-text-ink tw-shadow-card backdrop:tw-bg-ink/60 backdrop:tw-backdrop-blur-sm"></dialog>
 
 <footer>
-  <div class="wrap">
-    <div class="logo" role="img" aria-label="MyRoomPrice, by Londoner in Sydney"><span class="mark" aria-hidden="true">myroom<span class="p">pr<span class="i">ı<svg viewBox="0 0 24 32" aria-hidden="true"><path fill="#ffc53d" fill-rule="evenodd" d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 32 12 32s12-11.4 12-20.1C24 5.3 18.6 0 12 0zm0 7.2a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2z"/></svg></span>ce</span></span><span class="by" aria-hidden="true">By Londoner in Sydney</span></div>
-    <p><strong>Prices change often.</strong> <span id="foot-checked">Check the total on the booking site before you pay.</span></p>
-    <p>Everything on this page comes from the link you opened. Nothing about your stay is sent anywhere until you choose a site or play a video.</p>
-    <p id="disclosure"></p>
-    <p class="tw-mt-2 tw-text-[13px] tw-text-white/60">MyRoomPrice is independent and isn't affiliated with the hotels or booking sites shown; their names and logos belong to their owners. Prices and availability change often and aren't guaranteed, so check the total and terms on the booking site before you pay. We never rank results for money: some links may earn us a commission from our partner Stay22, at no extra cost to you, and that never changes the order.</p>
-    <a class="tw-mt-5 tw-flex tw-w-fit tw-items-center tw-gap-3 tw-border-0 tw-border-t tw-border-solid tw-border-white/15 tw-pt-5 tw-text-[13px] tw-font-semibold tw-uppercase tw-tracking-[.12em] tw-text-white/60 tw-no-underline hover:tw-text-white" href="https://londonerinsydney.com" target="_blank" rel="noopener" aria-label="Made by Londoner in Sydney: travel guides and expat tips">
-      Made by <img src="brand/lis-logo-white.png" alt="" width="203" height="50" class="tw-block tw-h-10 tw-w-auto">
+  <!-- Two columns: Londoner in Sydney on the left, MyRoomPrice and the small print on the right. -->
+  <div class="wrap tw-gap-y-6 md:tw-grid-cols-[auto_minmax(0,1fr)] md:tw-gap-x-10">
+    <a class="tw-flex tw-w-fit tw-flex-col tw-items-start tw-gap-2 tw-self-start tw-text-xs tw-font-semibold tw-uppercase tw-tracking-[.14em] tw-text-white/55 tw-no-underline hover:tw-text-white md:tw-border-0 md:tw-border-r md:tw-border-solid md:tw-border-white/15 md:tw-pr-10" href="https://londonerinsydney.com" target="_blank" rel="noopener" aria-label="Made by Londoner in Sydney: travel guides and expat tips">
+      Made by
+      <img src="brand/lis-logo-white.png" alt="" width="203" height="50" class="tw-block tw-h-12 tw-w-auto">
     </a>
+    <div class="tw-grid tw-content-start tw-gap-2">
+      <div class="logo" role="img" aria-label="MyRoomPrice, by Londoner in Sydney"><span class="mark" aria-hidden="true">myroom<span class="p">pr<span class="i">ı<svg viewBox="0 0 24 32" aria-hidden="true"><path fill="#ffc53d" fill-rule="evenodd" d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 32 12 32s12-11.4 12-20.1C24 5.3 18.6 0 12 0zm0 7.2a4.6 4.6 0 1 0 0 9.2 4.6 4.6 0 0 0 0-9.2z"/></svg></span>ce</span></span><span class="by" aria-hidden="true">By Londoner in Sydney</span></div>
+      <p><strong>Prices change often.</strong> <span id="foot-checked">Check the total on the booking site before you pay.</span></p>
+      <p>Everything on this page comes from the link you opened. Nothing about your stay is sent anywhere until you choose a site or play a video.</p>
+      <p id="disclosure"></p>
+      <p class="tw-mt-2 tw-text-[13px] tw-text-white/60">MyRoomPrice is independent and isn't affiliated with the hotels or booking sites shown; their names and logos belong to their owners. Prices and availability change often and aren't guaranteed, so check the total and terms on the booking site before you pay. We never rank results for money: some links may earn us a commission from our partner Stay22, at no extra cost to you, and that never changes the order.</p>
+    </div>
   </div>
 </footer>
 
