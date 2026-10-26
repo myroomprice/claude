@@ -40,8 +40,9 @@ Keep the user's browser calm: **two tabs at most**, the MyRoomPrice tab and one 
 ## Keep it quick
 
 The user is waiting. Aim to show prices within about a minute and finish within about 3 minutes. Every browser call is a round trip that costs seconds, so the check is built around a handful of big calls rather than many small ones. In testing, a check that searched each site and clicked through calendars took 13 minutes and about 60 browser calls; the same prices came back in two calls this way.
+- **Read what you need once, at the start, in one command:** `settings.json`, `references/sites.md`, the format notes at the top of `scripts/results_link.py`, and the three scripts (`find_pages.js`, `load_rooms.js`, `watch_page.js`). Don't go back to them part-way through a check.
 - **Don't use site search boxes or date pickers.** Find each site's hotel page with one Google search (step 3) and put the dates in the address (see "Booking links" in `references/sites.md`).
-- **Read hotel pages with the page reader** (see "Reading a hotel page"): one call returns the prices and terms word for word. No screenshots, no scrolling, no summaries.
+- **Read hotel pages from their text** (see "Reading a hotel page"): a short script loads the rooms, and the page's text gives you the prices and terms word for word. No screenshots, no summaries.
 - **Batch everything you can.** Open and read all the booking sites in one batched call (step 4). Put the Google searches in one batched call too.
 - **Skip Google Hotels, Trivago and Kayak** unless the Google search found fewer than two booking sites for the hotel. Their date pickers can't be set from the address, so each one costs several minutes.
 - **Update the MyRoomPrice tab 3 times:** when you start, when the prices are in, and at the end.
@@ -49,19 +50,15 @@ The user is waiting. Aim to show prices within about a minute and finish within 
 
 ## Reading a hotel page
 
-Screenshots are slow, and a summary of a page can get a price or a cancellation term wrong. Instead, pull the rates straight out of the page itself:
-1. Read `scripts/read_offers.js` and `scripts/find_pages.js` once at the start of the check, and keep them.
-2. On each site's hotel page, run the whole of `read_offers.js` with the browser's JavaScript tool (`javascript_tool` in Claude in Chrome), in the same batched call as the step that opens the page. It scrolls to the room list, waits up to about 6 seconds for the rooms to load, and returns one short line of JSON:
-   - `hotel`: the page's heading. Check that it's the right hotel.
-   - `offers`: up to 4 rates, cheapest first, each `[price, room, cancellation, taxes, payment]`, copied word for word from the page. `"same"` means the same as in `all`; a missing or empty term means the page didn't say. A price ends in "per night" when the page says so: multiply it by the nights for the total. Otherwise it's the price the page shows for the stay.
-   - `all`: terms every rate on the page shares, given once.
-   - `flags`: `sold-out` (no rates at all), `sign-in` or `member` (a lower price may need an account), `captcha` (stop and list the site under "couldn't check"), `no-rooms` (it couldn't find the room list, so the prices may be from elsewhere on the page).
-3. Use what it returns as the offer: the price and its terms. The offer's link is the address you opened, with its dates. Record terms the page didn't give as unknown; don't guess. The reader clicks nothing and changes nothing.
+Read prices from the page's own text, never from a screenshot or a summary: screenshots are slow and can be misread, and a summary once got a non-refundable rate wrong. On each site's hotel page, in the same batched call as the step that opens it:
+1. Run `scripts/load_rooms.js` with the browser's JavaScript tool (`javascript_tool` in Claude in Chrome), exactly as it is. It scrolls to the room list, waits for the prices to load, and puts a copy of the room list's text where the next step finds it. It returns `{"rooms": true}` when it found the rooms.
+2. Get the page's text (`get_page_text`, with `max_chars` 12000). After step 1 it's just the room list, word for word: room names, prices, taxes, cancellation and payment terms.
 
-Fall back only when the reader comes back empty, flagged `no-rooms`, or with prices that don't look right, such as far below the other sites:
-- Read the page text (`get_page_text`) and find the rates there.
-- Take a screenshot only if the page text is empty too.
-- If neither works within about a minute, list the site under "couldn't check".
+Then read each rate from that text: the room, the price and whether it's per night or for the whole stay, whether taxes are included, the cancellation terms (and until when), and whether you pay now or at the hotel. Use the page's own words for the terms, and record anything the page doesn't say as unknown; don't guess. Skip add-ons ("+ AUD 68", "AUD 59 / person"): they aren't room prices.
+
+If `load_rooms.js` returns `{"rooms": false}`, the page text is the whole page (or the site's own article): find the rates in it, scrolling first if they haven't loaded. Take a screenshot only if the page text has no prices at all, and give up on the site after about a minute (list it under "couldn't check").
+
+Each script in `scripts/` is short on purpose: you type it out every time you run it, so run it exactly as it is, without adding comments or spacing. (Readable copies live in the project's `browser/` folder.)
 
 ## Pop-ups
 
@@ -207,8 +204,8 @@ If the searches find fewer than two booking sites, fall back to Google Hotels an
 ## 4. Read the prices
 
 The final answer has to come from the sites themselves: a listed price can be stale, and in testing Google listed Booking.com at the going rate while Booking.com had no rooms.
-1. **The booking sites, in one batched call.** For each site found (Booking.com, Agoda, Expedia or Hotels.com, Trip.com), add the dates to its address (see "Booking links" in `references/sites.md`), then: open it, and run `read_offers.js`. Four sites is eight steps in one batch. If the batch stops part-way (a site errors), run the rest in a second batch.
-2. **The hotel's own site, briefly.** Open `official`, find its "Book" or "Check availability" link, and open the booking page with the dates (many booking engines take them in the address). Run `read_offers.js` there. Hotel booking pages usually show prices before tax, so find the total with tax. If you can't reach a priced page within about a minute, give its link as "check direct" and move on.
+1. **The booking sites, in one batched call.** For each site found (Booking.com, Agoda, Expedia or Hotels.com, Trip.com), add the dates to its address (see "Booking links" in `references/sites.md`), then: open it, run `load_rooms.js`, and get the page's text. Four sites is twelve steps in one batch. If the batch stops part-way (a site errors), run the rest in a second batch.
+2. **The hotel's own site, briefly.** Open `official`, find its "Book" or "Check availability" link, and open the booking page with the dates (many booking engines take them in the address). Run `load_rooms.js` and get the page's text there. Hotel booking pages usually show prices before tax, so find the total with tax. If you can't reach a priced page within about a minute, give its link as "check direct" and move on.
 3. **The page the user started on,** if it isn't one of these, in the first batch.
 
 For each offer, you need:
@@ -222,7 +219,7 @@ For each offer, you need:
 How to behave while browsing (you're in the user's real browser, signed in as them):
 - **Skip the ads.** In Google's results and on Google Hotels, ignore anything marked "Sponsored" or "Ad". Go to sites at their own address.
 - **Look only.** Opening a room's rate options or switching prices to include tax is fine. Never click Reserve, Book or Continue to payment. Never sign in, create an account, or type personal or payment details. If a price needs a sign-in to see, record it as "member price, sign in to see". Joining is the user's choice.
-- **Confirm the important terms from the page's own words.** Take totals and cancellation terms from the page reader (see "Reading a hotel page"), or from the page text if you had to fall back, never from a summary of the page. A summary once got a non-refundable rate wrong.
+- **Confirm the important terms from the page's own words.** Take totals and cancellation terms from the page's own text (see "Reading a hotel page"), never from a summary or a screenshot. A summary once got a non-refundable rate wrong.
 - **CAPTCHAs:** if one appears, or a "verify you're human" page, stop on that site and list it under "couldn't check". Don't try to get around it.
 - **Pop-ups and cookie banners:** see "Pop-ups".
 - **Time:** if a site needs more than its one batched step, give it at most about a minute, then list it under "couldn't check".

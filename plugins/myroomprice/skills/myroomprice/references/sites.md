@@ -59,7 +59,7 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
 **Find each site's own page for the hotel with a Google search, then read the price on that page.** Never take a site's price from somewhere else (Google Hotels, Trivago, Kayak or a results list): those only tell you which sites to check.
 1. In one batched call, run the two Google searches in SKILL.md step 3, each followed by `scripts/find_pages.js`. *Checked* for "Apollo Hotel", Newcastle, Australia: the plain search found the hotel's official site and its Booking.com page; the second, limited to the booking sites with `site:`, found its Agoda, Expedia and Hotels.com pages. Trip.com didn't appear; that's normal for smaller hotels.
 2. Add the dates to each address (see "Booking links" below).
-3. In one more batched call, open each one and run the page reader (`scripts/read_offers.js`; see "Reading a hotel page" in SKILL.md). *Checked*: Booking.com, Agoda and Expedia read in a single call, with the room, the total, taxes and cancellation terms. Agoda shows prices per night (the reader marks them "per night"); the others show the total for the stay.
+3. In one more batched call, open each one, run `scripts/load_rooms.js` and get the page's text (see "Reading a hotel page" in SKILL.md). *Checked* for the Sheraton Grand Sydney Hyde Park, 20 Jan 2027: the text came back as just the room list on Booking.com (about 10,000 characters), Expedia (7,000) and Agoda (3,000), with each rate's price, taxes, cancellation and payment terms. Agoda can show prices per night; Booking.com, Expedia and Trip.com show the total for the stay.
 4. Use each page, with the dates, as that offer's `link`.
 
 **If Google doesn't find a site,** you can search the site itself, but it's slower and less reliable:
@@ -141,7 +141,7 @@ They redirect to the user's country site. "Member Price" deals need a free One K
 ## Catches to watch for
 
 - **Stale listings.** Feed and Google prices can be hours old. A site listed at a price may have no rooms when you open it. Only report prices you saw live, or label the rest "listed, not confirmed".
-- **Check the important terms yourself.** A page summary (from `find`) once said a Booking.com rate had free cancellation when it was really non-refundable. Take a rate's total and cancellation terms from the page reader, which copies the page's own words, or from the page text, never from a summary.
+- **Check the important terms yourself.** A page summary (from `find`) once said a Booking.com rate had free cancellation when it was really non-refundable. Take a rate's total and cancellation terms from the page's own text, never from a summary or a screenshot.
 - **Subscriptions versus free memberships.** A hotel's own member rate, Booking Genius and Expedia One Key are free. Super+ and some "VIP" deal clubs charge a fee. Keep the two apart.
 - **Fees paid at the hotel.** Resort, destination, parking and pet fees are often left out of aggregator totals. The hotel's own site or its policies section usually lists them.
 - **Currency.** Sites pick the currency from the user's location, and the same applies to the feed if you pass `--currency`. Keep everything in one currency.
