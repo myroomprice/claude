@@ -291,6 +291,21 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     <div class="mrs-pop md:tw-right-auto md:tw-w-[680px]" id="picker" role="dialog" aria-label="Choose your dates" hidden></div>
     <div class="mrs-pop md:tw-right-auto md:tw-w-[320px]" id="guests-pop" role="dialog" aria-label="Guests" hidden></div>
     </div>
+    <!-- Which sites Claude checks: Standard (row one) or Advanced (both rows); any logo can be switched on or off. -->
+    <div class="tw-mt-4 tw-border-0 tw-border-t tw-border-solid tw-border-line tw-pt-4" id="sites-pick">
+      <div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3">
+        <p class="tw-flex tw-items-baseline tw-gap-2"><span class="mrs-label tw-m-0" id="sites-label">Sites to check</span><span class="tw-text-sm tw-text-ink-3" id="sites-count"></span></p>
+        <div class="mrs-seg" role="group" aria-label="Search">
+          <button type="button" class="mrs-seg-btn" id="mode-standard" aria-pressed="true">Standard</button>
+          <button type="button" class="mrs-seg-btn" id="mode-advanced" aria-pressed="false">Advanced</button>
+        </div>
+      </div>
+      <div class="tw-mt-3 tw-grid tw-gap-2.5">
+        <div class="tw-flex tw-flex-col tw-gap-1.5 sm:tw-flex-row sm:tw-items-center sm:tw-gap-3"><span class="mrs-site-row">Standard</span><div class="tw-flex tw-flex-wrap tw-gap-2" id="sites-standard" role="group" aria-label="Standard sites"></div></div>
+        <div class="tw-flex tw-flex-col tw-gap-1.5 sm:tw-flex-row sm:tw-items-center sm:tw-gap-3"><span class="mrs-site-row">More sites</span><div class="tw-flex tw-flex-wrap tw-gap-2" id="sites-more" role="group" aria-label="More sites"></div></div>
+      </div>
+      <p class="tw-mt-2 tw-text-xs tw-text-ink-3">Advanced adds comparison and smaller sites, so a check takes a few minutes longer. Tap a logo to add or remove it.</p>
+    </div>
     <!-- Paste a hotel link: the page reads the hotel, dates and guests from it (see readHotelLink), all in the browser. -->
     <div class="tw-mt-4" id="link-row">
       <label class="mrs-paste" for="q-link">
@@ -1115,6 +1130,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   function foldSearch(fold) {
     $("trip-bar").hidden = !fold;
     $("fields").hidden = fold;
+    $("sites-pick").hidden = fold;
     $("link-row").hidden = fold;
     if (fold && state.data) {
       const d = state.data;
@@ -1287,6 +1303,42 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     // After a check, while Claude still listens: a short note in the folded search line, not a box.
     $("trip-bar-note").hidden = !(d.status === "done" && d.ready);
   }
+
+  // ---------- which sites to check ----------
+  // Row one is the standard search; Advanced adds row two. The choice is remembered in this browser only.
+  const PICK_SITES = {
+    standard: [["booking", "Booking.com"], ["agoda", "Agoda"], ["expedia", "Expedia"], ["hotelscom", "Hotels.com"], ["trip", "Trip.com"], ["hotel", "Hotel's own site"]],
+    more: [["google", "Google Hotels"], ["trivago", "Trivago"], ["kayak", "Kayak"], ["priceline", "Priceline"], ["wotif", "Wotif"], ["tripadvisor", "Tripadvisor"],
+      ["qantas", "Qantas Hotels"], ["luxuryescapes", "Luxury Escapes"], ["webjet", "Webjet"], ["lastminute", "lastminute.com"], ["vrbo", "Vrbo"], ["hoteltonight", "HotelTonight"]],
+  };
+  const SITES_KEY = "myroomprice.sites.v1";
+  const STANDARD = PICK_SITES.standard.map(([k]) => k);
+  const ALL_SITES = STANDARD.concat(PICK_SITES.more.map(([k]) => k));
+  const siteName = (key) => (PICK_SITES.standard.concat(PICK_SITES.more).find(([k]) => k === key) || [key, key])[1];
+  let chosenSites = new Set(STANDARD);
+  try { const saved = JSON.parse(localStorage.getItem(SITES_KEY) || "null"); if (Array.isArray(saved) && saved.length) chosenSites = new Set(saved.filter((k) => ALL_SITES.includes(k))); } catch (e) { /* no storage */ }
+  function setSites(keys) {
+    chosenSites = new Set(keys.filter((k) => ALL_SITES.includes(k)));
+    try { localStorage.setItem(SITES_KEY, JSON.stringify([...chosenSites])); } catch (e) { /* no storage */ }
+    renderSites();
+  }
+  function renderSites() {
+    const tile = ([key, name]) => {
+      const on = chosenSites.has(key);
+      return el("button", { type: "button", class: "mrs-sitepick", "aria-pressed": String(on), title: name + (on ? " (checking)" : " (not checking)"), "aria-label": name,
+          onclick: () => { const next = new Set(chosenSites); next.has(key) ? next.delete(key) : next.add(key); setSites([...next]); } },
+        el("img", { src: key === "hotel" ? HOTEL_ICON : SITE_LOGOS[key], alt: "" }));
+    };
+    $("sites-standard").replaceChildren(...PICK_SITES.standard.map(tile));
+    $("sites-more").replaceChildren(...PICK_SITES.more.map(tile));
+    const same = (list) => list.length === chosenSites.size && list.every((k) => chosenSites.has(k));
+    const standard = same(STANDARD), advanced = same(ALL_SITES);
+    $("mode-standard").setAttribute("aria-pressed", String(standard));
+    $("mode-advanced").setAttribute("aria-pressed", String(advanced));
+    $("sites-count").textContent = chosenSites.size + (chosenSites.size === 1 ? " site" : " sites");  // short, so the line never wraps
+  }
+  $("mode-standard").addEventListener("click", () => setSites(STANDARD));
+  $("mode-advanced").addEventListener("click", () => setSites(ALL_SITES));
 
   // ---------- reading a pasted hotel link ----------
   // Everything is read from the link itself, in the browser: nothing is fetched. Each site's own address
@@ -1519,6 +1571,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     const entry = Object.assign({}, old, {
       hotel: str(search.hotel), where: str(search.where), checkin: search.checkin, checkout: search.checkout,
       adults: num(search.adults) || 2, children: num(search.children) || 0, link: str(search.link || old.link || ""), saved: Date.now(),
+      sites: Array.isArray(search.sites) ? search.sites.filter((k) => typeof k === "string").slice(0, 30) : old.sites,
     }, result || {});
     storeRecent([entry].concat(list.filter((r) => !sameSearch(r, search))));
     renderRecent();
@@ -1579,6 +1632,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     if (r.link) applyLink(r.link);
     $("q-hotel").value = r.hotel;
     setWhere(r.where || "");
+    if (Array.isArray(r.sites) && r.sites.length) setSites(r.sites);
     $("q-adults").value = r.adults || 2;
     $("q-children").value = r.children || 0;
     showGuests();
@@ -1780,13 +1834,15 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     if (!city && !state.link) { $("q-city").focus(); return needMore("Add the city or town the hotel is in."); }
     if (!country && !state.link) { $("q-country").focus(); return needMore("Choose the country the hotel is in."); }
     if (!a || !b) { openPicker(); return needMore("Choose your check-in and check-out dates."); }
+    if (!chosenSites.size) { $("mode-standard").focus(); return needMore("Choose at least one site to check, or click Standard."); }
+    const sites = ALL_SITES.filter((k) => chosenSites.has(k)).map(siteName);
     if (b <= a) { openPicker(); return needMore("Check-out needs to be after check-in."); }
     const stay = [hotel, where].filter(Boolean).join(", ") + ", " + longDay(a) + " to " + longDay(b) + ", " + guests({ adults, children });
     $("request").textContent = "Check requested. Hotel: " + hotel + ". City: " + (city || "not given") + ". Country: " + (country || "not given") +
       ". Check-in: " + a + ". Check-out: " + b +
-      ". Adults: " + adults + ". Children: " + children + "." + (state.link ? " Link: " + state.link.link : "");
+      ". Adults: " + adults + ". Children: " + children + ". Sites: " + sites.join(", ") + "." + (state.link ? " Link: " + state.link.link : "");
     document.title = "Check requested · MyRoomPrice";
-    rememberSearch({ hotel, where, checkin: a, checkout: b, adults, children, link: state.link ? state.link.link : "" });
+    rememberSearch({ hotel, where, checkin: a, checkout: b, adults, children, sites: [...chosenSites], link: state.link ? state.link.link : "" });
     state.requested = true;
     state.answered = false;
     state.sent = false;
@@ -1805,6 +1861,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => $(b.dataset.go).scrollIntoView({ behavior: "smooth" })));
   window.addEventListener("hashchange", start);
   fillCountries();
+  renderSites();
   start();
   // The setup guide links here with ?show=how or ?show=faq.
   const show = new URLSearchParams(location.search).get("show");

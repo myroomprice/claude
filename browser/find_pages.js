@@ -2,7 +2,7 @@
 // JavaScript tool, after putting the hotel's name in place of HOTEL NAME on the first line of code.
 // It returns one short JSON string with the hotel's own page on each booking site Google found, and
 // the hotel's official website:
-//   sites    - {booking, agoda, expedia, hotels, trip, priceline, kayak, tripadvisor}: each the page's
+//   sites    - {booking, agoda, expedia, hotels, trip, priceline, kayak, tripadvisor, wotif, qantas, ...}: each the page's
 //              address without its ? part, and the result's title, as [address, title]
 //   official - [address, title] of the result that looks like the hotel's own website, or null
 //   score    - for each entry, how well its title matched the name, 0 to 1 (below 0.5, check it)
@@ -29,6 +29,14 @@ await (async (WANT = "HOTEL NAME") => {
     priceline: /^https:\/\/[^/]*priceline\.com\/relax\/at\/\d+/i,
     kayak: /^https:\/\/[^/]*kayak\.[a-z.]+\/hotels\/[^?#]+-h\d+/i,
     tripadvisor: /^https:\/\/[^/]*tripadvisor\.[a-z.]+\/Hotel_Review-/i,
+    // The "More sites" row. Not yet checked in testing: check the title matches before using one.
+    wotif: /^https:\/\/[^/]*wotif\.com\/[^?#]*\.h\d+\.Hotel-Information/i,
+    qantas: /^https:\/\/[^/]*qantas\.com\/hotels\/properties\//i,
+    luxuryescapes: /^https:\/\/[^/]*luxuryescapes\.com\/[^?#]*\/offer\//i,
+    webjet: /^https:\/\/[^/]*webjet\.com(\.au)?\/hotels?\/[^?#]+/i,
+    lastminute: /^https:\/\/[^/]*lastminute\.com\/[^?#]*hotel[^?#]*/i,
+    vrbo: /^https:\/\/[^/]*vrbo\.com\/(?:[a-z-]+\/)?\d+/i,
+    hoteltonight: /^https:\/\/[^/]*hoteltonight\.com\/[^?#]*hotel[^?#]*/i,
   };
   // Hosts that are never the hotel's own website.
   const NOT_OFFICIAL = new Set(("google booking agoda expedia hotels trip priceline kayak tripadvisor trivago wotif orbitz " +

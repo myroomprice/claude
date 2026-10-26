@@ -81,6 +81,8 @@ Your browser tools can hide everything after the `?` in an address, so don't rel
 | Agoda | `https://www.agoda.com/sheraton-grand-sydney-hyde-park/hotel/sydney-au.html?checkIn=2026-11-20&los=2&adults=2&rooms=1&children=0` (`los` is the number of nights) |
 | Expedia (and Wotif) | `https://www.expedia.com.au/Sydney-Hotels-Sheraton-Grand-Sydney-Hyde-Park.h4807.Hotel-Information?chkin=2026-11-20&chkout=2026-11-22&rm1=a2` (`rm1=a2` is one room, 2 adults; add `:c7` per child aged 7) |
 | Trip.com | `https://au.trip.com/hotels/sydney-hotel-detail-826040/sheraton-grand-sydney-hyde-park/?checkIn=2026-11-20&checkOut=2026-11-22&adult=2&children=0&crn=1` |
+| Wotif (*Not yet checked*) | the Expedia format on wotif.com: `...h<number>.Hotel-Information?chkin=YYYY-MM-DD&chkout=YYYY-MM-DD&rm1=a2` (Expedia owns it) |
+| Priceline, Qantas Hotels, Luxury Escapes, Webjet, lastminute.com, Vrbo, HotelTonight (*Not yet checked*) | open the hotel's page `find_pages.js` found, then set the dates with the site's own date picker if they aren't in the address; give each about a minute |
 | Hotels.com (*Not yet checked*) | `https://au.hotels.com/ho198430/best-western-plus-apollo-international-hotel-newcastle-australia/?chkin=2026-12-23&chkout=2026-12-24&rm1=a2` (the same date format as Expedia, which owns it) |
 | Kayak | the hotel's address from "Kayak" above, with the dates in the path |
 | The hotel's own site | the booking page you read the price on; if its dates are hidden after the `?`, use the hotel's booking page address and say the user may need to re-enter the dates |

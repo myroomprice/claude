@@ -62,6 +62,16 @@
   .mrs-promise::before { content: "✓"; @apply tw-flex tw-h-6 tw-w-6 tw-flex-none tw-items-center tw-justify-center tw-rounded-full tw-bg-reef tw-text-xs tw-font-bold tw-text-white; }
   /* Claude's message replaces the section's status text while it shows, so the page below doesn't move. */
   #claude:not([hidden]) + .claude-default { display: none; }
+  /* The sites picker: a two-way Standard/Advanced switch and logo tiles that switch on and off. */
+  .mrs-seg { @apply tw-inline-flex tw-rounded-full tw-bg-mist tw-p-1; }
+  .mrs-seg-btn { @apply tw-h-8 tw-cursor-pointer tw-rounded-full tw-border-0 tw-bg-transparent tw-px-4 tw-text-sm tw-font-bold tw-text-ink-2 tw-transition hover:tw-text-ink; }
+  .mrs-seg-btn[aria-pressed="true"] { @apply tw-bg-white tw-text-ocean tw-shadow-sm; }
+  .mrs-site-row { @apply sm:tw-w-20 tw-flex-none tw-text-xs tw-font-bold tw-uppercase tw-tracking-[.08em] tw-text-ink-3; }
+  .mrs-sitepick { @apply tw-relative tw-flex tw-h-11 tw-w-11 tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-xl tw-border-[1.5px] tw-border-solid tw-border-line tw-bg-white tw-transition hover:tw-border-ink-3; }
+  .mrs-sitepick img { @apply tw-h-7 tw-w-7 tw-rounded-md tw-opacity-35 tw-grayscale tw-transition; }
+  .mrs-sitepick[aria-pressed="true"] { @apply tw-border-ocean tw-bg-ocean-soft; }
+  .mrs-sitepick[aria-pressed="true"] img { @apply tw-opacity-100 tw-grayscale-0; }
+  .mrs-sitepick[aria-pressed="true"]::after { content: "✓"; @apply tw-absolute tw--right-1.5 tw--top-1.5 tw-flex tw-h-4 tw-w-4 tw-items-center tw-justify-center tw-rounded-full tw-bg-ocean tw-text-[10px] tw-font-bold tw-text-white; }
   .mrs-recent { @apply tw-block tw-w-full tw-cursor-pointer tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-white tw-p-4 tw-text-left tw-shadow-sm tw-transition hover:tw-border-ocean hover:tw-shadow-card; }
   .mrs-recent-x { @apply tw-absolute tw-right-2.5 tw-top-2.5 tw-flex tw-h-7 tw-w-7 tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-bg-transparent tw-text-xs tw-text-ink-3 tw-transition hover:tw-bg-mist hover:tw-text-ink; }
 }

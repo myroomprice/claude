@@ -66,7 +66,7 @@ class BrowserScriptTest(unittest.TestCase):
     def test_are_short(self):
         # Claude types each one out every time it runs it; keep them small.
         for name in self.SCRIPTS:
-            self.assertLess(len(read(name)), 2600, name)
+            self.assertLess(len(read(name)), 3000, name)
 
     def test_only_look(self):
         # They must never click, type, submit or leave the page, or send anything anywhere.

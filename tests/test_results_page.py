@@ -104,12 +104,12 @@ class PageTest(unittest.TestCase):
         for words in ('"Check requested · MyRoomPrice"', '"Check requested. Hotel: "', '". City: "', '". Country: "', '". Check-in: "',
                       '"Answer given · MyRoomPrice"', '"Answer given. Question: "', '". Answer: "', 'q.id === "hotel"',
                       '["thinking", "question", "checking"]',
-                      '". Check-out: "', '". Adults: "', '". Children: "', 'hashHas("ready")'):
+                      '". Check-out: "', '". Adults: "', '". Children: "', '". Sites: "', 'hashHas("ready")'):
             self.assertIn(words, self.script, words)
         for words in ("## Waiting on the page", "`scripts/watch_page.js`", "Check requested. Hotel:", "City: (city or town). Country: (country).",
                       "Answer given. Question: (id). Answer: (label).", '"status": "question"',
                       '"status": "thinking"', 'Use `"hotel"`', "Check-in: YYYY-MM-DD", '"Link: (address)"', '**A pasted link.**',
-                      "Check-out: YYYY-MM-DD", "Adults:", "Children:", "#ready", "5 minutes"):
+                      "Check-out: YYYY-MM-DD", "Adults:", "Children:", "Sites: (the sites to check)", "#ready", "5 minutes"):
             self.assertIn(words, skill, words)
         self.assertIn("READY_MS = 5 * 60e3", self.script)
 
