@@ -62,6 +62,8 @@
   .mrs-promise::before { content: "✓"; @apply tw-flex tw-h-6 tw-w-6 tw-flex-none tw-items-center tw-justify-center tw-rounded-full tw-bg-reef tw-text-xs tw-font-bold tw-text-white; }
   /* Claude's message replaces the section's status text while it shows, so the page below doesn't move. */
   #claude:not([hidden]) + .claude-default { display: none; }
+  /* Inside the Claude section the message needs no box of its own: the section is the box. */
+  #getready #claude > div { @apply tw-border-0 tw-bg-transparent tw-p-0; }
   /* The sites picker: a two-way Standard/Advanced switch and logo tiles that switch on and off. */
   .mrs-seg { @apply tw-inline-flex tw-rounded-full tw-bg-mist tw-p-1; }
   .mrs-seg-btn { @apply tw-h-8 tw-cursor-pointer tw-rounded-full tw-border-0 tw-bg-transparent tw-px-4 tw-text-sm tw-font-bold tw-text-ink-2 tw-transition hover:tw-text-ink; }
@@ -72,6 +74,28 @@
   .mrs-sitepick[aria-pressed="true"] { @apply tw-border-ocean tw-bg-ocean-soft; }
   .mrs-sitepick[aria-pressed="true"] img { @apply tw-opacity-100 tw-grayscale-0; }
   .mrs-sitepick[aria-pressed="true"]::after { content: "✓"; @apply tw-absolute tw--right-1.5 tw--top-1.5 tw-flex tw-h-4 tw-w-4 tw-items-center tw-justify-center tw-rounded-full tw-bg-ocean tw-text-[10px] tw-font-bold tw-text-white; }
+  /* Claude's status dot: grey when it isn't running, a soft green pulse when it's ready. */
+  .mrs-dot { @apply tw-relative tw-h-2.5 tw-w-2.5 tw-flex-none tw-rounded-full tw-bg-ink-3/40; }
+  .mrs-dot.is-on { @apply tw-bg-reef; box-shadow: 0 0 0 4px rgb(43 184 173 / .22); }
+  .mrs-setup summary { @apply tw-w-fit tw-cursor-pointer tw-list-none tw-text-sm tw-font-bold tw-text-ocean; }
+  .mrs-setup summary::-webkit-details-marker { display: none; }
+  .mrs-setup summary::after { content: " ▾"; }
+  .mrs-setup[open] summary::after { content: " ▴"; }
+  /* A sweeping arc that fades at its tail. */
+  .mrs-spinner { @apply tw-inline-block tw-h-6 tw-w-6 tw-flex-none tw-rounded-full;
+    background: conic-gradient(from 90deg, rgb(10 110 125 / 0) 0deg, rgb(10 110 125 / .15) 60deg, #0a6e7d 330deg, rgb(10 110 125 / 0) 360deg);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.5px), #000 calc(100% - 3px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 3.5px), #000 calc(100% - 3px));
+    animation: mrs-spin .85s linear infinite; }
+  @keyframes mrs-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .mrs-spinner { animation-duration: 2.4s; } }
+  /* The country picker. */
+  .mrs-flag { @apply tw-flex-none tw-text-[19px] tw-leading-none; }
+  #q-country-btn.is-empty #q-country-text { @apply tw-font-normal tw-text-ink-3; }
+  .mrs-country-list { @apply tw-m-0 tw-mt-3 tw-max-h-72 tw-list-none tw-overflow-y-auto tw-p-0; overscroll-behavior: contain; }
+  .mrs-country-head { @apply tw-px-3 tw-pb-1 tw-pt-3 tw-text-xs tw-font-bold tw-uppercase tw-tracking-[.1em] tw-text-ink-3; }
+  .mrs-country { @apply tw-flex tw-w-full tw-cursor-pointer tw-items-center tw-gap-3 tw-rounded-lg tw-border-0 tw-bg-transparent tw-px-3 tw-py-2 tw-text-left tw-text-[15px] tw-text-ink hover:tw-bg-mist focus:tw-bg-mist focus:tw-outline-none; }
+  .mrs-country.is-on { @apply tw-bg-ocean-soft tw-font-bold tw-text-ocean; }
   .mrs-recent { @apply tw-block tw-w-full tw-cursor-pointer tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-white tw-p-4 tw-text-left tw-shadow-sm tw-transition hover:tw-border-ocean hover:tw-shadow-card; }
   .mrs-recent-x { @apply tw-absolute tw-right-2.5 tw-top-2.5 tw-flex tw-h-7 tw-w-7 tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-bg-transparent tw-text-xs tw-text-ink-3 tw-transition hover:tw-bg-mist hover:tw-text-ink; }
 }
