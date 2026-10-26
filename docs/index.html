@@ -978,8 +978,17 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   // every few seconds, and <html data-claude-took> when it reads a request. Claude counts as connected while
   // the marks are under a minute old, so the page only asks for /myroomprice when Claude has really gone.
   const SEEN_MS = 60e3;
-  let seenAt = 0, seenTimer = 0;
+  let seenAt = 0, seenTimer = 0, expectTimer = 0;
   const connected = () => Date.now() - seenAt < SEEN_MS;
+  // Claude starts checking in within seconds of opening or updating this page. If it doesn't, it isn't
+  // watching (an older copy of the skill, or Claude ended its turn): say so now, not after the user clicks.
+  function expectCheckIn(ms) {
+    const since = Date.now();
+    clearTimeout(expectTimer);
+    expectTimer = setTimeout(() => {
+      if (seenAt < since && state.ready && !state.requested && !state.answered) quiet();
+    }, ms);
+  }
   function claudeCheckedIn() {
     seenAt = Date.now();
     clearTimeout(seenTimer);
@@ -1170,6 +1179,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     closePops();
     if (!d || d.broken) {
       setReady(!d && hashHas("ready"));
+      if (state.ready) expectCheckIn(30e3);
       fillSearch(null);
       showEmpty(d && d.broken);
       // Claude can open this page in the tab the user was on and pass that tab's hotel page along:
@@ -1181,6 +1191,10 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     // While Claude thinks or asks, or for a few minutes after a check it says it's still watching,
     // a search sent from this page goes straight to Claude.
     setReady(d.status === "thinking" || d.status === "question" || (d.status === "done" && d.ready));
+    // While "thinking", Claude is working, not watching. After asking or finishing, it watches: expect it soon
+    // (after a check it writes its report first).
+    if (d.status === "question") expectCheckIn(60e3);
+    else if (d.status === "done" && d.ready) expectCheckIn(90e3);
     const sameStay = state.data && state.data.hotel.name === d.hotel.name && state.data.stay.checkin === d.stay.checkin && state.data.stay.checkout === d.stay.checkout;
     if (!sameStay) { state.seen = new Set(); state.selected = null; state.picked = false; }
     state.data = d;
