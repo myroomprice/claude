@@ -32,34 +32,46 @@ class SkillFileTest(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(SKILL_DIR, path)), path)
 
 
-class PageReaderTest(unittest.TestCase):
-    """scripts/read_offers.js runs inside booking sites in the user's own browser."""
+class BrowserScriptTest(unittest.TestCase):
+    """The scripts in scripts/*.js run inside web pages in the user's own, signed-in browser."""
 
-    def test_is_valid_javascript(self):
+    SCRIPTS = {
+        "scripts/read_offers.js": ["hotel", "offers", "all", "flags"],
+        "scripts/find_pages.js": ["sites", "official"],
+    }
+
+    def test_are_valid_javascript(self):
         node = shutil.which("node")
         if not node:
             self.skipTest("node not installed")
-        # It uses top-level await, which the browser's JavaScript tool allows, so check it as a module.
+        # They use top-level await, which the browser's JavaScript tool allows, so check them as modules.
         with tempfile.TemporaryDirectory() as tmp:
-            path = os.path.join(tmp, "reader.mjs")
-            with open(path, "w") as f:
-                f.write(read("scripts/read_offers.js"))
-            result = subprocess.run([node, "--check", path], capture_output=True, text=True)
-        self.assertEqual(result.returncode, 0, result.stderr)
+            for name in self.SCRIPTS:
+                path = os.path.join(tmp, os.path.basename(name) + ".mjs")
+                with open(path, "w") as f:
+                    f.write(read(name))
+                result = subprocess.run([node, "--check", path], capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, name + ": " + result.stderr)
 
-    def test_only_looks(self):
-        # It must never click, type, submit or leave the page: the user is signed in there.
-        code = re.sub(r"//.*", "", read("scripts/read_offers.js"))
-        for bad in [".click(", ".submit(", ".focus(", "dispatchEvent", "location.href =", "location.assign",
-                    "location.replace", ".value =", "fetch(", "XMLHttpRequest", "localStorage", "document.cookie"]:
-            self.assertNotIn(bad, code)
+    def test_only_look(self):
+        # They must never click, type, submit or leave the page, or send anything anywhere.
+        for name in self.SCRIPTS:
+            code = re.sub(r"//.*", "", read(name))
+            for bad in [".click(", ".submit(", ".focus(", "dispatchEvent", "location.href =", "location.assign",
+                        "location.replace", ".value =", "fetch(", "XMLHttpRequest", "localStorage", "document.cookie"]:
+                self.assertNotIn(bad, code, name)
 
-    def test_returns_one_json_line(self):
-        code = read("scripts/read_offers.js")
-        self.assertIn("await (async () => {", code)
-        self.assertIn("return JSON.stringify({", code)
-        for field in ["hotel", "page", "offers", "flags"]:
-            self.assertRegex(code, r"\b%s[,:]" % field)
+    def test_return_one_short_json_line(self):
+        for name, fields in self.SCRIPTS.items():
+            code = read(name)
+            self.assertRegex(code, r"await \(async \((?:WANT = \"HOTEL NAME\")?\) => \{", name)
+            answer = code[code.rindex("return JSON.stringify({"):]
+            for field in fields:
+                self.assertRegex(answer, r"\b%s\b" % field, name)
+
+    def test_no_dated_addresses_returned(self):
+        # Claude in Chrome hides any answer carrying a ?query, so the finder returns bare addresses.
+        self.assertIn('split("?")[0]', read("scripts/find_pages.js"))
 
 
 if __name__ == "__main__":

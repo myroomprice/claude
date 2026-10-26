@@ -7,6 +7,9 @@
   /* Search form fields */
   .mrs-label { @apply tw-grid tw-min-w-0 tw-gap-1.5 tw-text-xs tw-font-bold tw-uppercase tw-tracking-[.08em] tw-text-ink-3; }
   .mrs-input { @apply tw-h-12 tw-w-full tw-min-w-0 tw-rounded-xl tw-border-[1.5px] tw-border-solid tw-border-line tw-bg-white tw-px-3.5 tw-text-base tw-font-semibold tw-normal-case tw-tracking-normal tw-text-ink tw-outline-none tw-transition placeholder:tw-font-normal placeholder:tw-text-ink-3 hover:tw-border-ink-3 focus:tw-border-reef focus:tw-ring-4 focus:tw-ring-reef/20; }
+  /* The Country list: looks like the other fields, with its own arrow (a data: image, which the site's policy allows). */
+  .mrs-select { @apply tw-cursor-pointer tw-appearance-none tw-pr-10; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230a6e7d' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px; }
+  .mrs-select.is-empty { @apply tw-font-normal tw-text-ink-3; }
   .mrs-field { @apply tw-flex tw-cursor-pointer tw-items-center tw-gap-2.5 tw-text-left aria-expanded:tw-border-reef aria-expanded:tw-ring-4 aria-expanded:tw-ring-reef/20; }
   .mrs-pop { @apply tw-absolute tw-left-3 tw-right-3 tw-top-full tw-z-30 tw-mt-2 tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-white tw-p-4 tw-text-ink tw-shadow-card sm:tw-p-5; }
   /* Buttons inside the form, the pop-ups and Claude's card */

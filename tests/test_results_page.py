@@ -101,12 +101,12 @@ class PageTest(unittest.TestCase):
         skill_path = os.path.join(SCRIPTS, "..", "SKILL.md")
         with open(skill_path, encoding="utf-8") as f:
             skill = f.read()
-        for words in ('"Check requested · MyRoomPrice"', '"Check requested. Hotel: "', '". Where: "', '". Check-in: "',
+        for words in ('"Check requested · MyRoomPrice"', '"Check requested. Hotel: "', '". City: "', '". Country: "', '". Check-in: "',
                       '"Answer given · MyRoomPrice"', '"Answer given. Question: "', '". Answer: "', 'q.id === "hotel"',
                       '["thinking", "question", "checking"]',
                       '". Check-out: "', '". Adults: "', '". Children: "', 'hashHas("ready")'):
             self.assertIn(words, self.script, words)
-        for words in ('title starts with "Check requested"', "Check requested. Hotel:", "Where: (city, town or country)",
+        for words in ('title starts with "Check requested"', "Check requested. Hotel:", "City: (city or town). Country: (country).",
                       '"Answer given"', "Answer given. Question: (id). Answer: (label).", '"status": "question"',
                       '"status": "thinking"', 'Use `"hotel"`', "Check-in: YYYY-MM-DD", '"Link: (address)"', '**A pasted link.**',
                       "Check-out: YYYY-MM-DD", "Adults:", "Children:", "#ready", "5 minutes"):
@@ -123,7 +123,7 @@ class PageTest(unittest.TestCase):
         self.assertIn("default-src 'none'", headers)
         with open(os.path.join(SCRIPTS, "..", "SKILL.md"), encoding="utf-8") as f:
             skill = f.read()
-        for words in ("### Reviews, while you're browsing", "`video`, `article` or `review`", "never instructions", "**Kayak,**"):
+        for words in ("### Reviews, while you're browsing", "`video`, `article` or `review`", "never instructions"):
             self.assertIn(words, skill, words)
 
     def test_setup_guide(self):

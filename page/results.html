@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta name="description" content="Found the hotel? MyRoomPrice checks Booking.com, Expedia, Agoda, Google Hotels, Trivago, Kayak and the hotel's own site live in your browser with Claude, and shows the lowest total with taxes. Free, and never ranked for money.">
+<meta name="description" content="Found the hotel? MyRoomPrice checks Booking.com, Agoda, Expedia, Hotels.com, Trip.com and the hotel's own site live in your browser with Claude, and shows the lowest total with taxes. Free, and never ranked for money.">
 <link rel="canonical" href="https://myroomprice.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="MyRoomPrice">
 <meta property="og:title" content="MyRoomPrice: find the lowest price for the hotel you've chosen">
-<meta property="og:description" content="Found the hotel? MyRoomPrice checks Booking.com, Expedia, Agoda, Google Hotels, Trivago, Kayak and the hotel's own site live in your browser with Claude, and shows the lowest total with taxes. Free, and never ranked for money.">
+<meta property="og:description" content="Found the hotel? MyRoomPrice checks Booking.com, Agoda, Expedia, Hotels.com, Trip.com and the hotel's own site live in your browser with Claude, and shows the lowest total with taxes. Free, and never ranked for money.">
 <meta property="og:url" content="https://myroomprice.com/">
 <meta property="og:image" content="https://myroomprice.com/og.png">
 <meta property="og:image:width" content="1200">
@@ -231,7 +231,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     <p class="eyebrow" id="eyebrow">Same room. Lower price.</p>
     <h1 id="hotel-name">You've found the hotel. We'll find the lowest price.</h1>
     <p class="stay" id="stay-line"></p>
-    <p class="summary" id="summary">MyRoomPrice checks Google Hotels, Trivago, Kayak, the big booking sites and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.</p>
+    <p class="summary" id="summary">MyRoomPrice finds your hotel on the big booking sites and its own website, checks them live in your browser, and shows the lowest total with taxes and fees.</p>
     <ul class="steps" id="steps" hidden></ul>
     <p class="tw-mt-5 tw-flex tw-max-w-[62ch] tw-items-start tw-gap-2.5 tw-rounded-xl tw-bg-white/10 tw-px-3.5 tw-py-2.5 tw-text-sm tw-text-white/90 [text-shadow:none]" id="keep-open" hidden>
       <span class="tw-mt-px tw-flex tw-h-5 tw-w-5 tw-flex-none tw-items-center tw-justify-center tw-rounded-full tw-bg-sun tw-text-xs tw-font-bold tw-text-ink" aria-hidden="true">i</span>
@@ -242,17 +242,6 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
 
 <div class="wrap">
   <form id="search" autocomplete="off" novalidate class="tw-relative tw-z-[2] tw--mt-[76px] tw-rounded-[20px] tw-bg-white tw-p-4 tw-shadow-card sm:tw-p-5">
-    <!-- Paste a hotel link: the page reads the hotel, dates and guests from it (see readHotelLink), all in the browser. -->
-    <div class="tw-mb-4" id="link-row">
-      <label class="mrs-paste" for="q-link">
-        <svg class="tw-h-5 tw-w-5 tw-flex-none tw-text-ocean" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L11.6 6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.6-1.6"/></svg>
-        <span class="tw-sr-only">Hotel link (optional)</span>
-        <input class="tw-min-w-0 tw-flex-1 tw-border-0 tw-bg-transparent tw-py-2 tw-text-[15px] tw-font-medium tw-text-ink tw-outline-none placeholder:tw-text-ink-3" id="q-link" type="url" inputmode="url" spellcheck="false"
-          placeholder="Found it on Booking.com, Expedia or Agoda? Paste the link here">
-        <button class="mrs-paste-btn" type="button" id="paste-btn">Paste</button>
-      </label>
-      <div id="link-found" hidden></div>
-    </div>
     <!-- On results pages the search folds into this one line, with Edit search to open it again. -->
     <div class="tw-flex tw-flex-wrap tw-items-center tw-gap-x-4 tw-gap-y-2" id="trip-bar" hidden>
       <svg class="tw-h-5 tw-w-5 tw-flex-none tw-text-ocean" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
@@ -260,14 +249,19 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       <span class="tw-items-center tw-gap-1.5 tw-rounded-full tw-bg-reef-soft tw-px-3 tw-py-1 tw-text-sm tw-font-semibold tw-text-reef-ink" id="trip-bar-note" hidden><span class="pulse" aria-hidden="true"></span>Claude's still here: check another stay</span>
       <button class="mrs-round tw-w-auto tw-rounded-full tw-px-4 tw-text-sm" type="button" id="edit-search">Edit search</button>
     </div>
-    <div class="tw-grid tw-gap-3 md:tw-grid-cols-2 lg:tw-grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)_auto] lg:tw-items-end" id="fields">
-      <label class="mrs-label">Hotel
-        <input class="mrs-input" id="q-hotel" name="hotel" maxlength="200" placeholder="Hotel name">
+    <!-- Hotel, City, Country on the first row; Dates, Guests, Check prices on the second. The pop-ups open under the fields. -->
+    <div class="tw-relative" id="fields-wrap">
+    <div class="tw-grid tw-gap-3 md:tw-grid-cols-2 lg:tw-grid-cols-4 lg:tw-items-end" id="fields">
+      <label class="mrs-label md:tw-col-span-2">Hotel
+        <input class="mrs-input" id="q-hotel" name="hotel" maxlength="200" placeholder="e.g. Sheraton Grand Hyde Park">
       </label>
-      <label class="mrs-label">Where
-        <input class="mrs-input" id="q-where" name="where" maxlength="120" placeholder="City, town or country">
+      <label class="mrs-label">City or town
+        <input class="mrs-input" id="q-city" name="city" maxlength="80" placeholder="e.g. Sydney">
       </label>
-      <div class="mrs-label">
+      <label class="mrs-label">Country
+        <select class="mrs-input mrs-select" id="q-country" name="country"><option value="">Choose a country</option></select>
+      </label>
+      <div class="mrs-label md:tw-col-span-2">
         <span id="dates-label">Dates</span>
         <button type="button" class="mrs-input mrs-field" id="q-dates" aria-haspopup="dialog" aria-expanded="false" aria-controls="picker" aria-labelledby="dates-label q-dates-text">
           <svg class="tw-h-5 tw-w-5 tw-flex-none tw-text-ocean" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
@@ -283,10 +277,22 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
         </button>
         <input type="hidden" id="q-adults" name="adults" value="2"><input type="hidden" id="q-children" name="children" value="0">
       </div>
-      <button class="btn btn-sun tw-h-12 md:tw-col-span-2 lg:tw-col-span-1" type="submit">Check prices</button>
+      <button class="btn btn-sun tw-h-12" type="submit">Check prices</button>
     </div>
     <div class="mrs-pop md:tw-right-auto md:tw-w-[680px]" id="picker" role="dialog" aria-label="Choose your dates" hidden></div>
     <div class="mrs-pop md:tw-right-auto md:tw-w-[320px]" id="guests-pop" role="dialog" aria-label="Guests" hidden></div>
+    </div>
+    <!-- Paste a hotel link: the page reads the hotel, dates and guests from it (see readHotelLink), all in the browser. -->
+    <div class="tw-mt-4" id="link-row">
+      <label class="mrs-paste" for="q-link">
+        <svg class="tw-h-5 tw-w-5 tw-flex-none tw-text-ocean" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L11.6 6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.6-1.6"/></svg>
+        <span class="tw-sr-only">Hotel link (optional)</span>
+        <input class="tw-min-w-0 tw-flex-1 tw-border-0 tw-bg-transparent tw-py-2 tw-text-[15px] tw-font-medium tw-text-ink tw-outline-none placeholder:tw-text-ink-3" id="q-link" type="url" inputmode="url" spellcheck="false"
+          placeholder="Or paste a Booking.com, Expedia or Agoda link to fill this in">
+        <button class="mrs-paste-btn" type="button" id="paste-btn">Paste</button>
+      </label>
+      <div id="link-found" hidden></div>
+    </div>
   </form>
   <!-- Before a search: "Claude is ready", or the three setup steps for someone new (see renderGetReady). -->
   <div class="tw-mt-4" id="getready" hidden></div>
@@ -307,9 +313,6 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
         <p class="tw-mt-3 tw-text-ink-2">Booking sites, comparison sites and the hotel's own website often charge different amounts, and some leave out taxes or hide member rates. MyRoomPrice checks them side by side and tells you where to book.</p>
         <p class="tw-mt-6 tw-text-xs tw-font-bold tw-uppercase tw-tracking-[.12em] tw-text-ink-3">Sites we check</p>
         <ul class="tw-m-0 tw-mt-3 tw-flex tw-list-none tw-flex-wrap tw-gap-x-5 tw-gap-y-3 tw-p-0" aria-label="Sites we check">
-          <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/google.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Google Hotels</li>
-          <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/trivago.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Trivago</li>
-          <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/kayak.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Kayak</li>
           <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/booking.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Booking.com</li>
           <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/expedia.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Expedia</li>
           <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/hotelscom.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Hotels.com</li>
@@ -321,7 +324,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       <div class="tw-scroll-mt-24" id="how">
         <p class="eyebrow tw-mb-4 tw-text-ocean">How it works</p>
         <ol class="tw-m-0 tw-grid tw-list-none tw-gap-7 tw-p-0" aria-label="How it works">
-        <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">1</span><div><h3 class="tw-text-xl">Tell us the hotel</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Add the hotel, where it is and your dates. If the name matches more than one hotel, Claude asks which you mean.</p></div></li>
+        <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">1</span><div><h3 class="tw-text-xl">Tell us the hotel</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Add the hotel, its city and country, and your dates. If the name matches more than one hotel, Claude asks which you mean.</p></div></li>
         <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">2</span><div><h3 class="tw-text-xl">Claude checks every site</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Live, in your own browser, so you see today's prices, member rates and refundable rates, not old listings.</p></div></li>
         <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">3</span><div><h3 class="tw-text-xl">Book the lowest real price</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Every total includes taxes and fees, and we show what you give up for it, like free cancellation.</p></div></li>
       </ol>
@@ -341,7 +344,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
         </div>
       </div>
       <div class="tw-border-0 tw-border-t tw-border-solid tw-border-line">
-      <details class="mrs-faq" open><summary class="mrs-faq-q">What is MyRoomPrice?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">A free tool for Claude that finds the cheapest way to book a hotel you've already chosen. Tell it the hotel and your dates, and Claude checks the price comparison sites, the big booking sites and the hotel's own website, then shows every price side by side, with taxes and fees included.</p></div></details>
+      <details class="mrs-faq" open><summary class="mrs-faq-q">What is MyRoomPrice?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">A free tool for Claude that finds the cheapest way to book a hotel you've already chosen. Tell it the hotel and your dates, and Claude finds that hotel on the big booking sites and its own website, reads each price live, then shows them side by side, with taxes and fees included.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Why use it instead of a comparison site?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Comparison sites show listed prices, which are often per night, before tax, or out of date, and they rarely show the hotel's own member rates. MyRoomPrice opens each site live in your browser, reads the real total for your whole stay, and puts the hotel's own website alongside.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">It also tells you what you give up for a lower price, such as free cancellation, and finds recent reviews of the hotel while it checks.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Do you rank results for money?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed"><strong>No. We don't rank anything.</strong> Results are always sorted by the total you'd pay, cheapest first, and you can filter and re-sort them yourself. We want you to get the cheapest price.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Some booking links go through our partner Stay22 and may earn us a small commission, at no extra cost to you. Whether a site pays us never changes where it appears: the cheapest confirmed price comes first, even when it pays us nothing.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Why does Chrome say “Claude started debugging this browser”?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">That's normal for MyRoomPrice. Chrome shows this bar whenever an extension, here Claude in Chrome, is working in your browser, and it goes away when Claude finishes.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">While a check is running, don't click <strong>Cancel</strong> on that bar and don't close the background tab Claude is using: either one stops the check. Claude uses just one background tab, besides this page, and closes it when it's done.</p></div></details>
@@ -924,7 +927,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     $("q-link").value = "";
     showLink();
     $("q-hotel").value = d ? d.hotel.name : "";
-    $("q-where").value = d ? d.hotel.where : "";
+    setWhere(d ? d.hotel.where : "");
     setDates(d ? d.stay.checkin : "", d ? d.stay.checkout : "");
     $("q-adults").value = d ? d.stay.adults : 2;
     $("q-children").value = d ? d.stay.children : 0;
@@ -954,8 +957,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     $("hotel-name").textContent = "You've found the hotel. We'll find the lowest price.";
     $("stay-line").textContent = "";
     $("summary").textContent = broken ? "This link looks incomplete, so there are no results to show. Type /myroomprice in Claude to start again."
-      : ready ? "Claude is ready. Fill in the hotel, where it is and your dates, then click Check prices."
-      : "MyRoomPrice checks Google Hotels, Trivago, Kayak, the big booking sites and the hotel's own website, live in your browser, and shows the lowest total with taxes and fees.";
+      : ready ? "Claude is ready. Fill in the hotel, its city and country and your dates, then click Check prices."
+      : "MyRoomPrice finds your hotel on the big booking sites and its own website, checks them live in your browser, and shows the lowest total with taxes and fees.";
     document.title = ready ? "Ready · MyRoomPrice" : "MyRoomPrice: the lowest price for the hotel you've chosen";
     renderGetReady();
   }
@@ -1063,7 +1066,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   function tryAgain() {
     editSearch();
     card("note", badge("✎", "tw-bg-sun tw-text-ink"), "Change your search",
-      para("Fix the hotel, where it is or the dates above, then click Check prices. Claude is still watching this page."));
+      para("Fix the hotel, its city and country or the dates above, then click Check prices. Claude is still watching this page."));
     $("q-hotel").focus();
     $("q-hotel").select();
   }
@@ -1147,6 +1150,71 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     lk: "Sri Lanka", mv: "Maldives", fj: "Fiji", mx: "Mexico", br: "Brazil", ar: "Argentina", za: "South Africa",
     eg: "Egypt", ma: "Morocco", il: "Israel",
   };
+
+  // ---------- the Country list ----------
+  // Every country, named by the browser in English, with the most-booked ones first.
+  const COUNTRY_CODES = ("AD AE AF AG AI AL AM AO AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BW BY BZ CA CD CF CG " +
+    "CH CI CK CL CM CN CO CR CU CV CW CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP " +
+    "GQ GR GT GU GW GY HK HN HR HT HU ID IE IL IM IN IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT " +
+    "LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG " +
+    "PH PK PL PM PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TG TH TJ TL TM TN " +
+    "TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW").split(" ");
+  const POPULAR = "AU NZ GB US JP TH ID SG FR IT ES GR VN FJ".split(" ");
+  const regionName = (() => {
+    try { const names = new Intl.DisplayNames(["en"], { type: "region" }); return (code) => names.of(code) || COUNTRIES[code.toLowerCase()] || code; }
+    catch (e) { return (code) => COUNTRIES[code.toLowerCase()] || code; }
+  })();
+  // Other ways people write a country, for reading "City, Country" back into the form.
+  const COUNTRY_ALIASES = { usa: "US", "united states of america": "US", america: "US", uk: "GB", england: "GB", scotland: "GB",
+    wales: "GB", "northern ireland": "GB", "great britain": "GB", britain: "GB", uae: "AE", holland: "NL", "czech republic": "CZ",
+    turkey: "TR", "south korea": "KR", korea: "KR", vietnam: "VN", "hong kong": "HK", macau: "MO", bali: "ID", russia: "RU" };
+  function countryCode(text) {
+    const t = (text || "").trim().toLowerCase();
+    if (!t) return "";
+    if (COUNTRY_ALIASES[t]) return COUNTRY_ALIASES[t];
+    return COUNTRY_CODES.find((c) => regionName(c).toLowerCase() === t || c.toLowerCase() === t) || "";
+  }
+  function fillCountries() {
+    const select = $("q-country");
+    const option = (code) => el("option", { value: regionName(code), text: regionName(code) });
+    const popular = el("optgroup", { label: "Popular" });
+    POPULAR.forEach((c) => popular.append(option(c)));
+    const all = el("optgroup", { label: "All countries" });
+    COUNTRY_CODES.map((c) => [c, regionName(c)]).sort((x, y) => x[1].localeCompare(y[1], "en")).forEach(([c]) => all.append(option(c)));
+    select.append(popular, all);
+    select.value = guessCountry();
+    select.addEventListener("change", markCountry);
+    markCountry();
+  }
+  // Grey "Choose a country" until one is chosen, like the other boxes' placeholders.
+  const markCountry = () => $("q-country").classList.toggle("is-empty", !$("q-country").value);
+  // Start on the last search's country, or the visitor's own; they can change it.
+  function guessCountry() {
+    try { const last = loadRecent()[0]; const code = last && countryCode(splitWhere(last.where).country); if (code) return regionName(code); } catch (e) { /* no history */ }
+    let zone = "";
+    try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) { /* older browser */ }
+    if (/^Australia\//.test(zone)) return regionName("AU");
+    if (/^Pacific\/(Auckland|Chatham)$/.test(zone)) return regionName("NZ");
+    for (const lang of navigator.languages || [navigator.language || ""]) {
+      const region = (lang.split("-")[1] || "").toUpperCase();
+      if (COUNTRY_CODES.includes(region)) return regionName(region);
+    }
+    return "";
+  }
+  // "Sydney, Australia" <-> City "Sydney" and Country "Australia".
+  function splitWhere(where) {
+    const parts = (where || "").split(",").map((x) => x.trim()).filter(Boolean);
+    const code = parts.length ? countryCode(parts[parts.length - 1]) : "";
+    if (code) { parts.pop(); return { city: parts.join(", "), country: regionName(code) }; }
+    return { city: parts.join(", "), country: "" };
+  }
+  function setWhere(where) {
+    const { city, country } = splitWhere(where);
+    $("q-city").value = city;
+    if (country) $("q-country").value = country;
+    markCountry();
+  }
+  const getWhere = () => [$("q-city").value.trim().slice(0, 80), $("q-country").value].filter(Boolean).join(", ");
   const SMALL = new Set(["and", "of", "the", "by", "on", "at", "in", "de", "la", "le", "du"]);
   function titleCase(slug) {
     return decodeURIComponent(slug).replace(/[-_+]+/g, " ").trim().split(/\s+/)
@@ -1243,7 +1311,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     if (!r) return false;
     state.link = r;
     if (r.hotel) $("q-hotel").value = r.hotel;
-    if (r.where) $("q-where").value = r.where;
+    if (r.where) setWhere(r.where);
     if (r.checkin && r.checkout && r.checkout > r.checkin) setDates(r.checkin, r.checkout);
     else if (r.checkin) setDates(r.checkin, "");
     if (r.adults) $("q-adults").value = Math.min(12, r.adults);
@@ -1350,7 +1418,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     $("q-link").value = "";
     if (r.link) applyLink(r.link);
     $("q-hotel").value = r.hotel;
-    $("q-where").value = r.where || "";
+    setWhere(r.where || "");
     $("q-adults").value = r.adults || 2;
     $("q-children").value = r.children || 0;
     showGuests();
@@ -1478,8 +1546,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   let openPop = null;  // { pop, field }
   function placePop(pop, field) {
     if (!wide()) { pop.style.left = ""; return; }
-    const room = $("search").clientWidth - pop.offsetWidth - 12;
-    pop.style.left = Math.max(12, Math.min(field.offsetLeft, room)) + "px";
+    const room = $("fields-wrap").clientWidth - pop.offsetWidth;
+    pop.style.left = Math.max(0, Math.min(field.offsetLeft, room)) + "px";
   }
   function showPop(pop, field, draw) {
     closePops();
@@ -1504,7 +1572,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     if (refocus) field.focus();
   }
   // Phones get a placeholder short enough to read in full.
-  if (!matchMedia("(min-width: 640px)").matches) $("q-link").placeholder = "Paste a hotel link (optional)";
+  if (!matchMedia("(min-width: 640px)").matches) $("q-link").placeholder = "Or paste a hotel link";
   const pastedText = (e) => (e.clipboardData || window.clipboardData).getData("text");
   $("q-link").addEventListener("paste", (e) => { if (applyLink(pastedText(e))) e.preventDefault(); });
   $("q-link").addEventListener("change", () => applyLink($("q-link").value));
@@ -1543,16 +1611,19 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     e.preventDefault();
     closePops();
     const hotel = $("q-hotel").value.trim().slice(0, 200);
-    const where = $("q-where").value.trim().slice(0, 120);
+    const city = $("q-city").value.trim().slice(0, 80), country = $("q-country").value;
+    const where = getWhere();
     const a = $("q-in").value, b = $("q-out").value;
     const adults = Math.min(12, Math.max(1, parseInt($("q-adults").value, 10) || 2));
     const children = Math.min(8, Math.max(0, parseInt($("q-children").value, 10) || 0));
     if (!hotel) { $("q-hotel").focus(); return needMore("Add the hotel's name."); }
-    if (!where && !state.link) { $("q-where").focus(); return needMore("Add where the hotel is: a city, town or country."); }
+    if (!city && !state.link) { $("q-city").focus(); return needMore("Add the city or town the hotel is in."); }
+    if (!country && !state.link) { $("q-country").focus(); return needMore("Choose the country the hotel is in."); }
     if (!a || !b) { openPicker(); return needMore("Choose your check-in and check-out dates."); }
     if (b <= a) { openPicker(); return needMore("Check-out needs to be after check-in."); }
     const stay = [hotel, where].filter(Boolean).join(", ") + ", " + longDay(a) + " to " + longDay(b) + ", " + guests({ adults, children });
-    $("request").textContent = "Check requested. Hotel: " + hotel + ". Where: " + (where || "see link") + ". Check-in: " + a + ". Check-out: " + b +
+    $("request").textContent = "Check requested. Hotel: " + hotel + ". City: " + (city || "not given") + ". Country: " + (country || "not given") +
+      ". Check-in: " + a + ". Check-out: " + b +
       ". Adults: " + adults + ". Children: " + children + "." + (state.link ? " Link: " + state.link.link : "");
     document.title = "Check requested · MyRoomPrice";
     rememberSearch({ hotel, where, checkin: a, checkout: b, adults, children, link: state.link ? state.link.link : "" });
@@ -1578,6 +1649,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   $("viewer").addEventListener("click", (e) => { if (e.target === $("viewer")) $("viewer").close(); });  // a click on the backdrop
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => $(b.dataset.go).scrollIntoView({ behavior: "smooth" })));
   window.addEventListener("hashchange", start);
+  fillCountries();
   start();
   // The setup guide links here with ?show=how or ?show=faq.
   const show = new URLSearchParams(location.search).get("show");

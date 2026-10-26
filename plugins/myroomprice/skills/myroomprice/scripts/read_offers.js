@@ -1,14 +1,16 @@
-// MyRoomPrice page reader. Run this whole file in a hotel or booking page with the browser's
+// MyRoomPrice page reader. Run this whole file in a hotel's page on a booking site with the browser's
 // JavaScript tool; it returns one short JSON string (it takes a few seconds while the rooms load):
-//   hotel   - the page's main heading
-//   page    - the page's address without its ? part
-//   offers  - up to 5 rates, cheapest first, each [price, room, cancellation, taxes, payment],
-//             every field copied word for word from the page ("" when the page doesn't say);
-//             the price ends in "per night" or "total" when the page says which it is
+//   hotel   - the page's main heading: check it's the right hotel
+//   offers  - up to 4 rates, cheapest first, each [price, room, cancellation, taxes, payment],
+//             every field copied word for word from the page ("" when the page doesn't say, and
+//             left off the end when empty). "same" means the same as in "all".
+//             The price ends in "per night" or "total" when the page says which it is.
+//   all     - terms every rate shares, given once: {cancellation, taxes, payment}
 //   flags   - short words for what the page shows: sold-out (no rates at all), sign-in, member,
 //             captcha, no-rooms (no room list found, so the prices may be from elsewhere on the page)
 // The text is exact, so it stands in for a screenshot. It scrolls the page to the rooms, because
-// many sites only load them then, and it clicks nothing.
+// many sites only load them then, and it clicks nothing. The answer is kept short so that several
+// sites can be read in one batch without the browser tool cutting it off.
 await (async () => {
   const clean = (s) => (s || "").replace(/\s+/g, " ").trim();
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -24,15 +26,16 @@ await (async () => {
   const PRICE = /(?:A\$|AU\$|NZ\$|US\$|S\$|HK\$|C\$|\$|£|€|¥|₹|฿|₫|RM|Rp|AUD|USD|NZD|EUR|GBP|SGD|THB|JPY|IDR|VND|MYR|PHP)\s?\d[\d,.]*\d|\d[\d,.]*\d\s?(?:AUD|USD|NZD|EUR|GBP|SGD|THB|JPY|IDR|VND|MYR|PHP|€)/;
   // A room type's name says what kind of room it is; a bed line ("1 extra-large double bed") doesn't count.
   const ROOM = /\b(room|suite|studio|villa|bungalow|apartment|chalet|cabin|loft|penthouse)\b/i;
-  // ...and an amenity or a heading that only mentions rooms doesn't either.
-  const NOT_ROOM = /\b(dressing|bath|living|shower|powder|dining|sitting|laundry|fitness|meeting|board|smoking)\s?room\b|\broom (service|comfort|size|facilities|amenities|only|info|details|highlights)\b|^(?:select|choose|see|show|view|compare|filter|book|reserve)\b|\b(?:options|types|sold out|left)\b/i;
+  // ...and an amenity, a heading that only mentions rooms, or a guest's review doesn't either.
+  const NOT_ROOM = /\b(dressing|bath|living|shower|powder|dining|sitting|laundry|fitness|meeting|board|smoking)\s?room\b|\broom (service|comfort|size|facilities|amenities|only|info|details|highlights)\b|^(?:select|choose|see|show|view|compare|filter|book|reserve)\b|\b(?:options|types|sold out|left)\b|\b(?:great|comfy|clean|friendly|staff|lovely|nice|excellent|amazing|perfect|good|stayed|value|price|recommend)\b/i;
   // Cancellation terms, ending at their deadline ("before 20 November 2026", "before 23:59, Nov 19").
   const DATE = String.raw`(?:\d{1,2}\s[A-Za-z]{3,9}\s\d{4}|[A-Za-z]{3,9}\s\d{1,2},?\s\d{4}|\d{1,2}:\d{2}(?:\s?[ap]m)?,?\s(?:on\s)?(?:[A-Za-z]{3,9}\s\d{1,2}|\d{1,2}\s[A-Za-z]{3,9})|[A-Za-z]{3,9}\s\d{1,2}\b|\d{1,2}\s[A-Za-z]{3,9}\b)`;
   const CANCEL = new RegExp(String.raw`free cancell?ation\s+(?:before|until|till|up to|by)\s+(?:[^•|·]{0,12}?\s)?` + DATE +
     String.raw`|fully refundable\s+(?:before|until|till|by)\s+(?:[^•|·]{0,12}?\s)?` + DATE +
     String.raw`|free cancell?ation(?:[^•|·]{0,45}?\d{4})?|cancel for free[^•|·]{0,30}?\d{4}|fully refundable|partially refundable|non-?refundable|no refunds?`, "i");
   const value = (p) => parseFloat(p.replace(/[^\d.]/g, "")) || 0;
-  const pick = (text, re) => { const m = text.match(re); return m ? clean(m[0]).slice(0, 50) : ""; };
+  // "&" is written as "and": next to "=" the browser tool takes an answer for an address and hides it.
+  const pick = (text, re) => { const m = text.match(re); return m ? clean(m[0]).replace(/\s*&\s*/g, " and ").slice(0, 50) : ""; };
   const hasPrice = (el) => el && PRICE.test(el.innerText || "");
 
   // Find the room list: the sites' own markers first, then a "Rooms"/"Availability" heading.
@@ -62,7 +65,7 @@ await (async () => {
   for (const el of document.querySelectorAll("h2, h3, h4, h5, a, strong, b, span, [class*='room' i], [data-testid*='room' i]")) {
     if (el.children.length > 3 || skip(el) || !visible(el)) continue;
     const t = clean(el.innerText);
-    if (t.length >= 6 && t.length <= 70 && ROOM.test(t) && !PRICE.test(t) && !/[?!]$/.test(t) && !/^\d/.test(t) &&
+    if (t.length >= 6 && t.length <= 70 && ROOM.test(t) && !PRICE.test(t) && !/[?!]$/.test(t) && !/^[\d"'“‘«]/.test(t) &&
         !NOT_ROOM.test(t)) roomEls.push([el, t]);
   }
   const roomFor = (el) => {
@@ -126,20 +129,31 @@ await (async () => {
   // Leave out small sums that aren't rooms (a fee, a deposit): well under the typical price here.
   const sorted = [...byKey.values()].sort((a, b) => value(a[0]) - value(b[0]));
   const median = sorted.length ? value(sorted[Math.floor(sorted.length / 2)][0]) : 0;
-  const offers = sorted.filter((o) => value(o[0]) >= median * 0.4).slice(0, 5);
+  const offers = sorted.filter((o) => value(o[0]) >= median * 0.4).slice(0, 4);
+  // Terms every rate shares are listed once, in "all", to keep the answer short: the browser tool
+  // cuts long answers off, and several sites are read in one batch.
+  const all = {};
+  ["cancellation", "taxes", "payment"].forEach((name, i) => {
+    const v = offers.length > 1 && offers[0][i + 2];
+    if (v && offers.every((o) => o[i + 2] === v)) { all[name] = v; offers.forEach((o) => { o[i + 2] = "same"; }); }
+  });
+  offers.forEach((o) => {
+    o[1] = o[1].replace(/\s*&\s*/g, " and ").replace(/=/g, "-");
+    while (o.length > 2 && !o[o.length - 1]) o.pop();
+  });
 
-  const all = clean(document.body.innerText);
+  const text = clean(document.body.innerText);
   const flags = [
-    !offers.length && /sold out|no availability|not available for your dates|unavailable on our site|no rooms available/i.test(all) && "sold-out",
-    /sign in to (?:see|unlock|get)|log in to see/i.test(all) && "sign-in",
-    /member price|members save|member rate/i.test(all) && "member",
-    /are you a human|verify you are human|captcha|unusual traffic|press and hold/i.test(all) && "captcha",
+    !offers.length && /sold out|no availability|not available for your dates|unavailable on our site|no rooms available/i.test(text) && "sold-out",
+    /sign in to (?:see|unlock|get)|log in to see/i.test(text) && "sign-in",
+    /member price|members save|member rate/i.test(text) && "member",
+    /are you a human|verify you are human|captcha|unusual traffic|press and hold/i.test(text) && "captcha",
     scope === document.body && "no-rooms",
   ].filter(Boolean);
   return JSON.stringify({
-    hotel: clean((document.querySelector("h1") || document.querySelector("h2") || {}).innerText).slice(0, 80),
-    page: location.origin + location.pathname,
+    hotel: clean((document.querySelector("h1") || document.querySelector("h2") || {}).innerText).slice(0, 60),
     offers,
+    all,
     flags,
   });
 })();

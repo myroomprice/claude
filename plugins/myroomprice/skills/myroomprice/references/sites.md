@@ -56,19 +56,17 @@ Notes marked *Checked* were tested live in Oct 2026, from Australia. Sites chang
 
 ## Reaching each site in the worker tab
 
-**Search each site for the hotel yourself, and confirm on that site's own hotel page.** Never take a site's price or link from somewhere else (Google Hotels, Trivago, Kayak or a results list): those only tell you which sites to check. On each site:
-1. Search the site for the hotel, in the worker tab, with the dates (the addresses below put them in for you).
-2. Find the hotel in the results and read the address of its own page from the link on its name (see "From a list to the hotel's page"). Don't click it; on several sites that opens a new tab.
-3. Go to that hotel page in the worker tab, with the dates added (see "Booking links").
-4. Read the room, the total with taxes and fees, and the cancellation terms there, on the hotel's page, with the page reader (`scripts/read_offers.js`; see "Reading a hotel page" in SKILL.md). *Checked* on Booking.com, Agoda, Expedia and Trip.com hotel pages: Agoda shows prices per night (the reader marks them "per night"), the others show the total for the stay.
-5. Use that page, with the dates, as the offer's `link`.
+**Find each site's own page for the hotel with a Google search, then read the price on that page.** Never take a site's price from somewhere else (Google Hotels, Trivago, Kayak or a results list): those only tell you which sites to check.
+1. In one batched call, run the two Google searches in SKILL.md step 3, each followed by `scripts/find_pages.js`. *Checked* for "Apollo Hotel", Newcastle, Australia: the plain search found the hotel's official site and its Booking.com page; the second, limited to the booking sites with `site:`, found its Agoda, Expedia and Hotels.com pages. Trip.com didn't appear; that's normal for smaller hotels.
+2. Add the dates to each address (see "Booking links" below).
+3. In one more batched call, open each one and run the page reader (`scripts/read_offers.js`; see "Reading a hotel page" in SKILL.md). *Checked*: Booking.com, Agoda and Expedia read in a single call, with the room, the total, taxes and cancellation terms. Agoda shows prices per night (the reader marks them "per night"); the others show the total for the stay.
+4. Use each page, with the dates, as that offer's `link`.
 
-How to search each site:
-- **Booking.com** (*Checked*): `https://www.booking.com/searchresults.html?ss=<hotel+name+and+city>&checkin=YYYY-MM-DD&checkout=YYYY-MM-DD&group_adults=2&no_rooms=1&group_children=0`. The hotel is usually first in the list; take its page address from its name and go to it.
-- **Expedia, Hotels.com and Wotif** (*Not yet checked*): `https://www.expedia.com.au/Hotel-Search?destination=<hotel name>&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&adults=2&rooms=1` (and the same path on hotels.com or wotif.com). If the dates don't hold, use the site's own date picker. Take the hotel's page address from its name in the list and go to it.
-- **Agoda and Trip.com:** open the home page, type the hotel's name into the search box, pick the hotel from the suggestions, and set the dates. If that lands on a list, take the hotel's page address from its name and go to it.
-- **Kayak** (*Checked*): see "Kayak" above.
-- **The hotel's own site:** search for the hotel's official website (or use the address Google Hotels shows for it), go to it, and use its own "Book" or "Check availability" box, so the price comes from the hotel's own booking page. If its booking page only opens through Google's "Get price" button, use that, last (see "Tabs" in SKILL.md).
+**If Google doesn't find a site,** you can search the site itself, but it's slower and less reliable:
+- **Booking.com** (*Checked*): `https://www.booking.com/searchresults.html?ss=<hotel+name+city+country>&checkin=YYYY-MM-DD&checkout=YYYY-MM-DD&group_adults=2&no_rooms=1&group_children=0`. The hotel is usually first in the list; take its page address from its name and go to it.
+- **Expedia** (*Checked*, unreliable): `Hotel-Search?destination=<hotel name>` turns the name into a search of the whole city, so the hotel may not be on the first page.
+- **Agoda** (*Checked*, doesn't work): `search?textToSearch=` lands on the home page. Use the home page's search box only if Agoda really matters for this check.
+- **The hotel's own site:** use `official` from `find_pages.js`, or the address Google shows for it. Use its own "Book" or "Check availability" box, so the price comes from the hotel's own booking page.
 - **A link the user pasted:** open it directly; it's usually the quickest page of all.
 
 ## Booking links: the hotel's own page, with the dates
@@ -83,10 +81,11 @@ Your browser tools can hide everything after the `?` in an address, so don't rel
 | Agoda | `https://www.agoda.com/sheraton-grand-sydney-hyde-park/hotel/sydney-au.html?checkIn=2026-11-20&los=2&adults=2&rooms=1&children=0` (`los` is the number of nights) |
 | Expedia (and Wotif) | `https://www.expedia.com.au/Sydney-Hotels-Sheraton-Grand-Sydney-Hyde-Park.h4807.Hotel-Information?chkin=2026-11-20&chkout=2026-11-22&rm1=a2` (`rm1=a2` is one room, 2 adults; add `:c7` per child aged 7) |
 | Trip.com | `https://au.trip.com/hotels/sydney-hotel-detail-826040/sheraton-grand-sydney-hyde-park/?checkIn=2026-11-20&checkOut=2026-11-22&adult=2&children=0&crn=1` |
+| Hotels.com (*Not yet checked*) | `https://au.hotels.com/ho198430/best-western-plus-apollo-international-hotel-newcastle-australia/?chkin=2026-12-23&chkout=2026-12-24&rm1=a2` (the same date format as Expedia, which owns it) |
 | Kayak | the hotel's address from "Kayak" above, with the dates in the path |
 | The hotel's own site | the booking page you read the price on; if its dates are hidden after the `?`, use the hotel's booking page address and say the user may need to re-enter the dates |
 
-How to find the hotel's page address on each site: open the hotel from the site's own search (in the worker tab), then read the address up to the `?`. Booking.com's is `/hotel/<country>/<name>.html`, Agoda's `/<name>/hotel/<city>.html`, Expedia's ends `.h<number>.Hotel-Information`, and Trip.com's is `/hotels/<city>-hotel-detail-<number>/<name>/`. If you only have a search page, don't save it as the link: open the hotel from the results first.
+How to find the hotel's page address on each site: `find_pages.js` on a Google search returns it (see "Reaching each site"); otherwise open the hotel from the site's own search and read the address up to the `?`. Booking.com's is `/hotel/<country>/<name>.html`, Agoda's `/<name>/hotel/<city>.html`, Expedia's ends `.h<number>.Hotel-Information`, and Trip.com's is `/hotels/<city>-hotel-detail-<number>/<name>/`. If you only have a search page, don't save it as the link: open the hotel from the results first.
 
 ## From a list to the hotel's page
 
