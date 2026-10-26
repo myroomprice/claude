@@ -146,6 +146,9 @@ def list_links(results):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("results", help="results JSON file, or - for standard input")
+    ap.add_argument("--json", action="store_true",
+                    help="print the results JSON, with partner links and the disclosure added, instead of a link "
+                         "(to hand to the page with a short script; see \"The app tab\" in SKILL.md)")
     args = ap.parse_args()
     raw = sys.stdin.read() if args.results == "-" else open(args.results, encoding="utf-8").read()
     try:
@@ -159,7 +162,11 @@ def main():
     for site in list_links(results):
         print("Warning: the link for %s opens a list, not the hotel's own page. Replace it with the hotel's page "
               "(see \"From a list to the hotel's page\" in references/sites.md)." % site, file=sys.stderr)
-    print(make_url(add_partner_links(results, settings), settings))
+    results = add_partner_links(results, settings)
+    if args.json:
+        print(json.dumps(results, ensure_ascii=False, separators=(",", ":")))
+    else:
+        print(make_url(results, settings))
 
 
 if __name__ == "__main__":

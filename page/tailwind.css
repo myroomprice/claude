@@ -53,6 +53,15 @@
 
 @layer components {
   /* Recent searches */
+  /* A full-width tinted band behind a section, without leaving the page's column. */
+  .mrs-band { @apply tw-bg-mist; box-shadow: 0 0 0 100vmax #f2f7f8; clip-path: inset(0 -100vmax); }
+  .mrs-h2 { @apply tw-mt-2 tw-max-w-[24ch] tw-text-[clamp(26px,3.4vw,38px)] tw-leading-tight; }
+  .mrs-howcard { @apply tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-white tw-p-6; }
+  .mrs-site { @apply tw-flex tw-items-center tw-gap-3 tw-rounded-xl tw-border tw-border-solid tw-border-line tw-bg-white tw-px-4 tw-py-3 tw-text-[15px] tw-font-semibold tw-text-ink; }
+  .mrs-promise { @apply tw-flex tw-items-center tw-gap-2.5 tw-rounded-xl tw-bg-reef-soft tw-px-4 tw-py-3 tw-text-sm tw-font-semibold tw-text-reef-ink; }
+  .mrs-promise::before { content: "✓"; @apply tw-flex tw-h-6 tw-w-6 tw-flex-none tw-items-center tw-justify-center tw-rounded-full tw-bg-reef tw-text-xs tw-font-bold tw-text-white; }
+  /* Claude's message replaces the section's status text while it shows, so the page below doesn't move. */
+  #claude:not([hidden]) + .claude-default { display: none; }
   .mrs-recent { @apply tw-block tw-w-full tw-cursor-pointer tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-white tw-p-4 tw-text-left tw-shadow-sm tw-transition hover:tw-border-ocean hover:tw-shadow-card; }
   .mrs-recent-x { @apply tw-absolute tw-right-2.5 tw-top-2.5 tw-flex tw-h-7 tw-w-7 tw-cursor-pointer tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-bg-transparent tw-text-xs tw-text-ink-3 tw-transition hover:tw-bg-mist hover:tw-text-ink; }
 }

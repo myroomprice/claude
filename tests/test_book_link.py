@@ -111,3 +111,18 @@ class BookLinkTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ResultsJsonTest(unittest.TestCase):
+    def test_results_json_option(self):
+        # --json prints the results with partner fields added, for handing to the page with a short script.
+        import json, subprocess, sys, os
+        script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "plugins", "myroomprice", "skills", "myroomprice", "scripts", "results_link.py")
+        data = {"hotel": {"name": "Apollo Hotel"}, "stay": {"checkin": "2026-12-23", "checkout": "2026-12-24", "adults": 2},
+                "offers": [{"site": "Booking.com", "total": 219, "link": "https://www.booking.com/hotel/au/quality-apollo-international.html?checkin=2026-12-23&checkout=2026-12-24"}]}
+        out = subprocess.run([sys.executable, script, "--json", "-"], input=json.dumps(data), capture_output=True, text=True)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        back = json.loads(out.stdout)
+        self.assertEqual(back["hotel"]["name"], "Apollo Hotel")
+        self.assertIn("partner", back["offers"][0])
+        self.assertTrue(back["offers"][0]["link"].startswith("https://www.booking.com/hotel/au/quality-apollo-international.html"))

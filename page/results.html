@@ -84,6 +84,11 @@ button, input, select { font: inherit; color: inherit; }
 .hero-photo, .hero-shade, .photo-credit { display: none; }
 .hero.photo { min-height: max(400px, min(54svh, 540px)); display: flex; align-items: flex-end; padding-top: 72px; text-shadow: 0 1px 12px rgb(0 0 0 / .35); }
 .hero.photo > .wrap { width: 100%; }
+.hero-side { display: none; }
+@media (min-width: 1100px) {
+  .hero.photo .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 48px; align-items: end; }
+  .hero.photo .hero-side:not([hidden]) { display: block; text-shadow: none; color: var(--ink); }
+}
 .hero.photo .hero-photo { display: block; position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; }
 .hero.photo .hero-shade { display: block; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, var(--ocean-deep) 6%, rgb(11 58 78 / .45) 45%, rgb(0 0 0 / .3)); }
 .hero.photo .photo-credit { display: block; position: absolute; top: 12px; right: 16px; font-size: 11px; color: rgb(255 255 255 / .8); }
@@ -227,7 +232,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   <img class="hero-photo" src="brand/hero.webp" alt="" width="1280" height="720" fetchpriority="high">
   <div class="hero-shade"></div>
   <p class="photo-credit">Palm Bay Resort, Whitsundays</p>
-  <div class="wrap">
+  <div class="wrap hero-grid">
+   <div class="hero-text">
     <p class="eyebrow" id="eyebrow">Same room. Lower price.</p>
     <h1 id="hotel-name">You've found the hotel. We'll find the lowest price.</h1>
     <p class="stay" id="stay-line"></p>
@@ -237,6 +243,9 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       <span class="tw-mt-px tw-flex tw-h-5 tw-w-5 tw-flex-none tw-items-center tw-justify-center tw-rounded-full tw-bg-sun tw-text-xs tw-font-bold tw-text-ink" aria-hidden="true">i</span>
       <span>Chrome shows “Claude started debugging this browser” while Claude checks. That's normal for MyRoomPrice: don't click Cancel or close the background tab until the check is finished.</span>
     </p>
+   </div>
+   <!-- On wide screens the Claude section sits here, beside the headline (see placeGetReady). -->
+   <aside class="hero-side" id="hero-side" aria-label="Claude" hidden></aside>
   </div>
 </section>
 
@@ -294,56 +303,70 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       <div id="link-found" hidden></div>
     </div>
   </form>
-  <!-- Before a search: "Claude is ready", or the three setup steps for someone new (see renderGetReady). -->
-  <div class="tw-mt-4" id="getready" hidden></div>
   <!-- What Claude is doing or asking, and the user's answers. -->
-  <div class="tw-mt-3" id="claude" aria-live="polite" hidden></div>
+  <div id="claude-home"><div class="tw-mt-3" id="claude" aria-live="polite" hidden></div></div>
   <!-- Claude reads this line to pick up a search or an answer. Keep its wording in step with SKILL.md. -->
+  <!-- Everything about Claude in one place: whether it's connected, what to do, the debugging bar, and how to set it up
+       (see renderGetReady). Hidden once there are results. -->
+  <div id="getready-home"><section class="tw-mt-6" id="getready" aria-labelledby="claude-title" hidden></section></div>
   <p class="tw-sr-only" id="request"></p>
 
   <!-- Recent searches, kept only in this browser (see "Recent searches" in the script). Hidden once there are results. -->
   <section class="tw-mt-6" id="recent" aria-labelledby="recent-title" hidden></section>
 
   <!-- The search page's pitch and how it works. Hidden once there are results. -->
-  <section id="intro" class="tw-pb-12 tw-pt-10" aria-labelledby="intro-title">
-    <div class="tw-grid tw-gap-10 lg:tw-grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:tw-gap-20 lg:tw-items-start">
-      <div>
-        <p class="eyebrow tw-text-ocean">Why prices differ</p>
-        <h2 class="tw-mt-2 tw-text-[clamp(26px,3.4vw,36px)] tw-leading-tight" id="intro-title">The same room, the same night, very different prices.</h2>
-        <p class="tw-mt-3 tw-text-ink-2">Booking sites, comparison sites and the hotel's own website often charge different amounts, and some leave out taxes or hide member rates. MyRoomPrice checks them side by side and tells you where to book.</p>
-        <p class="tw-mt-6 tw-text-xs tw-font-bold tw-uppercase tw-tracking-[.12em] tw-text-ink-3">Sites we check</p>
-        <ul class="tw-m-0 tw-mt-3 tw-flex tw-list-none tw-flex-wrap tw-gap-x-5 tw-gap-y-3 tw-p-0" aria-label="Sites we check">
-          <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/booking.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Booking.com</li>
-          <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/expedia.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Expedia</li>
-          <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/hotelscom.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Hotels.com</li>
-          <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/agoda.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Agoda</li>
-          <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-semibold tw-text-ink"><img src="brand/sites/trip.png" alt="" class="tw-h-6 tw-w-6 tw-rounded-md">Trip.com</li>
-          <li class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-bold tw-text-ocean"><svg viewBox="0 0 30 30" aria-hidden="true" class="tw-h-6 tw-w-6 tw-rounded-md"><rect width="30" height="30" rx="7" fill="#0a6e7d"/><path d="M8 24V9.5L15 6l7 3.5V24z" fill="#fff"/><path d="M11 12h2v2h-2zM17 12h2v2h-2zM11 16h2v2h-2zM17 16h2v2h-2zM13.5 20h3v4h-3z" fill="#0a6e7d"/></svg>The hotel's own site</li>
-        </ul>
-      </div>
-      <div class="tw-scroll-mt-24" id="how">
-        <p class="eyebrow tw-mb-4 tw-text-ocean">How it works</p>
-        <ol class="tw-m-0 tw-grid tw-list-none tw-gap-7 tw-p-0" aria-label="How it works">
-        <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">1</span><div><h3 class="tw-text-xl">Tell us the hotel</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Add the hotel, its city and country, and your dates. If the name matches more than one hotel, Claude asks which you mean.</p></div></li>
-        <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">2</span><div><h3 class="tw-text-xl">Claude checks every site</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Live, in your own browser, so you see today's prices, member rates and refundable rates, not old listings.</p></div></li>
-        <li class="mrs-step"><span class="mrs-step-n" aria-hidden="true">3</span><div><h3 class="tw-text-xl">Book the lowest real price</h3><p class="tw-mt-1 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Every total includes taxes and fees, and we show what you give up for it, like free cancellation.</p></div></li>
-      </ol>
-      </div>
-    </div>
-    <p class="tw-mt-8 tw-flex tw-flex-wrap tw-gap-x-6 tw-gap-y-2 tw-text-sm tw-font-semibold tw-text-ink-2">
-      <span>✓ Free to use</span><span>✓ Never ranked for money</span><span>✓ Taxes and fees included</span><span>✓ The hotel's own rates included</span><span>✓ Nothing about your stay is sent to us</span>
-    </p>
+  <!-- The search page's pitch, how it works and questions, in separate bands. Hidden once there are results. -->
+  <div id="intro">
 
-    <div class="tw-mt-14 tw-grid tw-scroll-mt-24 tw-gap-8 lg:tw-grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" id="faq">
-      <div>
-        <p class="eyebrow tw-text-ocean">Questions</p>
-        <h2 class="tw-mt-2 tw-text-[clamp(26px,3.4vw,36px)] tw-leading-tight">Everything you might want to know</h2>
-        <div class="tw-mt-5 tw-rounded-2xl tw-bg-sun-soft tw-p-5">
-          <p class="tw-font-bold">We don't rank anything.</p>
-          <p class="tw-mt-1 tw-text-[15px] tw-text-ink-2">The cheapest confirmed price always comes first, whether or not a site pays us. We want you to get the cheapest price.</p>
+    <section class="tw-pb-16 tw-pt-14" aria-labelledby="intro-title">
+      <div class="tw-grid tw-gap-10 lg:tw-grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:tw-items-center lg:tw-gap-16">
+        <div>
+          <p class="eyebrow tw-text-ocean">Why prices differ</p>
+          <h2 class="mrs-h2" id="intro-title">The same room, the same night, very different prices.</h2>
+          <p class="tw-mt-4 tw-max-w-[52ch] tw-leading-relaxed tw-text-ink-2">Booking sites and the hotel's own website often charge different amounts, and some leave out taxes or hide member rates. MyRoomPrice checks them side by side and tells you where to book.</p>
+        </div>
+        <div>
+          <p class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-[.12em] tw-text-ink-3">Sites we check</p>
+          <ul class="tw-m-0 tw-mt-3 tw-grid tw-list-none tw-grid-cols-2 tw-gap-3 tw-p-0 sm:tw-grid-cols-3" aria-label="Sites we check">
+          <li class="mrs-site"><img src="brand/sites/booking.png" alt="" class="tw-h-7 tw-w-7 tw-flex-none tw-rounded-lg">Booking.com</li>
+          <li class="mrs-site"><img src="brand/sites/expedia.png" alt="" class="tw-h-7 tw-w-7 tw-flex-none tw-rounded-lg">Expedia</li>
+          <li class="mrs-site"><img src="brand/sites/hotelscom.png" alt="" class="tw-h-7 tw-w-7 tw-flex-none tw-rounded-lg">Hotels.com</li>
+          <li class="mrs-site"><img src="brand/sites/agoda.png" alt="" class="tw-h-7 tw-w-7 tw-flex-none tw-rounded-lg">Agoda</li>
+          <li class="mrs-site"><img src="brand/sites/trip.png" alt="" class="tw-h-7 tw-w-7 tw-flex-none tw-rounded-lg">Trip.com</li>
+          <li class="mrs-site"><svg viewBox="0 0 30 30" aria-hidden="true" class="tw-h-7 tw-w-7 tw-flex-none tw-rounded-lg"><rect width="30" height="30" rx="7" fill="#0a6e7d"/><path d="M8 24V9.5L15 6l7 3.5V24z" fill="#fff"/><path d="M11 12h2v2h-2zM17 12h2v2h-2zM11 16h2v2h-2zM17 16h2v2h-2zM13.5 20h3v4h-3z" fill="#0a6e7d"/></svg>The hotel's own site</li>
+          </ul>
         </div>
       </div>
-      <div class="tw-border-0 tw-border-t tw-border-solid tw-border-line">
+      <ul class="tw-m-0 tw-mt-12 tw-grid tw-list-none tw-gap-3 tw-p-0 sm:tw-grid-cols-2 lg:tw-grid-cols-5" aria-label="What you can count on">
+        <li class="mrs-promise">Free to use</li>
+        <li class="mrs-promise">Never ranked for money</li>
+        <li class="mrs-promise">Taxes and fees included</li>
+        <li class="mrs-promise">The hotel's own rates included</li>
+        <li class="mrs-promise">Nothing about your stay is sent to us</li>
+      </ul>
+    </section>
+
+    <section class="mrs-band tw-scroll-mt-20 tw-py-16" id="how" aria-labelledby="how-title">
+      <p class="eyebrow tw-text-ocean">How it works</p>
+      <h2 class="mrs-h2" id="how-title">Three steps, and Claude does the checking</h2>
+      <ol class="tw-m-0 tw-mt-8 tw-grid tw-list-none tw-gap-4 tw-p-0 md:tw-grid-cols-3" aria-label="How it works">
+        <li class="mrs-howcard"><span class="mrs-step-n" aria-hidden="true">1</span><h3 class="tw-mt-4 tw-text-xl">Tell us the hotel</h3><p class="tw-mt-2 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Type /myroomprice in Claude's side panel, then fill in the hotel, its city and country, and your dates.</p></li>
+        <li class="mrs-howcard"><span class="mrs-step-n" aria-hidden="true">2</span><h3 class="tw-mt-4 tw-text-xl">Claude checks every site</h3><p class="tw-mt-2 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Live, in your own browser, so you see today's prices, member rates and refundable rates, not old listings.</p></li>
+        <li class="mrs-howcard"><span class="mrs-step-n" aria-hidden="true">3</span><h3 class="tw-mt-4 tw-text-xl">Book the lowest real price</h3><p class="tw-mt-2 tw-text-[15px] tw-leading-relaxed tw-text-ink-2">Every total includes taxes and fees, and we show what you give up for it, like free cancellation.</p></li>
+      </ol>
+    </section>
+
+    <section class="tw-scroll-mt-20 tw-py-16" id="faq" aria-labelledby="faq-title">
+      <div class="tw-grid tw-gap-8 lg:tw-grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:tw-gap-16">
+        <div class="lg:tw-sticky lg:tw-top-24 lg:tw-self-start">
+          <p class="eyebrow tw-text-ocean">Questions</p>
+          <h2 class="mrs-h2" id="faq-title">Everything you might want to know</h2>
+          <div class="tw-mt-6 tw-rounded-2xl tw-bg-sun-soft tw-p-5">
+            <p class="tw-font-bold">We don't rank anything.</p>
+            <p class="tw-mt-1 tw-text-[15px] tw-text-ink-2">The cheapest confirmed price always comes first, whether or not a site pays us. We want you to get the cheapest price.</p>
+          </div>
+        </div>
+        <div class="tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-white tw-px-5 sm:tw-px-7">
       <details class="mrs-faq" open><summary class="mrs-faq-q">What is MyRoomPrice?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">A free tool for Claude that finds the cheapest way to book a hotel you've already chosen. Tell it the hotel and your dates, and Claude finds that hotel on the big booking sites and its own website, reads each price live, then shows them side by side, with taxes and fees included.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Why use it instead of a comparison site?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Comparison sites show listed prices, which are often per night, before tax, or out of date, and they rarely show the hotel's own member rates. MyRoomPrice opens each site live in your browser, reads the real total for your whole stay, and puts the hotel's own website alongside.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">It also tells you what you give up for a lower price, such as free cancellation, and finds recent reviews of the hotel while it checks.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Do you rank results for money?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed"><strong>No. We don't rank anything.</strong> Results are always sorted by the total you'd pay, cheapest first, and you can filter and re-sort them yourself. We want you to get the cheapest price.</p><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Some booking links go through our partner Stay22 and may earn us a small commission, at no extra cost to you. Whether a site pays us never changes where it appears: the cheapest confirmed price comes first, even when it pays us nothing.</p></div></details>
@@ -351,9 +374,10 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
       <details class="mrs-faq"><summary class="mrs-faq-q">Is it free?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Yes, MyRoomPrice is free. It runs inside Claude, so you need a Claude plan that includes Claude in Chrome.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">What happens to my data?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">Your search stays in your browser. Results travel inside this page's own link, after the #, which browsers never send to a server, so we never see them. Claude visits the booking sites in your own browser, just as you would. A review video loads from YouTube only when you choose to play it. Your recent searches are kept only in this browser, so you can check one again in a click; clear them any time with Clear all.</p></div></details>
       <details class="mrs-faq"><summary class="mrs-faq-q">Can I rely on the prices?</summary><div class="tw-pb-5 tw-pr-8"><p class="tw-mt-2 tw-text-ink-2 tw-leading-relaxed">They're the prices each site showed when Claude checked. Prices and availability change often, some sites add fees at checkout, and we can't guarantee any price. Always check the total and the cancellation terms on the booking site before you pay.</p></div></details>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
   <div class="highlights" id="highlights"></div>
 
@@ -956,7 +980,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     $("eyebrow").replaceChildren(...(ready ? [el("span", { class: "pulse" }), "Claude is ready"] : ["Same room. Lower price."]));
     $("hotel-name").textContent = "You've found the hotel. We'll find the lowest price.";
     $("stay-line").textContent = "";
-    $("summary").textContent = broken ? "This link looks incomplete, so there are no results to show. Type /myroomprice in Claude to start again."
+    $("summary").textContent = broken ? "These results didn't come through properly. If Claude is still checking, they'll appear here in a moment; if not, type /myroomprice in Claude to check again."
       : ready ? "Claude is ready. Fill in the hotel, its city and country and your dates, then click Check prices."
       : "MyRoomPrice finds your hotel on the big booking sites and its own website, checks them live in your browser, and shows the lowest total with taxes and fees.";
     document.title = ready ? "Ready · MyRoomPrice" : "MyRoomPrice: the lowest price for the hotel you've chosen";
@@ -1004,7 +1028,6 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   function claudeTookIt() {
     if (!state.requested && !state.answered) return;
     state.taken = true;
-    $("getready").hidden = true;
     clearTimeout(pickupTimer);
     if (state.requested) card("claude", spinner(), "Claude has your search", para(el("strong", { text: state.stay }), ". Starting now: the results appear here."));
     pickupTimer = setTimeout(pickupFailed, 3 * 60e3);
@@ -1035,7 +1058,6 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   }
   function showSent() {
     state.sent = true;
-    $("getready").hidden = true;
     clearTimeout(readyTimer);
     clearTimeout(pickupTimer);
     card("claude", spinner(), "Sent to Claude", para(el("strong", { text: state.stay }), ". Claude starts in a few seconds."),
@@ -1052,6 +1074,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   };
   function card(tone, icon, title, ...body) {
     const box = $("claude");
+    placeClaudeCard();
     box.replaceChildren(el("div", { class: "tw-flex tw-items-start tw-gap-3.5 tw-rounded-2xl tw-border tw-border-solid tw-p-4 sm:tw-p-5 " + CARD_TONES[tone] },
       icon, el("div", { class: "tw-min-w-0 tw-flex-1" }, el("p", { class: "tw-font-bold tw-text-ink", text: title }), ...body)));
     box.hidden = false;
@@ -1107,28 +1130,74 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
 
   // ---------- getting ready: shown on the search page before a search ----------
   // If Claude is watching, a one-line "ready". If not, the three things a newcomer needs, with the guide.
+  // Wide screens: the Claude section sits in the hero's right-hand corner; otherwise under the form.
+  const CORNER = matchMedia("(min-width: 1100px)");
+  function placeGetReady() {
+    const box = $("getready"), corner = CORNER.matches && !state.data;
+    const target = corner ? $("hero-side") : $("getready-home");
+    if (box.parentElement !== target) target.append(box);
+    $("hero-side").hidden = !corner || box.hidden;
+    return corner;
+  }
+  CORNER.addEventListener("change", () => renderGetReady());
+
   function renderGetReady() {
     const box = $("getready");
-    if (state.data) { box.hidden = true; return; }
+    if (state.data) { box.hidden = true; placeGetReady(); placeClaudeCard(); return; }
     box.hidden = false;
-    if (state.ready) {
-      box.replaceChildren(el("p", { class: "tw-flex tw-items-center tw-gap-2.5 tw-rounded-xl tw-bg-reef-soft tw-px-4 tw-py-3 tw-text-[15px] tw-text-reef-ink" },
-        badge("✓", "tw-bg-reef tw-text-white"), el("span", {}, el("strong", { text: "Claude is ready. " }), "Fill in your stay and click Check prices.")));
-      return;
-    }
+    const corner = placeGetReady();
+    const ready = state.ready;
     const stepEl = (n, title, sub) => el("li", { class: "tw-flex tw-items-start tw-gap-3" },
-      el("span", { class: "mrs-step-n tw-h-8 tw-w-8", "aria-hidden": "true", text: String(n) }),
+      el("span", { class: "mrs-step-n tw-h-8 tw-w-8 tw-text-sm", "aria-hidden": "true", text: String(n) }),
       el("span", {}, el("span", { class: "tw-block tw-font-bold tw-text-ink", text: title }), el("span", { class: "tw-block tw-text-sm tw-text-ink-2", text: sub })));
-    box.replaceChildren(el("div", { class: "tw-grid tw-gap-4 tw-rounded-[20px] tw-border tw-border-solid tw-border-line tw-bg-mist tw-p-5 lg:tw-grid-cols-[minmax(0,1fr)_auto] lg:tw-items-center" },
-      el("div", {},
-        el("p", { class: "tw-font-bold tw-text-ink", text: "MyRoomPrice works inside Claude in Chrome" }),
-        el("ol", { class: "tw-m-0 tw-mt-3 tw-grid tw-list-none tw-gap-3 tw-p-0 md:tw-grid-cols-3" },
+    $("claude-home").append($("claude"));  // out of the way while the section is redrawn
+    box.classList.toggle("tw-mt-6", !corner);
+    box.replaceChildren(el("div", { class: "tw-grid tw-overflow-hidden tw-rounded-[20px] tw-border tw-border-solid tw-border-line tw-bg-white tw-shadow-card " + (corner ? "" : "md:tw-grid-cols-[minmax(0,7fr)_minmax(0,5fr)]") },
+      // Is Claude here, and what to do now. While Claude has something to say (#claude), that shows here instead.
+      el("div", { class: "claude-col " + (corner ? "tw-p-5" : "tw-p-6 sm:tw-p-7") }, el("div", { class: "claude-default" },
+        el("p", { class: "tw-flex tw-flex-wrap tw-items-center tw-gap-3" },
+          el("span", { class: "eyebrow tw-text-ocean", text: "Claude in Chrome" }),
+          el("span", { class: "tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-px-2.5 tw-py-0.5 tw-text-xs tw-font-bold " + (ready ? "tw-bg-reef-soft tw-text-reef-ink" : "tw-bg-mist tw-text-ink-3") },
+            ready ? el("span", { class: "pulse", "aria-hidden": "true" }) : null, ready ? "Connected" : "Not connected")),
+        el("h2", { class: "tw-mt-2 " + (corner ? "tw-text-xl" : "tw-text-2xl"), id: "claude-title", text: ready ? "Claude is ready" : "Start Claude to check prices" }),
+        el("p", { class: "tw-mt-2 tw-max-w-[56ch] tw-leading-relaxed tw-text-ink-2 " + (corner ? "tw-text-[15px]" : "") }, ...(ready
+          ? ["Fill in your stay above and click ", el("strong", { text: "Check prices" }), ". Claude picks it up straight away and shows the prices here."]
+          : ["Open Claude's side panel in Chrome and type ", slash(), ". It opens this page and waits for your search, and if you've already filled it in, it picks that up too."])),
+        el("div", { class: "tw-flex tw-items-start tw-gap-3 tw-rounded-xl tw-bg-sun-soft tw-text-ink-2 " + (corner ? "tw-mt-4 tw-p-3 tw-text-sm" : "tw-mt-5 tw-p-4 tw-text-[15px]") },
+          badge("!", "tw-bg-sun tw-text-ink"),
+          el("p", {}, el("strong", { class: "tw-text-ink", text: "“Claude started debugging this browser” is normal. " }),
+            "Chrome shows it while Claude checks. Don't click Cancel or close Claude's background tab until the check is finished.")))),
+      // How to set it up.
+      el("div", { class: "tw-border-0 tw-border-t tw-border-solid tw-border-line tw-bg-mist " + (corner ? "tw-p-5" : "tw-p-6 sm:tw-p-7 md:tw-border-l md:tw-border-t-0") },
+        el("h3", { class: corner ? "tw-text-lg" : "tw-text-xl", text: "How to set it up" }),
+        el("ol", { class: "tw-m-0 tw-list-none tw-p-0 tw-grid " + (corner ? "tw-mt-3 tw-gap-3" : "tw-mt-4 tw-gap-4") },
           stepEl(1, "Add Claude to Chrome", "Once, from the Chrome Web Store"),
-          stepEl(2, "Add MyRoomPrice to Claude", "Once, in Customize, Plugins"),
-          stepEl(3, "Type /myroomprice", "In Claude's side panel, then fill this in"))),
-      el("div", { class: "tw-flex tw-flex-wrap tw-items-center tw-gap-3 lg:tw-flex-col lg:tw-items-stretch" },
-        el("a", { class: "mrs-done tw-justify-center tw-no-underline", href: "https://myroomprice.com/setup/", target: "_blank", rel: "noopener", text: "How to set it up" }),
-        el("p", { class: "tw-text-xs tw-text-ink-3", text: "Already set up? Type /myroomprice in Claude." }))));
+          stepEl(2, "Add MyRoomPrice to Claude", "Once, in Customize, then Plugins"),
+          stepEl(3, "Type /myroomprice", "In Claude's side panel, whenever you want a price")),
+        el("div", { class: "tw-mt-5 tw-flex tw-flex-wrap tw-items-center tw-gap-x-4 tw-gap-y-2" },
+          el("a", { class: "mrs-done tw-no-underline", href: "https://myroomprice.com/setup/", target: "_blank", rel: "noopener", text: "Full setup guide" }),
+          el("span", { class: "tw-text-sm tw-text-ink-3", text: "Fastest: Sonnet 5.5, Auto mode" })))));
+    placeClaudeCard();
+    keepClaudeHeight();
+  }
+  // A message from Claude takes the status text's place without changing the section's height, so nothing
+  // below it moves (and in the hero's corner, the hero keeps its size).
+  const claudeColHeight = { corner: 0, below: 0 };  // the tallest it has been, in each place
+  function keepClaudeHeight() {
+    const col = $("getready").querySelector(".claude-col");
+    if (!col) return;
+    const where = CORNER.matches ? "corner" : "below";
+    col.style.minHeight = "";
+    claudeColHeight[where] = Math.max(claudeColHeight[where], col.offsetHeight);
+    col.style.minHeight = claudeColHeight[where] + "px";
+  }
+  // The card goes in the Claude section on the search page, and under the form on a results page.
+  function placeClaudeCard() {
+    const card = $("claude");
+    const status = !state.data && !$("getready").hidden && $("getready").querySelector(".claude-default");
+    if (status) { if (card.nextElementSibling !== status) status.before(card); }
+    else if (card.parentElement !== $("claude-home")) $("claude-home").append(card);
+    card.classList.toggle("tw-mt-3", !status);
   }
 
   function tryAgain() {
@@ -1467,31 +1536,40 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   }
   function forgetSearch(r) { storeRecent(loadRecent().filter((x) => !sameSearch(x, r))); renderRecent(); }
 
+  let recentOpen = false;  // closed by default: the header line opens and closes the list
   function renderRecent() {
     const box = $("recent");
     const list = loadRecent();
     box.hidden = !!state.data || !list.length;
     if (box.hidden) { box.replaceChildren(); return; }
     const today = isoDay(new Date());
-    const ago = (t) => { const d = new Date(t); return d.toLocaleDateString(undefined, { day: "numeric", month: "short" }); };
+    const ago = (t) => new Date(t).toLocaleDateString(undefined, { day: "numeric", month: "short" });
     box.replaceChildren(
-      el("div", { class: "tw-flex tw-items-baseline tw-justify-between tw-gap-3" },
-        el("h2", { class: "tw-font-sans tw-text-sm tw-font-bold tw-uppercase tw-tracking-[.12em] tw-text-ink-3", id: "recent-title", text: "Your recent searches" }),
-        el("button", { type: "button", class: "mrs-quiet tw-h-8 tw-text-xs", onclick: () => { storeRecent([]); renderRecent(); }, text: "Clear all" })),
-      el("ul", { class: "tw-m-0 tw-mt-2 tw-grid tw-list-none tw-gap-3 tw-p-0 sm:tw-grid-cols-2 lg:tw-grid-cols-3" }, list.map((r) => {
+      el("div", { class: "tw-flex tw-items-center tw-gap-3 tw-rounded-2xl tw-border tw-border-solid tw-border-line tw-bg-white tw-px-4 tw-py-1.5" },
+        el("button", { type: "button", class: "tw-flex tw-min-w-0 tw-flex-1 tw-cursor-pointer tw-items-center tw-gap-2.5 tw-border-0 tw-bg-transparent tw-py-2 tw-text-left",
+            "aria-expanded": String(recentOpen), "aria-controls": "recent-list", onclick: () => { recentOpen = !recentOpen; renderRecent(); } },
+          el("span", { class: "tw-text-[15px] tw-font-bold tw-text-ink", id: "recent-title", text: "Your recent searches" }),
+          el("span", { class: "tw-rounded-full tw-bg-ocean-soft tw-px-2 tw-py-0.5 tw-text-xs tw-font-bold tw-text-ocean", text: String(list.length) }),
+          el("span", { class: "tw-ml-auto tw-whitespace-nowrap tw-text-sm tw-font-bold tw-text-ocean", text: recentOpen ? "Hide ▴" : "Show ▾" })),
+        recentOpen && el("button", { type: "button", class: "mrs-quiet tw-h-8 tw-whitespace-nowrap tw-text-xs", onclick: () => { storeRecent([]); renderRecent(); }, text: "Clear all" })),
+      recentOpen ? el("ul", { class: "tw-m-0 tw-mt-3 tw-grid tw-list-none tw-gap-3 tw-p-0 sm:tw-grid-cols-2 lg:tw-grid-cols-3", id: "recent-list" }, list.map((r) => {
         const passed = r.checkin < today;
         return el("li", { class: "tw-relative" },
           el("button", { type: "button", class: "mrs-recent", onclick: () => recheck(r),
             "aria-label": (passed ? "Choose new dates for " : "Check again: ") + r.hotel + ", " + day(r.checkin) + " to " + day(r.checkout) },
-            el("span", { class: "tw-block tw-truncate tw-pr-7 tw-font-bold tw-text-ink", text: r.hotel }),
-            el("span", { class: "tw-mt-0.5 tw-block tw-truncate tw-text-sm tw-text-ink-2",
-              text: [r.where, day(r.checkin) + " – " + day(r.checkout), guests({ adults: r.adults, children: r.children })].filter(Boolean).join(" · ") }),
-            el("span", { class: "tw-mt-2 tw-flex tw-items-center tw-justify-between tw-gap-2 tw-text-sm" },
-              el("span", { class: "tw-truncate tw-text-ink-3",
-                text: r.price ? money(r.price, r.currency) + (r.site ? " at " + r.site : "") + " · " + ago(r.checked) : "Searched " + ago(r.saved) }),
-              el("span", { class: "tw-flex-none tw-font-bold " + (passed ? "tw-text-ink-3" : "tw-text-ocean"), text: passed ? "Dates passed" : "Check again ↻" }))),
+            el("span", { class: "tw-block tw-truncate tw-pr-7 tw-text-[17px] tw-font-bold tw-text-ink", text: r.hotel }),
+            el("span", { class: "tw-mt-1 tw-block tw-truncate tw-text-sm tw-text-ink-2", text: r.where || "" }),
+            el("span", { class: "tw-block tw-truncate tw-text-sm tw-text-ink-2",
+              text: day(r.checkin) + " – " + day(r.checkout) + " · " + guests({ adults: r.adults, children: r.children }) }),
+            el("span", { class: "tw-mt-4 tw-flex tw-items-center tw-justify-between tw-gap-3 tw-border-0 tw-border-t tw-border-solid tw-border-line tw-pt-3 tw-text-sm" },
+              r.price
+                ? el("span", { class: "tw-min-w-0 tw-truncate" }, el("strong", { class: "tw-text-ink", text: money(r.price, r.currency) }),
+                    el("span", { class: "tw-text-ink-3", text: (r.site ? " at " + r.site : "") + " · " + ago(r.checked) }))
+                : el("span", { class: "tw-truncate tw-text-ink-3", text: "Searched " + ago(r.saved) }),
+              el("span", { class: "tw-flex-none tw-rounded-full tw-px-3 tw-py-1 tw-font-bold " + (passed ? "tw-bg-mist tw-text-ink-3" : "tw-bg-ocean-soft tw-text-ocean"),
+                text: passed ? "Dates passed" : "Check again ↻" }))),
           el("button", { type: "button", class: "mrs-recent-x", "aria-label": "Forget " + r.hotel, onclick: () => forgetSearch(r), text: "✕" }));
-      })));
+      })) : "");
   }
 
   // One click: fill in the form and send it, or ask for new dates if these have passed.

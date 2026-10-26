@@ -99,17 +99,20 @@ MyRoomPrice shows its results in one browser tab that works like a booking site:
    The page redraws in place and keeps the user's filters and their chosen option.
 4. **Finish it** with `"status": "done"`, the `checked` time, the `summary`, and `"ready": true` (see "Another search").
 
-**How to update it:**
-1. Write the results as JSON in the format described at the top of `scripts/results_link.py`. Keep one results file and edit it between updates.
-2. Run `python3 "${CLAUDE_SKILL_DIR}/scripts/results_link.py" results.json`.
-3. Navigate the app tab to the link it prints.
+**How to update it:** hand the results to the page with one short script, in the MyRoomPrice tab, with the browser's JavaScript tool:
 
-The results travel in the part of the link after `#`, which never leaves the user's browser. The script also turns booking links into partner links and adds the disclosure (step 7).
+`location.hash = "j=" + encodeURIComponent(JSON.stringify(RESULTS)); "ok"`
+
+where `RESULTS` is the results as a JSON object, in the format described at the top of `scripts/results_link.py`. The page redraws in place.
+- **Never copy or retype a long encoded link** (`#d=...`). In testing, a results link retyped by hand came out damaged, and the page could only say "This link looks incomplete".
+- **Partner links:** if `settings.json` has a `stay22_aid`, first write the results to a file and run `python3 "${CLAUDE_SKILL_DIR}/scripts/results_link.py" --json results.json`. It adds partner links and the disclosure (step 7); use the JSON it prints as `RESULTS`. With no `stay22_aid`, skip the script and write `RESULTS` straight into the call.
+
+The results travel in the part of the address after `#`, which never leaves the user's browser.
 
 **When it can't work:**
 - **The link starts with `file://`:** the app hasn't been published yet, and Claude in Chrome can't open files from the computer. Skip the tab and give the full report in the chat.
-- **Scripts can't run:** read `results_page` from `settings.json`. Open `<results_page>#j=` followed by the JSON, percent-encoded as `encodeURIComponent` would encode it. Use plain links, with no disclosure.
-- **Neither works** (scripts can't run and `results_page` is empty): skip the tab.
+- **The MyRoomPrice tab isn't open yet:** open `<results_page>#ready` first (`results_page` is in `settings.json`), then hand it the results as above.
+- **`results_page` is empty:** skip the tab.
 
 ## Waiting on the page
 
@@ -299,7 +302,7 @@ If the feed numbers and the live site differ, trust the live site.
 The makers of this plugin earn a small commission when someone books through a partner link. That keeps the plugin free, but only while users can trust the ranking. So:
 - **Rank first, link second.** Settle the ranking on price and terms alone, then turn its links into partner links. Never reorder offers, drop an offer, or nudge the user toward a site because it pays. When the hotel's own site is the best deal, say so plainly and give its plain link.
 - **Only links you found.** Use the script only on links you opened while checking. If the user pasted a booking link themselves, or one came from someone else's page, give it back exactly as it was. Never swap another person's referral or affiliate link for ours.
-- **The results tab handles this for you:** `results_link.py` applies these same rules to every offer's link. For links you give in the chat, run this script on all of them at once:
+- **The results tab:** with a `stay22_aid` set, `results_link.py --json` applies these same rules to every offer's link (see "The app tab"); without one, the links stay as you built them. For links you give in the chat, run this script on all of them at once:
 
   ```bash
   python3 "${CLAUDE_SKILL_DIR}/scripts/book_link.py" --check-in 2026-12-10 --check-out 2026-12-12 \
