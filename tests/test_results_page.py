@@ -106,8 +106,8 @@ class PageTest(unittest.TestCase):
                       '["thinking", "question", "checking"]',
                       '". Check-out: "', '". Adults: "', '". Children: "', 'hashHas("ready")'):
             self.assertIn(words, self.script, words)
-        for words in ('title starts with "Check requested"', "Check requested. Hotel:", "City: (city or town). Country: (country).",
-                      '"Answer given"', "Answer given. Question: (id). Answer: (label).", '"status": "question"',
+        for words in ("## Waiting on the page", "`scripts/watch_page.js`", "Check requested. Hotel:", "City: (city or town). Country: (country).",
+                      "Answer given. Question: (id). Answer: (label).", '"status": "question"',
                       '"status": "thinking"', 'Use `"hotel"`', "Check-in: YYYY-MM-DD", '"Link: (address)"', '**A pasted link.**',
                       "Check-out: YYYY-MM-DD", "Adults:", "Children:", "#ready", "5 minutes"):
             self.assertIn(words, skill, words)
@@ -256,7 +256,7 @@ class PageTest(unittest.TestCase):
         self.assertIn("Claude's still here: check another stay", self.html)
         with open(os.path.join(SCRIPTS, "..", "SKILL.md"), encoding="utf-8") as f:
             skill = f.read()
-        for words in ("## Another search", '`"ready": true`', "**Watch for 5 minutes,**"):
+        for words in ("## Another search", '`"ready": true`', "**Watch for 5 minutes**"):
             self.assertIn(words, skill, words)
 
     def test_list_links_are_flagged(self):

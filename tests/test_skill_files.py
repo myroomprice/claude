@@ -38,6 +38,7 @@ class BrowserScriptTest(unittest.TestCase):
     SCRIPTS = {
         "scripts/read_offers.js": ["hotel", "offers", "all", "flags"],
         "scripts/find_pages.js": ["sites", "official"],
+        "scripts/watch_page.js": ["request", "page"],
     }
 
     def test_are_valid_javascript(self):
@@ -68,6 +69,18 @@ class BrowserScriptTest(unittest.TestCase):
             answer = code[code.rindex("return JSON.stringify({"):]
             for field in fields:
                 self.assertRegex(answer, r"\b%s\b" % field, name)
+
+    def test_watcher_and_page_use_the_same_marks(self):
+        # The page counts Claude as connected from the watcher's check-ins; the names must match.
+        watcher = read("scripts/watch_page.js")
+        with open(os.path.join(HERE, "..", "page", "results.html"), encoding="utf-8") as f:
+            page = f.read()
+        for mark in ("data-claude-seen", "data-claude-took"):
+            self.assertIn('"%s"' % mark, watcher)
+            self.assertIn('"%s"' % mark, page)
+        # It waits well under the browser tool's 45-second limit.
+        self.assertIn("i < 60", watcher)
+        self.assertIn("await wait(500)", watcher)
 
     def test_no_dated_addresses_returned(self):
         # Claude in Chrome hides any answer carrying a ?query, so the finder returns bare addresses.

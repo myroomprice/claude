@@ -972,6 +972,68 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   const PICKUP_MS = 60e3;     // a request still waiting after this gets a "type /myroomprice" note
   let readyTimer = 0, pickupTimer = 0;
   const hashHas = (name) => new URLSearchParams(location.hash.slice(1)).has(name);
+
+  // ---------- Claude's check-ins ----------
+  // While Claude waits for this page it runs scripts/watch_page.js in it, which marks <html data-claude-seen>
+  // every few seconds, and <html data-claude-took> when it reads a request. Claude counts as connected while
+  // the marks are under a minute old, so the page only asks for /myroomprice when Claude has really gone.
+  const SEEN_MS = 60e3;
+  let seenAt = 0, seenTimer = 0;
+  const connected = () => Date.now() - seenAt < SEEN_MS;
+  function claudeCheckedIn() {
+    seenAt = Date.now();
+    clearTimeout(seenTimer);
+    seenTimer = setTimeout(claudeWentQuiet, SEEN_MS + 1000);
+    const d = state.data;
+    if (!state.ready && (!d || d.status !== "checking")) {
+      setReady(true);
+      if (!d && !state.requested && !state.answered) showEmpty(false);
+      else if (d && d.status === "done") $("trip-bar-note").hidden = false;
+    }
+    if (state.requested && !state.sent && !state.taken) showSent();
+  }
+  // Claude has read the search or the answer: it takes the page over as soon as it has started.
+  function claudeTookIt() {
+    if (!state.requested && !state.answered) return;
+    state.taken = true;
+    $("getready").hidden = true;
+    clearTimeout(pickupTimer);
+    if (state.requested) card("claude", spinner(), "Claude has your search", para(el("strong", { text: state.stay }), ". Starting now: the results appear here."));
+    pickupTimer = setTimeout(pickupFailed, 3 * 60e3);
+  }
+  function claudeWentQuiet() {
+    if (connected()) return;
+    if ((state.requested || state.answered) && !state.taken) return pickupFailed();
+    if (state.ready && !state.requested && !state.answered) quiet();
+  }
+  new MutationObserver((changes) => changes.forEach((c) => (c.attributeName === "data-claude-took" ? claudeTookIt() : claudeCheckedIn())))
+    .observe(document.documentElement, { attributes: true, attributeFilter: ["data-claude-seen", "data-claude-took"] });
+
+  // A search or answer is waiting: keep waiting while Claude is still checking in; otherwise say what to do.
+  function checkPickup() {
+    if (!state.requested && !state.answered) return;
+    if (connected() || state.taken) { pickupTimer = setTimeout(checkPickup, PICKUP_MS); return; }
+    pickupFailed();
+  }
+  function pickupFailed() {
+    if (!state.requested && !state.answered) return;
+    stopReady();
+    state.taken = false;
+    state.sent = false;
+    if (state.answered) return card("note", badge("!", "tw-bg-sun tw-text-ink"), "Claude hasn't picked this up", para("Click Check prices to start again."));
+    if (!state.data) showEmpty(false);
+    document.title = "Check requested · MyRoomPrice";  // Claude picks it up from here when /myroomprice is typed
+    typeSlash("Claude isn't connected", state.stay);
+  }
+  function showSent() {
+    state.sent = true;
+    $("getready").hidden = true;
+    clearTimeout(readyTimer);
+    clearTimeout(pickupTimer);
+    card("claude", spinner(), "Sent to Claude", para(el("strong", { text: state.stay }), ". Claude starts in a few seconds."),
+      el("p", { class: "tw-mt-2 tw-text-sm tw-text-ink-2", text: "Chrome shows “Claude started debugging this browser” while Claude checks. That's normal for MyRoomPrice: don't click Cancel or close the background tab until the check is finished." }));
+    pickupTimer = setTimeout(checkPickup, PICKUP_MS);
+  }
   function longDay(s) { const d = parseDay(s); return d ? d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : ""; }
 
   // ---------- Claude's card: what Claude is doing or asking ----------
@@ -992,7 +1054,7 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
   const slash = () => el("code", { class: "tw-rounded-md tw-bg-white/80 tw-px-1.5 tw-py-0.5 tw-font-sans tw-font-bold tw-text-ink", text: "/myroomprice" });
   const needMore = (text) => card("note", badge("!", "tw-bg-sun tw-text-ink"), "Almost there", para(text));
   const typeSlash = (title, stay) => card("note", badge("/", "tw-bg-sun tw-text-ink"), title,
-    para("Open Claude in the side panel and type ", slash(), ". It picks up ", el("strong", { text: stay }), " from this page."));
+    para("Open Claude in the side panel and type ", slash(), ". It picks up ", el("strong", { text: stay }), " from this page, so there's no need to fill it in again."));
 
   function showQuestion(q) {
     const short = q.options.every((o) => !o.detail && o.label.length <= 14);
@@ -1013,12 +1075,9 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     if (q.id === "hotel") $("q-hotel").value = label;  // the hotel they meant, ready for any later search
     clearTimeout(readyTimer);
     clearTimeout(pickupTimer);
+    state.taken = false;
     card("claude", spinner(), "Sent to Claude", para("You chose ", el("strong", { text: label }), ". Claude is carrying on."));
-    pickupTimer = setTimeout(() => {
-      if (!state.answered) return;
-      stopReady();
-      card("note", badge("!", "tw-bg-sun tw-text-ink"), "Claude hasn't picked this up", para("Click Check prices to start again."));
-    }, PICKUP_MS);
+    pickupTimer = setTimeout(checkPickup, PICKUP_MS);
   }
 
   // ---------- folding the search on results pages ----------
@@ -1072,17 +1131,24 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     $("q-hotel").select();
   }
 
+  // Ready: Claude is watching this page. It stays ready while Claude checks in (see "Claude's check-ins");
+  // READY_MS covers the start, before the first check-in.
   function setReady(on) {
     state.ready = on;
     clearTimeout(readyTimer);
     if (!on) return;
-    readyTimer = setTimeout(() => {
+    readyTimer = setTimeout(function idle() {
       if (state.requested || state.answered) return;
-      stopReady();
-      if (!state.data) showEmpty(false);
-      else if (watching()) card("note", badge("!", "tw-bg-sun tw-text-ink"), "Claude has stopped waiting", para("Click Check prices to start again."));
-      else $("trip-bar-note").hidden = true;  // after a finished check: Claude has stopped listening
+      if (connected()) { readyTimer = setTimeout(idle, SEEN_MS); return; }
+      quiet();
     }, READY_MS);
+  }
+  // Claude has stopped watching.
+  function quiet() {
+    stopReady();
+    if (!state.data) showEmpty(false);
+    else if (watching()) card("note", badge("!", "tw-bg-sun tw-text-ink"), "Claude has stopped waiting", para("Type ", slash(), " in Claude to carry on, or click Check prices to start again."));
+    else $("trip-bar-note").hidden = true;  // after a finished check: Claude has stopped listening
   }
 
   // Claude has stopped watching: drop "#ready" from the address too, so a reload doesn't claim otherwise.
@@ -1097,6 +1163,8 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     clearTimeout(pickupTimer);
     state.requested = false;
     state.answered = false;
+    state.sent = false;
+    state.taken = false;
     $("request").textContent = "";
     $("claude").hidden = true;
     closePops();
@@ -1630,19 +1698,14 @@ footer .logo { color: #fff; margin-bottom: 8px; justify-self: start; } footer .l
     rememberSearch({ hotel, where, checkin: a, checkout: b, adults, children, link: state.link ? state.link.link : "" });
     state.requested = true;
     state.answered = false;
+    state.sent = false;
+    state.taken = false;
+    state.stay = stay;
     clearTimeout(pickupTimer);
-    if (!state.ready) return typeSlash("Now type /myroomprice in Claude", stay);
-    // Claude is watching: it reads the request within a few seconds and takes over this page.
-    clearTimeout(readyTimer);
-    card("claude", spinner(), "Sent to Claude", para(el("strong", { text: stay }), ". Claude starts in a few seconds."),
-      el("p", { class: "tw-mt-2 tw-text-sm tw-text-ink-2", text: "Chrome shows “Claude started debugging this browser” while Claude checks. That's normal for MyRoomPrice: don't click Cancel or close the background tab until the check is finished." }));
-    pickupTimer = setTimeout(() => {
-      if (!state.requested) return;
-      stopReady();
-      if (!state.data) showEmpty(false);
-      document.title = "Check requested · MyRoomPrice";
-      typeSlash("Claude hasn't picked this up", stay);
-    }, PICKUP_MS);
+    // Not connected: the search waits here, and Claude picks it up as soon as it checks in again,
+    // or when /myroomprice is typed.
+    if (!state.ready && !connected()) return typeSlash("Now type /myroomprice in Claude", stay);
+    showSent();
   });
   document.querySelector(".topbar .logo").addEventListener("click", (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); });
   $("edit-search").addEventListener("click", () => (state.editing ? (state.editing = false, foldSearch(true)) : editSearch()));

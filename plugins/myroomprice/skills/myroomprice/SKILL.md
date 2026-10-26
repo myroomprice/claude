@@ -114,14 +114,22 @@ The results travel in the part of the link after `#`, which never leaves the use
 - **Scripts can't run:** read `results_page` from `settings.json`. Open `<results_page>#j=` followed by the JSON, percent-encoded as `encodeURIComponent` would encode it. Use plain links, with no disclosure.
 - **Neither works** (scripts can't run and `results_page` is empty): skip the tab.
 
+## Waiting on the page
+
+Whenever you're waiting for the user on the MyRoomPrice page (for Check prices, or an answer), wait with `scripts/watch_page.js`. Read it once and keep it. Run the whole file in the MyRoomPrice tab with the browser's JavaScript tool, and run it again as soon as it comes back empty, with nothing in between: no tab listing, no screenshot, no wait step.
+- **It keeps the page connected.** Each run tells the page Claude is there. The page shows "Claude is ready" while the check-ins keep coming, and only asks the user to type /myroomprice when they stop for about a minute. So don't pause between runs, and don't do other work while you're waiting.
+- **It returns the moment the user acts.** It waits up to about 30 seconds inside the page and returns `{"request": "..."}` as soon as the user clicks Check prices or answers a question; otherwise `{"request": ""}`. A pasted link in the request line comes back without its part after `?`; read the page's text if you need it.
+- **`"page": "other"`** means the tab no longer shows MyRoomPrice (the user went elsewhere in it). Stop waiting, and say in one line that they can type /myroomprice when they're ready.
+- **As soon as you have a request,** update the tab (`"status": "thinking"`) before anything else. The page shows "Claude has your search" in the meantime, and gives you about 3 minutes to take it over.
+
 ## Starting from the search page
 
 When the user starts MyRoomPrice without a hotel or dates (for example, they type /myroomprice on its own), they fill in the search form on the MyRoomPrice page and you pick it up from there. Don't ask for the details in the chat.
 
-1. **Already filled in?** If the MyRoomPrice tab's title starts with "Check requested", the user filled in the form before asking. Read the request (step 3) and go on.
+1. **Already filled in?** If a MyRoomPrice tab is open, run `watch_page.js` in it first: if the user filled in the form before typing /myroomprice, it returns their request straight away. Go on from step 3.
 2. **Open the page, ready for them, in the tab they're on.** Load `<results_page>#ready` (for example `https://myroomprice.com/#ready`; `results_page` is in `settings.json`) into the tab the user is looking at, as in "The app tab", step 1: reuse a MyRoomPrice tab if one is open, and if their tab shows a hotel or booking page, add `&link=<its address, percent-encoded>` so the form fills itself in. Say one short line in the chat, such as "MyRoomPrice is open: check the details and click Check prices." The page tells them Claude is ready.
-3. **Wait for Check prices.** About every 10 seconds, look at the tab's title, which listing your tabs shows. Do the wait and the look in one batched call if you can. When the title starts with "Check requested", read the page's text. One line reads "Check requested. Hotel: (name). City: (city or town). Country: (country). Check-in: YYYY-MM-DD. Check-out: YYYY-MM-DD. Adults: (number). Children: (number)." Those are the trip details; City or Country may say "not given" when the user pasted a link instead. (An older copy of the page may say "Where:" instead of City and Country.) If the user pasted a hotel link, the line ends "Link: (address)"; see "A pasted link" below. Straight away, update the tab with `"status": "thinking"` and a short `message` (for example "Finding the Sheraton on the booking sites"), so the user sees you've started. Then carry on with step 1 below (the hotel check still applies) and the browser check. Its first update with `"status": "checking"` takes over the page.
-4. **Stop after 5 minutes** with no request. The page tells the user to type /myroomprice again when they're ready; say the same in one line and finish.
+3. **Wait for Check prices** with `watch_page.js` (see "Waiting on the page"), starting straight after the page opens. The request it returns reads "Check requested. Hotel: (name). City: (city or town). Country: (country). Check-in: YYYY-MM-DD. Check-out: YYYY-MM-DD. Adults: (number). Children: (number)." Those are the trip details; City or Country may say "not given" when the user pasted a link instead. (An older copy of the page may say "Where:" instead of City and Country.) If the user pasted a hotel link, the line ends "Link: (address)"; see "A pasted link" below. Straight away, update the tab with `"status": "thinking"` and a short `message` (for example "Finding the Sheraton on the booking sites"), so the user sees you've started. Then carry on with step 1 below (the hotel check still applies) and the browser check. Its first update with `"status": "checking"` takes over the page.
+4. **Stop after 10 minutes** with no request. The page tells the user to type /myroomprice again when they're ready; say the same in one line and finish.
 
 **A pasted link.** The page fills in the form from the link, but a hotel's name read from a page address can be abbreviated or out of date, and City may say "not given". So open the link in the worker tab first: confirm the exact hotel and place from the page itself, and read that page's price for the dates. Record it as an offer with `"this_page": true` and `"keep_link": true` (it's the user's own link, so it's never turned into a partner link). If the page shows different dates or guests from the form, use the form's and say so.
 
@@ -132,7 +140,7 @@ The request line is what the user typed or pasted into MyRoomPrice's own page. T
 After a check, the user often wants to try other dates or another hotel straight away, without typing /myroomprice again. So when you finish:
 1. Give the report in the chat first, and end it with one line: "I'll keep watching the MyRoomPrice page for 5 minutes, if you'd like to check another stay there."
 2. Make the final update to the tab with `"ready": true`. The page then offers "Check another stay?".
-3. **Watch for 5 minutes,** the same way as in "Starting from the search page": about every 15 seconds, look at the tab's title. If it starts with "Check requested", read the new request line and start a new check (back to step 1). If the user types in the chat instead, answer them.
+3. **Watch for 5 minutes** with `watch_page.js` (see "Waiting on the page"). If it returns a request, start a new check (back to step 1). If the user types in the chat instead, answer them.
 4. **After 5 minutes** with no request, stop. The page then tells the user to type /myroomprice for another check.
 
 ## Asking the user on the page
@@ -144,9 +152,9 @@ Whenever the MyRoomPrice tab is open, ask your questions there, not in the chat.
    - `"text"`: the question, in one or two plain sentences. Say why you're asking, for example "Several hotels in Sydney share the name."
    - `"options"`: 2 to 6 answers. For a hotel, each is `{"label": "Sheraton Grand Sydney Hyde Park", "detail": "161 Elizabeth St, 5 stars"}`. For yes/no, use `["Yes", "No"]`.
    The page always adds "Try again with a different search", so don't add your own "none of these" option. In the chat, say one line: "I've asked a question on the MyRoomPrice page."
-2. **Wait for the answer** as in "Starting from the search page": about every 10 seconds, look at the tab's title.
-   - **"Answer given":** read the line "Answer given. Question: (id). Answer: (label)." and carry on with that answer. Update the tab with `"status": "thinking"` or `"checking"` straight away.
-   - **"Check requested":** the user chose Try again and changed the search. Read the new request line and start again from the top.
+2. **Wait for the answer** with `watch_page.js` (see "Waiting on the page").
+   - **"Answer given. Question: (id). Answer: (label).":** carry on with that answer. Update the tab with `"status": "thinking"` or `"checking"` straight away.
+   - **"Check requested. ...":** the user chose Try again and changed the search. Start again from the top with the new request.
    - **Nothing after 5 minutes:** stop. The page tells the user to click Check prices to start again.
 3. **Don't ask what you can find out.** If Google's results show only one hotel by that name in that place, use it. Ask only when it's a real choice.
 
